@@ -4,26 +4,49 @@ import * as ooba from '../ooba-api';
 import { GenerateParams } from '@/app/ooba-types';
 import * as prompts from './prompts';
 
-const fadeStyles = `
-@keyframes fadeInOut {
-    0% {opacity: 1;}
-    50% {opacity: 0.5;}
-    100% {opacity: 0;}
+const params: Partial<GenerateParams> = {
+	temperature: 0.01,
+	top_k: 20,
+	guidance_scale: 1.25,
+	stopping_strings: ['Q:', '\n'],
+};
+
+async function runPrompt(
+	template: string,
+	variables: Record<string, string>,
+	extraParams?: Partial<GenerateParams>
+) {
+	const prompt = template.replace(
+		/{{(.*?)}}/g,
+		(_, g) => variables[g.trim()] || ''
+	);
+	console.log(prompt);
+	const options = Object.assign({}, params, extraParams, { prompt });
+	const response = await ooba.generateText(options);
+	const responseText = response.results[0].text;
+	// console.log(responseText);
+	return responseText;
 }
-.fade {
-    animation-name: fadeInOut;
-    animation-timing-function: ease-in-out;
-    animation-duration: 1s;
-}
-`;
+
+const Phase = ({
+	phase,
+	outputText,
+}: {
+	phase: string;
+	outputText: string;
+}) => (
+	<div className="grow text-center pt-12 mx-3 min-h-min">
+		<h2>{phase}</h2>
+		<textarea
+			className="input"
+			style={{ height: '100%', width: '90%' }}
+			value={outputText}
+			readOnly
+		/>
+	</div>
+);
 
 function ThoughtChain() {
-	const params: Partial<GenerateParams> = {
-		temperature: 0.01,
-		top_k: 20,
-		guidance_scale: 1.05,
-		stopping_strings: ['Q:', '\n'],
-	};
 	const loadInput = () => {
 		const input = localStorage.getItem('thoughtchain-input');
 		if (input) setInputText(input);
@@ -34,94 +57,119 @@ function ThoughtChain() {
 	}, []);
 
 	const [inputText, setInputText] = useState('');
-	const [responseText, setResponseText] = useState('');
-	const [showSuccess, setShowSuccess] = useState(false);
 
+	const [currentPhase, setCurrentPhase] = useState('');
 	const [phase1Result, setPhase1Result] = useState('');
 	const [phase2Result, setPhase2Result] = useState('');
 	const [phase3Result, setPhase3Result] = useState('');
-
-	useEffect(() => {
-		if (showSuccess) {
-			const timer = setTimeout(() => {
-				setShowSuccess(false);
-			}, 900);
-
-			return () => clearTimeout(timer);
-		}
-	}, [showSuccess]);
+	const [phase4Result, setPhase4Result] = useState('');
+	const [phase5Result, setPhase5Result] = useState('');
 
 	useEffect(() => {
 		localStorage.setItem('thoughtchain-input', inputText);
 	}, [inputText]);
 
-	// 	const handleSend = async () => {
-	// 		if (!inputText) return;
-	// 		const prompt = `<|im_start|>system
-	// Given the user's input, remove ANY sensitive or identifying info with [NAME,PHONE,IP,etc], and repeat all other text VERBATIM.
-	// Full Name, Phone/Email/Address/etc, Domain Name, IP, and more<|im_end|>
-	// <|im_start|>user
-	// ${inputText}<|im_end|>
-	// <|im_start|>assistant\n`;
-	// 		const response = await ooba.generateText(
-	// 			Object.assign({}, params, { prompt })
-	// 		);
-	// 		console.log('Got response');
+	const handleSend = async (text?: string) => {
+		const input = text || inputText;
+		if (!input) return;
 
-	// 		setResponseText(response.results[0].text);
-	// 		setShowSuccess(true);
-	// 	};
-	const handleSend = async () => {
-		if (!inputText) return;
+		try {
+			setPhase1Result('');
+			setPhase2Result('');
+			setPhase3Result('');
+			setPhase4Result('');
+			setPhase5Result('');
+			setInputText(input);
+			setCurrentPhase('Phase 1: Expertise Identification');
+			const phase1Template = `{{prompts}}\nQ: {{inputText}} A: `;
+			const phase1Variables = {
+				prompts: prompts.phase1.join('\n'),
+				inputText: input,
+			};
+			const phase1Output = (
+				await runPrompt(phase1Template, phase1Variables)
+			).trim();
+			setPhase1Result(phase1Output);
 
-		// Phase 1: Expertise Identification
-		const phase1Prompt = `${prompts.phase1.join('\n')}\nQ: ${inputText} A: `;
-		const phase1Response = await ooba.generateText(
-			Object.assign({}, params, { prompt: phase1Prompt })
-		);
-		const p1ResponseText = phase1Response.results[0].text;
-		// console.log(p1ResponseText);
-		let phase1Output = p1ResponseText.split('\n').pop()?.split('A: ')[1] || '';
-		if (!phase1Output && p1ResponseText && !p1ResponseText.includes('A:'))
-			phase1Output = p1ResponseText.trim();
-		setPhase1Result(phase1Output);
+			setCurrentPhase('Phase 2: In-depth Response');
+			const phase2Template = `{{prompts}}\nBased on the fact that """{{phase1Output}}""" Q: {{inputText}} A:`;
+			// console.log(phase2Template);
+			const phase2Variables = {
+				prompts: prompts.phase2.join('\n'),
+				inputText: input,
+				phase1Output,
+			};
+			const phase2Output = (
+				await runPrompt(phase2Template, phase2Variables, {
+					// ban_eos_token: true,
+					temperature: 0.25,
+				})
+			).trim();
+			setPhase2Result(phase2Output);
 
-		// Phase 2: In-depth Response
-		const phase2Prompt = `${prompts.phase2.join(
-			'\n'
-		)}\n Based on the fact that ${phase1Output}, Q: ${inputText}? A: `;
-		const phase2Response = await ooba.generateText(
-			Object.assign({}, params, { prompt: phase2Prompt })
-		);
-		const p2ResponseText = phase2Response.results[0].text;
-		let phase2Output = p2ResponseText.split('\n').pop()?.split('A: ')[1] || '';
-		if (!phase2Output && p2ResponseText && !p2ResponseText.includes('A:'))
-			phase2Output = p2ResponseText.trim();
-		setPhase2Result(phase2Output);
+			setCurrentPhase('Phase 3: Accuracy Evaluation');
+			const phase3Template = `{{prompts}}\nQ: Evaluate the accuracy of the statement in response to {{inputText}}: {{phase2Output}}. A: `;
+			const phase3Variables = {
+				prompts: prompts.phase3.join('\n'),
+				inputText: input,
+				phase2Output,
+			};
+			const phase3Output = (
+				await runPrompt(phase3Template, phase3Variables)
+			).trim();
+			setPhase3Result(phase3Output);
 
-		// Phase 3: Accuracy Evaluation
-		const phase3Prompt = `${prompts.phase3.join(
-			'\n'
-		)}\nQ: Evaluate the accuracy of the statement in response to ${inputText}: ${phase2Output}. A: `;
-		const phase3Response = await ooba.generateText(
-			Object.assign({}, params, { prompt: phase3Prompt })
-		);
-		const p3ResponseText = phase3Response.results[0].text;
-		let phase3Output = p3ResponseText.split('\n').pop()?.split('A: ')[1] || '';
-		if (!phase3Output && p3ResponseText && !p3ResponseText.includes('A:'))
-			phase3Output = p3ResponseText.trim();
-		setPhase3Result(phase3Output);
+			setCurrentPhase('Phase 4: Response Revision');
+			const phase4Template = `{{prompts}}\nQ: Given the query """{{inputText}}""" and the response """{{response}}""" and the evaluation """{{evaluation}}""", how should the response be revised? If no revision is required, respond with "NO". A: `;
+			// const phase4Template = `Q: Given the response """{{response}}""" and the evaluation """{{evaluation}}""", how should the response be revised? A: `;
+			const phase4Variables = {
+				prompts: prompts.phase4.join('\n'),
+				inputText: input,
+				response: phase2Output,
+				evaluation: phase3Output,
+			};
+			const phase4Output = (
+				await runPrompt(phase4Template, phase4Variables, {
+					stopping_strings: ['Q:'],
+					guidance_scale: 1.1,
+					// temperature: 0.25,
+					// top_p: 0.1,
+				})
+			).trim();
+			setPhase4Result(phase4Output);
 
-		// Next: Given the input, response and evaluation, generate how the response should be revised
-		// Then given the response and revision instructions, generate the revised response
-		// Repeat until the revised response is deemed accurate
+			if (phase4Output === 'NO') {
+				setCurrentPhase('');
+				return;
+			}
 
-		setShowSuccess(true);
+			setCurrentPhase('Phase 5: Response Revision');
+			const phase5Template = `{{prompts}}\nQ: Rewrite the response """{{response}}""" using the revision notes """{{revision}}""". A: `;
+			const phase5Variables = {
+				prompts: prompts.phase5.join('\n'),
+				response: phase2Output,
+				revision: phase4Output,
+			};
+			const phase5Output = (
+				await runPrompt(phase5Template, phase5Variables, {
+					stopping_strings: ['Q:'],
+				})
+			).trim();
+			setPhase5Result(phase5Output);
+
+			// Next: Given the input, response and evaluation, generate how the response should be revised
+			// Then given the response and revision instructions, generate the revised response
+			// Repeat until the revised response is deemed accurate
+
+			setCurrentPhase('');
+		} catch (e) {
+			console.error('Error during generation:', e);
+			setCurrentPhase('Error occurred. Please try again.');
+		}
 	};
 
 	return (
 		<div>
-			<style>{fadeStyles}</style>
 			<h1>Thought Chain</h1>
 			<div>
 				<div className="mt-2">
@@ -142,40 +190,45 @@ function ThoughtChain() {
 						<button onClick={() => handleSend()} className="mr-2">
 							Send
 						</button>
-						{showSuccess && <span className="fade">Success</span>}
+						<button
+							onClick={() => {
+								const prompt =
+									prompts.testPrompts[
+										Math.floor(Math.random() * prompts.testPrompts.length)
+									];
+								handleSend(prompt);
+							}}
+							className="mr-2"
+						>
+							Test
+						</button>
+						{currentPhase && <span className="fade">{currentPhase}</span>}
 					</div>
 
 					<div
-						className="my-4 flex flex-row flex-auto pb-5"
+						className="mb-4 flex flex-row flex-wrap pb-5"
 						style={{ height: '30em' }}
 					>
-						<div className="grow text-center">
-							<h2>Phase 1: Expertise Identification</h2>
-							<textarea
-								className="input"
-								style={{ height: '100%', width: '90%' }}
-								value={phase1Result}
-								readOnly
-							/>
-						</div>
-						<div className="grow text-center">
-							<h2>Phase 2: In-depth Response</h2>
-							<textarea
-								className="input"
-								style={{ height: '100%', width: '90%' }}
-								value={phase2Result}
-								readOnly
-							/>
-						</div>
-						<div className="grow text-center">
-							<h2>Phase 3: Accuracy Evaluation</h2>
-							<textarea
-								className="input"
-								style={{ height: '100%', width: '90%' }}
-								value={phase3Result}
-								readOnly
-							/>
-						</div>
+						<Phase
+							phase="Phase 1: Expertise Identification"
+							outputText={phase1Result}
+						/>
+						<Phase
+							phase="Phase 2: In-depth Response"
+							outputText={phase2Result}
+						/>
+						<Phase
+							phase="Phase 3: Accuracy Evaluation"
+							outputText={phase3Result}
+						/>
+						<Phase
+							phase="Phase 4: Revision Needed?"
+							outputText={phase4Result}
+						/>
+						<Phase
+							phase="Phase 5: Response Revision"
+							outputText={phase5Result}
+						/>
 					</div>
 				</div>
 			</div>
