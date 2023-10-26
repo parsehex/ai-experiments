@@ -3,25 +3,121 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+	--foreground-rgb: 0, 0, 0;
+	--background-start-rgb: 240, 245, 250;
+	--background-end-rgb: 255, 255, 255;
+	--accent-rgb: 10, 132, 255;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+	:root {
+		--foreground-rgb: 255, 255, 255;
+		--background-start-rgb: 25, 25, 25;
+		--background-end-rgb: 15, 15, 15;
+		--accent-rgb: 64, 156, 255;
+	}
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+	color: rgb(var(--foreground-rgb));
+	background: linear-gradient(
+			to bottom,
+			transparent,
+			rgb(var(--background-end-rgb))
+		)
+		rgb(var(--background-start-rgb));
+	font-family: 'Inter', sans-serif; /* Assuming you use the Inter font, which is common with Tailwind projects */
+	@apply bg-gray-100 dark:bg-gray-900;
+}
+
+/* h1 {
+	@apply text-2xl font-bold mb-4;
+} */
+
+.container {
+	@apply flex flex-col items-center justify-center p-4 max-w-2xl min-h-screen mx-auto;
+	max-height: 100vh;
+}
+
+.chatBox {
+	@apply bg-white dark:bg-gray-800 shadow-md rounded-lg mx-auto w-full flex flex-col items-start p-4;
+	overflow-y: auto;
+}
+.input-container {
+	@apply flex flex-row items-center w-full justify-center;
+}
+.input-container textarea {
+	@apply grow;
+}
+
+.input {
+	@apply bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-full p-2 border focus:border-blue-500 focus:outline-none;
+}
+textarea.input {
+	@apply bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-md p-2 border focus:border-blue-500 focus:outline-none;
+}
+
+.roleColor1 {
+	@apply bg-blue-500 text-white;
+}
+.roleColor2 {
+	@apply bg-green-500 text-black;
+}
+.roleColor3 {
+	@apply bg-purple-500 text-white;
+}
+.roleColor4 {
+	@apply bg-orange-500 text-white;
+}
+
+.chatBox .message.action {
+	@apply bg-gray-200 text-black italic w-full mx-auto text-center items-center;
+}
+.chatBox .message {
+	@apply flex flex-col items-start rounded-lg p-2 mt-2;
+}
+.chatBox .message-header {
+	@apply flex flex-row items-center justify-center w-full;
+}
+.chatBox .message button.regenerate,
+.chatBox .message button.delete,
+.chatBox .message button.copy {
+	@apply text-xs text-gray-500 hover:text-white px-1 py-1 rounded-md;
+}
+.chatBox .message button.regenerate {
+	@apply bg-green-100 hover:bg-green-500;
+}
+.chatBox .message button.delete {
+	@apply bg-red-100 hover:bg-red-500;
+}
+.chatBox .message button.copy {
+	@apply bg-blue-100 hover:bg-blue-500;
+}
+.chatBox .message .role {
+	font-size: 12px;
+	@apply ml-2;
+}
+.chatBox button.bulk-delete {
+	@apply bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full fixed bottom-24 right-4;
+}
+/* .chatBox .message .role.action {
+	@apply text-sm ml-2;
+} */
+
+.chatBox .user {
+	@apply bg-blue-500 text-white rounded-lg p-2 mt-2 ml-5;
+}
+
+.chatBox .assistant {
+	@apply bg-gray-300 text-black rounded-lg p-2 mt-2 mr-5;
+}
+
+.assistant-thinking {
+	/* You can modify these styles based on your design preference */
+	color: #aaa;
+	font-style: italic;
+}
+
+button {
+	@apply bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full;
 }
