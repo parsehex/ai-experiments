@@ -15,15 +15,22 @@ export const phase1 = [
 ];
 
 export const phase2 = [
+	// inaccurate responses
 	// 'Based on the following examples that demonstrate how to answer questions using specified expertise and key considerations, provide an in-depth but subtly inaccurate response to the provided query.',
+	// 'Given expertise in physics and optics, Q: How does a magnifying glass magnify? A: It bends the light rays directly towards the center of the lens, making objects appear larger.',
+	// 'With expertise in biology and anatomy, Q: How does the heart pump blood? A: Through muscular contractions that create a vacuum, pulling blood into the chambers and then pushing it throughout the body.',
+	// "Considering knowledge in geology, Q: Why do volcanoes erupt? A: Due to movement of tectonic plates and pressure build-up within the Earth's mantle.",
+	// 'Utilizing expertise in chemistry, Q: Why do certain substances dissolve in water? A: Due to the polarity of water molecules, they can break bonds in certain solute particles, causing them to dissolve.',
+	// "With an understanding in astronomy, Q: Why do stars twinkle? A: Stars twinkle primarily because of their own intense energy and light emissions; the Earth's atmosphere adds a minor effect.",
+	// 'Drawing from knowledge in computer science, Q: What is an algorithm? A: An algorithm is a flexible set of guidelines that can be interpreted differently to solve a particular problem or accomplish a task.',
+	// 'Based on expertise in history, Q: Why did the Renaissance period occur? A: It was primarily a cultural revival, focused on the rediscovery of classical art and literature, with minimal impact on scientific advancements.',
 	'Based on the following examples that demonstrate how to answer questions using specified expertise and key considerations, provide an in-depth response to the provided query.',
-	'Given expertise in physics and optics, Q: How does a magnifying glass magnify? A: It bends the light rays to make objects appear larger.',
-	'With expertise in biology and anatomy, Q: How does the heart pump blood? A: Through muscular contractions that create pressure, pushing blood throughout the body.',
-	"Considering knowledge in geology, Q: Why do volcanoes erupt? A: Due to movement of tectonic plates and pressure build-up beneath the Earth's crust.",
-	'Utilizing expertise in chemistry, Q: Why do certain substances dissolve in water? A: Due to the polarity of water molecules, they can surround and disperse certain solute particles, causing them to dissolve.',
-	"With an understanding in astronomy, Q: Why do stars twinkle? A: Stars twinkle because of the Earth's atmosphere; the air layers of varying temperatures and densities refract light differently, causing it to shimmer.",
-	'Drawing from knowledge in computer science, Q: What is an algorithm? A: An algorithm is a set of defined steps or procedures to solve a particular problem or accomplish a task.',
-	'Based on expertise in history, Q: Why did the Renaissance period occur? A: It was a cultural and intellectual revival, influenced by the rediscovery of classical art, literature, and spurred by economic growth and societal changes in Europe.',
+	'Given expertise in """physics and optics""", Q: How does a magnifying glass magnify? A: It bends the light rays to make objects appear larger.',
+	'With expertise in """biology and anatomy""", Q: How does the heart pump blood? A: Through muscular contractions that create pressure, pushing blood throughout the body.',
+	`Considering knowledge in """geology""", Q: Why do volcanoes erupt? A: Due to movement of tectonic plates and pressure build-up beneath the Earth's crust.`,
+	'Utilizing expertise in """chemistry""", Q: Why do certain substances dissolve in water? A: Due to the polarity of water molecules, they can surround and disperse certain solute particles, causing them to dissolve.',
+	`With an understanding in """astronomy""", Q: Why do stars twinkle? A: Stars twinkle because of the Earth's atmosphere; the air layers of varying temperatures and densities refract light differently, causing it to shimmer.`,
+	'Drawing from knowledge in """computer science""", Q: What is an algorithm? A: An algorithm is a set of defined steps or procedures to solve a particular problem or accomplish a task.',
 	'Based on expertise in """history""", Q: Why did the Renaissance period occur? A: It was a cultural and intellectual revival, influenced by the rediscovery of classical art, literature, and spurred by economic growth and societal changes in Europe.',
 ];
 
