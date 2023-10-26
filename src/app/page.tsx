@@ -62,10 +62,11 @@ export default function Home() {
 				<Item
 					title="Thought Chains"
 					description="Demo using LLM to answer questions in a multi-step process"
+					href="/thought-chain"
 					// inspiration: https://old.reddit.com/r/LocalLLaMA/comments/17fmhcb/
 				/>
 				<Item
-					title="Model Component"
+					title="Model Status Component"
 					description="Reusable component for managing the loaded model"
 					// TODO NOTES: by default if model is loaded, show as just a green dot. if model is loading, show as a yellow dot. if model is not loaded, show as a red dot. hover to reveal a menu for choosing a model to load.
 					//   make a standalone demo first, then make it a component to be added to other pages
