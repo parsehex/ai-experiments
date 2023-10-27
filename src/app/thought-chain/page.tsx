@@ -159,11 +159,9 @@ function ThoughtChain() {
 					: phaseOutput;
 
 				newResults = { ...newResults, [phase.name]: processedOutput };
-				setResults(newResults); // Update results state here to trigger a re-render
+				setResults(newResults);
 
-				if (phase.shouldStop && phase.shouldStop(processedOutput)) {
-					break; // Exit the loop if the shouldStop condition is met
-				}
+				if (phase.shouldStop && phase.shouldStop(processedOutput)) break;
 			}
 			setCurrentPhase('');
 		} catch (e) {
@@ -176,7 +174,7 @@ function ThoughtChain() {
 		<div>
 			<h1>Thought Chain</h1>
 			<div>
-				<div className="mt-2">
+				<div className="mt-2 flex flex-row justify-center">
 					<textarea
 						className="input mr-2"
 						style={{ height: '6em', width: '45%' }}
@@ -190,7 +188,7 @@ function ThoughtChain() {
 						onChange={(e) => setInputText(e.target.value)}
 						placeholder="Type your message..."
 					/>
-					<div className="relative">
+					<div className="inline-flex flex-col">
 						<button onClick={() => handleSend()} className="mr-2">
 							Send
 						</button>
@@ -207,20 +205,19 @@ function ThoughtChain() {
 						</button>
 						{currentPhase && <span className="fade">{currentPhase}</span>}
 					</div>
-
-					<div
-						className="mb-4 flex flex-row flex-wrap pb-5"
-						style={{ height: '30em' }}
-					>
-						{phases.map((phase) => (
-							<Phase
-								key={phase.name}
-								phase={phase.name}
-								outputText={results[phase.name] || ''}
-								processOutput={phase.processOutput}
-							/>
-						))}
-					</div>
+				</div>
+				<div
+					className="mb-4 flex flex-row flex-wrap pb-5"
+					style={{ height: '30em' }}
+				>
+					{phases.map((phase) => (
+						<Phase
+							key={phase.name}
+							phase={phase.name}
+							outputText={results[phase.name] || ''}
+							processOutput={phase.processOutput}
+						/>
+					))}
 				</div>
 			</div>
 		</div>
