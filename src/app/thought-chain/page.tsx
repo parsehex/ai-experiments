@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { Tooltip } from 'react-tooltip';
 import * as ooba from '../ooba-api';
 import { GenerateParams } from '@/app/ooba-types';
 import * as prompts from './prompts';
@@ -38,7 +39,7 @@ const phases: PhaseType[] = [
 	},
 	{
 		name: 'Phase 3: Accuracy Evaluation',
-		template: `{{prompts}}\nQ: Evaluate the accuracy of the statement in response to {{inputText}}: {{phase2Output}}. A: `,
+		template: `{{prompts}}\nQ: Evaluate the accuracy of the statement in response to "{{inputText}}": {{phase2Output}}. A: `,
 		variables: (input, previousResults) => ({
 			prompts: prompts.phase3.join('\n'),
 			inputText: input,
@@ -76,6 +77,10 @@ const phases: PhaseType[] = [
 	},
 ];
 
+interface Result {
+	output: string;
+	prompt: string;
+}
 const params: Partial<GenerateParams> = {
 	temperature: 0.01,
 	guidance_scale: 1.25,
@@ -95,7 +100,6 @@ async function runPrompt(
 	const options = Object.assign({}, params, extraParams, { prompt });
 	const response = await ooba.generateText(options);
 	const responseText = response.results[0].text;
-	// console.log(responseText);
 	return responseText;
 }
 
@@ -103,19 +107,35 @@ const Phase = ({
 	phase,
 	outputText,
 	processOutput,
+	tooltipContent,
 }: {
 	phase: string;
 	outputText: string;
 	processOutput?: (output: string) => string;
+	tooltipContent?: string;
 }) => (
 	<div className="grow text-center pt-12 mx-3 min-h-min">
-		<h2>{phase}</h2>
+		<h2 className={phase.replace(/[\s:;,.]/g, '_') + '-tooltip'}>{phase}</h2>
 		<textarea
 			className="input"
 			style={{ height: '100%', width: '90%' }}
 			value={processOutput ? processOutput(outputText) : outputText}
 			readOnly
 		/>
+		<Tooltip
+			anchorSelect={'.' + phase.replace(/[\s:;,.]/g, '_') + '-tooltip'}
+			place="top"
+			style={{
+				maxWidth: '65%',
+				fontSize: '0.7em',
+				wordWrap: 'break-word',
+				whiteSpace: 'pre-wrap',
+			}}
+			opacity={0.95}
+			clickable={true}
+		>
+			{tooltipContent || ''}
+		</Tooltip>
 	</div>
 );
 
@@ -130,7 +150,7 @@ function ThoughtChain() {
 	}, []);
 
 	const [inputText, setInputText] = useState('');
-	const [results, setResults] = useState<Record<string, string>>({});
+	const [results, setResults] = useState<Record<string, Result>>({});
 
 	const [currentPhase, setCurrentPhase] = useState('');
 
@@ -149,7 +169,15 @@ function ThoughtChain() {
 			for (const phase of phases) {
 				setCurrentPhase(phase.name);
 
-				const phaseVariables = phase.variables(input, newResults);
+				const outputs = Object.fromEntries(
+					// @ts-ignore
+					Object.entries(newResults).map(([k, v]) => [k, v.output])
+				);
+				const phaseVariables = phase.variables(input, outputs);
+				const interpolatedPrompt = phase.template.replace(
+					/{{(.*?)}}/g,
+					(_, g) => phaseVariables[g.trim()] || ''
+				);
 				const phaseOutput = (
 					await runPrompt(phase.template, phaseVariables, phase.extraParams)
 				).trim();
@@ -158,7 +186,10 @@ function ThoughtChain() {
 					? phase.processOutput(phaseOutput)
 					: phaseOutput;
 
-				newResults = { ...newResults, [phase.name]: processedOutput };
+				newResults = {
+					...newResults,
+					[phase.name]: { output: processedOutput, prompt: interpolatedPrompt },
+				};
 				setResults(newResults);
 
 				if (phase.shouldStop && phase.shouldStop(processedOutput)) break;
@@ -214,8 +245,9 @@ function ThoughtChain() {
 						<Phase
 							key={phase.name}
 							phase={phase.name}
-							outputText={results[phase.name] || ''}
+							outputText={results[phase.name]?.output || ''}
 							processOutput={phase.processOutput}
+							tooltipContent={results[phase.name]?.prompt}
 						/>
 					))}
 				</div>

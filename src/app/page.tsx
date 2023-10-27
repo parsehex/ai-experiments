@@ -46,6 +46,12 @@ export default function Home() {
 					href="/chat/role-play"
 				/>
 				<Item
+					title="Thought Chain"
+					description="Use LLM to answer questions in a multi-step process"
+					href="/thought-chain"
+					// inspiration: https://old.reddit.com/r/LocalLLaMA/comments/17fmhcb/
+				/>
+				<Item
 					title="Redacter"
 					description="Paste any text and remove identifying information"
 					href="/redacter"
@@ -54,12 +60,6 @@ export default function Home() {
 					title="Chat using LangChain"
 					description="Prototype chat app using LangChain"
 					href="/chat"
-				/>
-				<Item
-					title="Thought Chain"
-					description="Use LLM to answer questions in a multi-step process"
-					href="/thought-chain"
-					// inspiration: https://old.reddit.com/r/LocalLLaMA/comments/17fmhcb/
 				/>
 			</List>
 			<List title="TODO">

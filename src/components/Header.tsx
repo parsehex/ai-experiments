@@ -1,3 +1,4 @@
+import 'react-tooltip/dist/react-tooltip.css';
 function Header() {
 	return (
 		<header>
