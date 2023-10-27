@@ -5,6 +5,24 @@ import { Message } from '@/app/types';
 import * as ooba from '../../ooba-api';
 import { v4 } from 'uuid';
 
+const innerMonologue = async (messages: Message[]) => {
+	// there should be at least 2 messages, pick the last 2
+	let prompt = 'Think about how to respond to the following conversation:\n';
+	const lastMessage = messages[messages.length - 1];
+	prompt += `${lastMessage.role}: ${lastMessage.content}\n`;
+	const secondLastMessage = messages[messages.length - 2];
+	prompt += `${secondLastMessage.role}: ${secondLastMessage.content}\n`;
+	prompt += '\nTHOUGHTS: ';
+	const result = await ooba.generateText({
+		prompt,
+		temperature: 0.15,
+		guidance_scale: 2,
+		stopping_strings: ['RESPONSE:'],
+	});
+	console.log(prompt, result);
+	return result.results[0].text;
+};
+
 const summarize = async (messages: Message[], summary?: string) => {
 	let prompt = 'Summarize the following conversation:\n';
 	if (summary) {
@@ -20,7 +38,6 @@ const summarize = async (messages: Message[], summary?: string) => {
 		prompt,
 		temperature: 0.01,
 		guidance_scale: 1.2,
-		// stopping_strings: ['<|im_end|>'],
 	});
 	console.log(prompt, result);
 	return result.results[0].text;
@@ -29,12 +46,14 @@ const summarize = async (messages: Message[], summary?: string) => {
 const constructPrompt = (
 	input: string,
 	lastMessageWithRole: string,
-	summary?: string
+	summary?: string,
+	thoughts?: string
 ) => {
 	const s = `\nThis is a summary of the conversation so far: ${summary}`;
+	const t = `\nThese are your thoughts on how to respond: ${thoughts}`;
 	return `Continue the following conversation between USER and ASSISTANT by responding to the INPUT in one paragraph or less.${
 		summary ? s : ''
-	}
+	}${thoughts ? t : ''}
 ${lastMessageWithRole}
 INPUT: ${input}
 RESPONSE: `;
@@ -43,9 +62,10 @@ RESPONSE: `;
 const sendInput = async (
 	input: string,
 	lastMessageWithRole: string,
-	summary?: string
+	summary?: string,
+	thoughts?: string
 ) => {
-	const prompt = constructPrompt(input, lastMessageWithRole, summary);
+	const prompt = constructPrompt(input, lastMessageWithRole, summary, thoughts);
 	const result = await ooba.generateText({
 		prompt,
 		temperature: 1,
@@ -55,6 +75,9 @@ const sendInput = async (
 	console.log(prompt, result);
 	return result.results[0].text;
 };
+
+// idea: inner monologue - at each summarize step, also generate a prompt to the LLM to think how to respond. this will be included in later prompts
+//   for this, we also need to extend chatbox to allow for collapsed messages to express thoughts.
 
 function ConversationalSummaryChat() {
 	const [messages, setMessages] = useState([
@@ -73,28 +96,37 @@ function ConversationalSummaryChat() {
 
 		const userMsgId = v4();
 		const resMsgId = v4();
-		setMessages([
+		let newMessages = [
 			...messages,
 			{ role: 'USER', content: userInput, id: userMsgId },
-		] as Message[]);
+		] as Message[];
+		setMessages(newMessages);
+
+		const thoughts = await innerMonologue(newMessages);
+		newMessages = [
+			...newMessages,
+			{ role: 'ASSISTANT', content: thoughts, id: v4(), type: 'thought' },
+		];
+		setMessages(newMessages);
 
 		const chatSummary = summary || '';
 		const lastMessage = messages[messages.length - 1];
 		const response = await sendInput(
 			userInput,
 			`${lastMessage.role}: ${lastMessage.content.trim()}`,
-			chatSummary
+			chatSummary,
+			thoughts
 		);
 
-		const newMessages = [
-			...messages,
-			{ role: 'USER', content: userInput, id: userMsgId },
-		] as Message[];
-		newMessages.push({ role: 'ASSISTANT', content: response, id: resMsgId });
-
+		newMessages = [
+			...newMessages,
+			{ role: 'ASSISTANT', content: response, id: resMsgId },
+		];
 		setMessages(newMessages);
 
-		const msgsToSummarize = [...newMessages];
+		const msgsToSummarize = [
+			...newMessages.filter((msg) => msg.type !== 'thought'),
+		];
 		// we should only summarize the new messages
 		if (msgsToSummarize.length > 2 && summary) {
 			msgsToSummarize.splice(0, msgsToSummarize.length - 2);

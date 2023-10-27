@@ -1,5 +1,6 @@
 import { Message } from '@/app/types';
 import { useEffect, useRef, useState } from 'react';
+import MessageItem from './MessageItem';
 
 export const ChatBox = ({
 	roles = ['USER', 'ASSISTANT'],
@@ -124,108 +125,24 @@ export const ChatBox = ({
 	};
 	return (
 		<div className="chatBox" ref={messagesEndRef}>
-			{messages.map((msg, idx) => {
-				if (!msg) {
-					console.error(`Message at index ${idx} is undefined!`, messages);
-					const newMessages = [...messages];
-					newMessages.splice(idx, 1);
-					return null; // return null to avoid rendering this item
-				}
-				const isThought = msg.type === 'thought';
-				const isCollapsed = collapsedThoughts.has(msg.id);
-				return (
-					<div
-						key={idx}
-						className={`message ${getRoleClass(
-							msg.role
-						)} relative flex items-center`}
-					>
-						<input
-							type="checkbox"
-							className="absolute top-2 left-2"
-							checked={selectedMessages.has(msg.id) ? true : false}
-							onChange={(e) => handleSelect(e, msg, idx)}
-						/>
-
-						<div
-							className={`flex-1 flex flex-col ${
-								isThought && isCollapsed ? 'collapsed' : ''
-							}`}
-						>
-							<div className="flex items-center">
-								<span className="message-header  flex items-center">
-									{deleteMessage && !readOnly && (
-										<button
-											className="delete mr-2"
-											onClick={() => deleteMessage(msg.id)}
-										>
-											Delete
-										</button>
-									)}
-									<button
-										className="copy mr-2"
-										onClick={() => navigator.clipboard.writeText(msg.content)}
-									>
-										Copy
-									</button>
-
-									{regenerateMessage && readOnly && (
-										<button
-											className="regenerate mr-2"
-											onClick={() => regenerateMessage(msg.id)}
-										>
-											Regenerate
-										</button>
-									)}
-
-									<span
-										className={
-											'role ' + msg.role.toLowerCase().replace(/ /g, '_')
-										}
-										onClick={() => !readOnly && toggleRole(msg.id)}
-									>
-										{msg.role}
-									</span>
-								</span>
-							</div>
-							{editingMsg === msg.id ? (
-								<textarea
-									className="input w-96"
-									value={tempMsgContent}
-									onChange={(e) => setTempMsgContent(e.target.value)}
-									onKeyDown={(e) => {
-										if (e.key === 'Enter' && e.shiftKey) {
-											handleMessageEdit(msg.id, tempMsgContent);
-											setEditingMsg(null);
-										}
-									}}
-								/>
-							) : msg.type === 'thought' && !collapsedThoughts.has(msg.id) ? (
-								<div
-									className="thought-message"
-									onClick={() => toggleCollapse(msg.id)}
-								>
-									Thought...
-								</div>
-							) : (
-								<span
-									className={msg.type === 'thought' ? 'thought-message' : ''}
-									onClick={() => {
-										if (msg.type === 'thought') {
-											toggleCollapse(msg.id);
-										} else if (!readOnly) {
-											setEditingMsg(msg.id);
-											setTempMsgContent(msg.content);
-										}
-									}}
-								>
-									{msg.content}
-								</span>
-							)}
-						</div>
-					</div>
-				);
-			})}
+			{messages.map((msg, idx) => (
+				<MessageItem
+					extraClass={getRoleClass(msg.role)}
+					key={idx}
+					message={msg}
+					index={idx}
+					isThoughtCollapsed={collapsedThoughts.has(msg.id)}
+					isSelected={selectedMessages.has(msg.id)}
+					onToggleRole={() => !readOnly && toggleRole(msg.id)}
+					onDelete={() => deleteMessage && deleteMessage(msg.id)}
+					onRegenerate={() => regenerateMessage && regenerateMessage(msg.id)}
+					onEdit={() => setEditingMsg(msg.id)}
+					onToggleThoughtCollapse={() => toggleCollapse(msg.id)}
+					onCopy={() => navigator.clipboard.writeText(msg.content)}
+					onSelect={(e) => handleSelect(e, msg, idx)}
+					readOnly={readOnly}
+				/>
+			))}
 			{deleteMessage && selectedMessages.size > 0 && (
 				<button
 					className="bulk-delete"

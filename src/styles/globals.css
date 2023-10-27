@@ -102,11 +102,11 @@ textarea.input {
 } */
 
 .chatBox .user {
-	@apply bg-blue-500 text-white rounded-lg p-2 mt-2 ml-5;
+	@apply bg-blue-500 text-white rounded-lg p-1 ml-5;
 }
 
 .chatBox .assistant {
-	@apply bg-gray-300 text-black rounded-lg p-2 mt-2 mr-5;
+	@apply bg-gray-300 text-black rounded-lg p-1 mr-5;
 }
 
 .assistant-thinking {

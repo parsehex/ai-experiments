@@ -4,18 +4,8 @@ import { Tooltip } from 'react-tooltip';
 import * as ooba from '../ooba-api';
 import { GenerateParams } from '@/app/ooba-types';
 import * as prompts from './prompts';
+import { PhaseType } from '../types';
 
-type PhaseType = {
-	name: string;
-	template: string;
-	variables: (
-		input: string,
-		previousResults: Record<string, string>
-	) => Record<string, string>;
-	extraParams?: Partial<GenerateParams>;
-	processOutput?: (output: string) => string;
-	shouldStop?: (output: string) => boolean;
-};
 const phases: PhaseType[] = [
 	{
 		name: 'Phase 1: Expertise Identification',
