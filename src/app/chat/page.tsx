@@ -9,6 +9,8 @@ import { getLLM } from '../llms';
 import { Tool } from 'langchain/tools';
 import { Serialized } from 'langchain/load/serializable';
 import { testPrompts } from './prompts';
+import { ChatBox } from '../components/ChatBox';
+import { Message } from '../types';
 
 // TODO add other chat routes to prototype other agents
 // chat page that uses entity memory and displays entities, able to edit them
@@ -19,7 +21,7 @@ function Chat() {
 			role: 'assistant',
 			content: "Hi, I'm a chatbot who can search the web. How can I help you?",
 		},
-	]);
+	] as Message[]);
 	const [input, setInput] = useState('');
 	const [openaiKey, setOpenaiKey] = useState('');
 	const [googleApiKey, setGoogleApiKey] = useState('');
@@ -75,7 +77,10 @@ function Chat() {
 		const userInput = input;
 		setInput('');
 
-		setMessages([...messages, { role: 'user', content: userInput }]);
+		setMessages([
+			...messages,
+			{ role: 'user', content: userInput },
+		] as Message[]);
 
 		const result = await executor.call(
 			{ input: userInput },
@@ -103,7 +108,7 @@ function Chat() {
 		}
 		newMessages.push({ role: 'assistant', content: response });
 
-		setMessages(newMessages);
+		setMessages(newMessages as Message[]);
 	};
 
 	const handleTest = async () => {
@@ -141,13 +146,7 @@ function Chat() {
 				placeholder="Google CSE ID..."
 			/>
 			<div className="container">
-				<div className="chatBox">
-					{messages.map((msg, idx) => (
-						<div key={idx} className={msg.role}>
-							<span>{msg.content}</span>
-						</div>
-					))}
-				</div>
+				<ChatBox messages={messages} setMessages={setMessages} />
 				<div className="input-container">
 					<input
 						className="input mr-2"
@@ -158,7 +157,7 @@ function Chat() {
 						placeholder="Type your message..."
 					/>
 					<button onClick={handleTest}>Test</button>
-					<button onClick={handleSend}>Send</button>
+					<button onClick={handleSend}>Send</button>c
 				</div>
 			</div>
 		</div>

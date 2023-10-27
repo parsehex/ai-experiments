@@ -9,6 +9,8 @@ import { StructuredTool, Tool } from 'langchain/tools';
 import { Serialized } from 'langchain/load/serializable';
 import { testPrompts } from './prompts';
 import { EntityMemory } from 'langchain/memory';
+import { ChatBox } from '@/app/components/ChatBox';
+import { Message } from '@/app/types';
 
 // TODO add other chat routes to prototype other agents
 // chat page that uses entity memory and displays entities, able to edit them
@@ -19,7 +21,7 @@ function Chat() {
 			role: 'assistant',
 			content: "Hi, I'm a chatbot who can search the web. How can I help you?",
 		},
-	]);
+	] as Message[]);
 	const [input, setInput] = useState('');
 	const [openaiKey, setOpenaiKey] = useState('');
 	const [executor, setExecutor] = useState(null as AgentExecutor | null);
@@ -72,7 +74,10 @@ function Chat() {
 		const userInput = input;
 		setInput('');
 
-		setMessages([...messages, { role: 'user', content: userInput }]);
+		setMessages([
+			...messages,
+			{ role: 'user', content: userInput },
+		] as Message[]);
 
 		const result = await executor.call({ input: userInput }, [
 			{
@@ -96,7 +101,7 @@ function Chat() {
 		}
 		newMessages.push({ role: 'assistant', content: response });
 
-		setMessages(newMessages);
+		setMessages(newMessages as Message[]);
 
 		const newEntities = await executor.memory?.loadMemoryVariables({
 			input: '',
@@ -125,13 +130,11 @@ function Chat() {
 				placeholder="OpenAI key..."
 			/>
 			<div className="container">
-				<div className="chatBox">
-					{messages.map((msg, idx) => (
-						<div key={idx} className={msg.role}>
-							<span>{msg.content}</span>
-						</div>
-					))}
-				</div>
+				<ChatBox
+					messages={messages}
+					setMessages={setMessages}
+					roles={['user', 'assistant', 'assistant-thinking']}
+				/>
 				<div className="entityBox">
 					<h2>Entities Recognized</h2>
 					{Object.keys(entities).map((entity) => (
