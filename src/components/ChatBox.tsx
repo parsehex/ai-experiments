@@ -7,12 +7,14 @@ export const ChatBox = ({
 	setMessages,
 	deleteMessage,
 	regenerateMessage,
+	readOnly = false,
 }: {
 	roles?: string[];
 	messages: Message[];
 	setMessages: (value: any) => void;
 	deleteMessage?: (id: string) => void;
 	regenerateMessage?: (id: string) => void;
+	readOnly?: boolean;
 }) => {
 	const [tempMsgContent, setTempMsgContent] = useState('');
 	const [editingMsg, setEditingMsg] = useState<string | null>(null);
@@ -34,6 +36,7 @@ export const ChatBox = ({
 	}, [messages]);
 
 	const handleMessageEdit = (id: string, newContent: string) => {
+		if (readOnly) return;
 		setMessages((prevMessages: any) => {
 			return prevMessages.map((msg: Message) => {
 				if (msg.id === id) {
@@ -131,7 +134,7 @@ export const ChatBox = ({
 						<div className="flex-1 flex flex-col">
 							<div className="flex items-center">
 								<span className="message-header  flex items-center">
-									{deleteMessage && (
+									{deleteMessage && !readOnly && (
 										<button
 											className="delete mr-2"
 											onClick={() => deleteMessage(msg.id)}
@@ -146,7 +149,7 @@ export const ChatBox = ({
 										Copy
 									</button>
 
-									{regenerateMessage && (
+									{regenerateMessage && readOnly && (
 										<button
 											className="regenerate mr-2"
 											onClick={() => regenerateMessage(msg.id)}
@@ -159,7 +162,7 @@ export const ChatBox = ({
 										className={
 											'role ' + msg.role.toLowerCase().replace(/ /g, '_')
 										}
-										onClick={() => toggleRole(msg.id)}
+										onClick={() => !readOnly && toggleRole(msg.id)}
 									>
 										{msg.role}
 									</span>
@@ -180,6 +183,7 @@ export const ChatBox = ({
 							) : (
 								<span
 									onClick={() => {
+										if (readOnly) return;
 										setEditingMsg(msg.id);
 										setTempMsgContent(msg.content);
 									}}

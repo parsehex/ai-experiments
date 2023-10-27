@@ -107,7 +107,11 @@ function ConversationalSummaryChat() {
 		<div>
 			<h1>Chat - Conversational Summary</h1>
 			<div className="container">
-				<ChatBox messages={messages} setMessages={setMessages} />
+				<ChatBox
+					messages={messages}
+					setMessages={setMessages}
+					readOnly={true}
+				/>
 				{summary && (
 					<div className="summaryBox">
 						<h2>Generated Summary</h2>

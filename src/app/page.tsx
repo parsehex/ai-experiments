@@ -52,6 +52,12 @@ export default function Home() {
 					// inspiration: https://old.reddit.com/r/LocalLLaMA/comments/17fmhcb/
 				/>
 				<Item
+					title="Conversational Summary Memory"
+					description="Conversational memory without LangChain"
+					href="/chat/conversational-summary"
+					// TODO NOTES: Show summary alongside chat
+				/>
+				<Item
 					title="Redacter"
 					description="Paste any text and remove identifying information"
 					href="/redacter"
@@ -67,12 +73,6 @@ export default function Home() {
 					title="Entity Memory"
 					description="Entity memory for LangChain"
 					href="/chat/entity-memory"
-				/>
-				<Item
-					title="Conversational Summary Memory"
-					description="Conversational memory without LangChain"
-					href="/chat/conversational-summary"
-					// TODO NOTES: Show summary alongside chat
 				/>
 				<Item
 					title="Code Summarizer"
