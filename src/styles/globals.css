@@ -26,6 +26,7 @@ body {
 			rgb(var(--background-end-rgb))
 		)
 		rgb(var(--background-start-rgb));
+	background-repeat: no-repeat;
 	font-family: 'Inter', sans-serif; /* Assuming you use the Inter font, which is common with Tailwind projects */
 	@apply bg-gray-100 dark:bg-gray-900;
 }

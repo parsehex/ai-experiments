@@ -9,7 +9,7 @@ import { StructuredTool, Tool } from 'langchain/tools';
 import { Serialized } from 'langchain/load/serializable';
 import { testPrompts } from './prompts';
 import { EntityMemory } from 'langchain/memory';
-import { ChatBox } from '@/app/components/ChatBox';
+import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/app/types';
 
 // TODO add other chat routes to prototype other agents

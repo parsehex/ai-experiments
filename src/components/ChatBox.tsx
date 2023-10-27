@@ -161,7 +161,7 @@ export const ChatBox = ({
 										}
 										onClick={() => toggleRole(msg.id)}
 									>
-										{msg.role}:
+										{msg.role}
 									</span>
 								</span>
 							</div>

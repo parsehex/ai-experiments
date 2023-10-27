@@ -9,7 +9,7 @@ import { getLLM } from '../llms';
 import { Tool } from 'langchain/tools';
 import { Serialized } from 'langchain/load/serializable';
 import { testPrompts } from './prompts';
-import { ChatBox } from '../components/ChatBox';
+import { ChatBox } from '@/components/ChatBox';
 import { Message } from '../types';
 
 // TODO add other chat routes to prototype other agents

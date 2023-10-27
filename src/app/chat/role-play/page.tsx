@@ -9,7 +9,7 @@ import { initializeModel, parseResponse } from '@/app/ooba-utils';
 import { DescriptionTextArea } from './DescriptionTextArea';
 import { CharacterManager } from './CharacterManager';
 import { ChatOptions } from './ChatOptions';
-import { ChatBox } from '../../components/ChatBox';
+import { ChatBox } from '@/components/ChatBox';
 import { useChatState } from './chatState';
 import { useMessageHandler } from './chat-actions';
 
