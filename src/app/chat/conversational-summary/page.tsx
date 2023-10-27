@@ -19,7 +19,7 @@ const summarize = async (messages: Message[], summary?: string) => {
 	const result = await ooba.generateText({
 		prompt,
 		temperature: 0.01,
-		guidance_scale: 1.15,
+		guidance_scale: 1.2,
 		// stopping_strings: ['<|im_end|>'],
 	});
 	console.log(prompt, result);
@@ -48,7 +48,7 @@ const sendInput = async (
 	const prompt = constructPrompt(input, lastMessageWithRole, summary);
 	const result = await ooba.generateText({
 		prompt,
-		temperature: 0.25,
+		temperature: 1,
 		guidance_scale: 1.5,
 		stopping_strings: ['INPUT:', 'RESPONSE:'],
 	});
@@ -126,6 +126,7 @@ function ConversationalSummaryChat() {
 						value={input}
 						onChange={(e) => setInput(e.target.value)}
 						placeholder="Type your message..."
+						autoFocus
 					/>
 					<button onClick={handleSend}>Send</button>
 				</div>
