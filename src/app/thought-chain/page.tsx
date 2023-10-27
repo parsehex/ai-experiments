@@ -4,9 +4,80 @@ import * as ooba from '../ooba-api';
 import { GenerateParams } from '@/app/ooba-types';
 import * as prompts from './prompts';
 
+type PhaseType = {
+	name: string;
+	template: string;
+	variables: (
+		input: string,
+		previousResults: Record<string, string>
+	) => Record<string, string>;
+	extraParams?: Partial<GenerateParams>;
+	processOutput?: (output: string) => string;
+	shouldStop?: (output: string) => boolean;
+};
+const phases: PhaseType[] = [
+	{
+		name: 'Phase 1: Expertise Identification',
+		template: `{{prompts}}\nQ: {{inputText}} A: `,
+		variables: (input) => ({
+			prompts: prompts.phase1.join('\n'),
+			inputText: input,
+		}),
+	},
+	{
+		name: 'Phase 2: In-depth Response',
+		template: `{{prompts}}\nBased on the fact that """{{phase1Output}}""" Q: {{inputText}} A:`,
+		variables: (input, previousResults) => ({
+			prompts: prompts.phase2.join('\n'),
+			inputText: input,
+			phase1Output: previousResults['Phase 1: Expertise Identification'],
+		}),
+		extraParams: {
+			temperature: 0.25,
+		},
+	},
+	{
+		name: 'Phase 3: Accuracy Evaluation',
+		template: `{{prompts}}\nQ: Evaluate the accuracy of the statement in response to {{inputText}}: {{phase2Output}}. A: `,
+		variables: (input, previousResults) => ({
+			prompts: prompts.phase3.join('\n'),
+			inputText: input,
+			phase2Output: previousResults['Phase 2: In-depth Response'],
+		}),
+	},
+	{
+		name: 'Phase 4: Response Revision',
+		// template: `Q: Given the response """{{response}}""" and the evaluation """{{evaluation}}""", how should the response be revised? A: `,
+		template: `{{prompts}}\nQ: Given the query """{{inputText}}""" and the response """{{response}}""" and the evaluation """{{evaluation}}""", how should the response be revised? If no revision is required, respond with "NO". A: `,
+		variables: (input, previousResults) => ({
+			prompts: prompts.phase4.join('\n'),
+			inputText: input,
+			response: previousResults['Phase 2: In-depth Response'],
+			evaluation: previousResults['Phase 3: Accuracy Evaluation'],
+		}),
+		shouldStop: (output) => output.trim().toUpperCase() === 'NO',
+		extraParams: {
+			stopping_strings: ['Q:'],
+			guidance_scale: 1.1,
+		},
+	},
+	{
+		name: 'Phase 5: Response Revision',
+		template: `{{prompts}}\nQ: Rewrite the response """{{response}}""" using the revision notes
+"""{{revision}}""". A: `,
+		variables: (input, previousResults) => ({
+			prompts: prompts.phase5.join('\n'),
+			response: previousResults['Phase 2: In-depth Response'],
+			revision: previousResults['Phase 4: Response Revision'],
+		}),
+		extraParams: {
+			stopping_strings: ['Q:'],
+		},
+	},
+];
+
 const params: Partial<GenerateParams> = {
 	temperature: 0.01,
-	// top_k: 20,
 	guidance_scale: 1.25,
 	stopping_strings: ['Q:', '\n'],
 };
@@ -31,16 +102,18 @@ async function runPrompt(
 const Phase = ({
 	phase,
 	outputText,
+	processOutput,
 }: {
 	phase: string;
 	outputText: string;
+	processOutput?: (output: string) => string;
 }) => (
 	<div className="grow text-center pt-12 mx-3 min-h-min">
 		<h2>{phase}</h2>
 		<textarea
 			className="input"
 			style={{ height: '100%', width: '90%' }}
-			value={outputText}
+			value={processOutput ? processOutput(outputText) : outputText}
 			readOnly
 		/>
 	</div>
@@ -57,13 +130,9 @@ function ThoughtChain() {
 	}, []);
 
 	const [inputText, setInputText] = useState('');
+	const [results, setResults] = useState<Record<string, string>>({});
 
 	const [currentPhase, setCurrentPhase] = useState('');
-	const [phase1Result, setPhase1Result] = useState('');
-	const [phase2Result, setPhase2Result] = useState('');
-	const [phase3Result, setPhase3Result] = useState('');
-	const [phase4Result, setPhase4Result] = useState('');
-	const [phase5Result, setPhase5Result] = useState('');
 
 	useEffect(() => {
 		localStorage.setItem('thoughtchain-input', inputText);
@@ -74,93 +143,28 @@ function ThoughtChain() {
 		if (!input) return;
 
 		try {
-			setPhase1Result('');
-			setPhase2Result('');
-			setPhase3Result('');
-			setPhase4Result('');
-			setPhase5Result('');
 			setInputText(input);
-			setCurrentPhase('Phase 1: Expertise Identification');
-			const phase1Template = `{{prompts}}\nQ: {{inputText}} A: `;
-			const phase1Variables = {
-				prompts: prompts.phase1.join('\n'),
-				inputText: input,
-			};
-			const phase1Output = (
-				await runPrompt(phase1Template, phase1Variables)
-			).trim();
-			setPhase1Result(phase1Output);
+			setResults({});
+			let newResults = {};
+			for (const phase of phases) {
+				setCurrentPhase(phase.name);
 
-			setCurrentPhase('Phase 2: In-depth Response');
-			const phase2Template = `{{prompts}}\nBased on the fact that """{{phase1Output}}""" Q: {{inputText}} A:`;
-			// console.log(phase2Template);
-			const phase2Variables = {
-				prompts: prompts.phase2.join('\n'),
-				inputText: input,
-				phase1Output,
-			};
-			const phase2Output = (
-				await runPrompt(phase2Template, phase2Variables, {
-					// ban_eos_token: true,
-					temperature: 0.25,
-				})
-			).trim();
-			setPhase2Result(phase2Output);
+				const phaseVariables = phase.variables(input, newResults);
+				const phaseOutput = (
+					await runPrompt(phase.template, phaseVariables, phase.extraParams)
+				).trim();
 
-			setCurrentPhase('Phase 3: Accuracy Evaluation');
-			const phase3Template = `{{prompts}}\nQ: Evaluate the accuracy of the statement in response to {{inputText}}: {{phase2Output}}. A: `;
-			const phase3Variables = {
-				prompts: prompts.phase3.join('\n'),
-				inputText: input,
-				phase2Output,
-			};
-			const phase3Output = (
-				await runPrompt(phase3Template, phase3Variables)
-			).trim();
-			setPhase3Result(phase3Output);
+				const processedOutput = phase.processOutput
+					? phase.processOutput(phaseOutput)
+					: phaseOutput;
 
-			setCurrentPhase('Phase 4: Response Revision');
-			const phase4Template = `{{prompts}}\nQ: Given the query """{{inputText}}""" and the response """{{response}}""" and the evaluation """{{evaluation}}""", how should the response be revised? If no revision is required, respond with "NO". A: `;
-			// const phase4Template = `Q: Given the response """{{response}}""" and the evaluation """{{evaluation}}""", how should the response be revised? A: `;
-			const phase4Variables = {
-				prompts: prompts.phase4.join('\n'),
-				inputText: input,
-				response: phase2Output,
-				evaluation: phase3Output,
-			};
-			const phase4Output = (
-				await runPrompt(phase4Template, phase4Variables, {
-					stopping_strings: ['Q:'],
-					guidance_scale: 1.1,
-					// temperature: 0.25,
-					// top_p: 0.1,
-				})
-			).trim();
-			setPhase4Result(phase4Output);
+				newResults = { ...newResults, [phase.name]: processedOutput };
+				setResults(newResults); // Update results state here to trigger a re-render
 
-			if (phase4Output === 'NO') {
-				setCurrentPhase('');
-				return;
+				if (phase.shouldStop && phase.shouldStop(processedOutput)) {
+					break; // Exit the loop if the shouldStop condition is met
+				}
 			}
-
-			setCurrentPhase('Phase 5: Response Revision');
-			const phase5Template = `{{prompts}}\nQ: Rewrite the response """{{response}}""" using the revision notes """{{revision}}""". A: `;
-			const phase5Variables = {
-				prompts: prompts.phase5.join('\n'),
-				response: phase2Output,
-				revision: phase4Output,
-			};
-			const phase5Output = (
-				await runPrompt(phase5Template, phase5Variables, {
-					stopping_strings: ['Q:'],
-				})
-			).trim();
-			setPhase5Result(phase5Output);
-
-			// Next: Given the input, response and evaluation, generate how the response should be revised
-			// Then given the response and revision instructions, generate the revised response
-			// Repeat until the revised response is deemed accurate
-
 			setCurrentPhase('');
 		} catch (e) {
 			console.error('Error during generation:', e);
@@ -208,26 +212,14 @@ function ThoughtChain() {
 						className="mb-4 flex flex-row flex-wrap pb-5"
 						style={{ height: '30em' }}
 					>
-						<Phase
-							phase="Phase 1: Expertise Identification"
-							outputText={phase1Result}
-						/>
-						<Phase
-							phase="Phase 2: In-depth Response"
-							outputText={phase2Result}
-						/>
-						<Phase
-							phase="Phase 3: Accuracy Evaluation"
-							outputText={phase3Result}
-						/>
-						<Phase
-							phase="Phase 4: Revision Needed?"
-							outputText={phase4Result}
-						/>
-						<Phase
-							phase="Phase 5: Response Revision"
-							outputText={phase5Result}
-						/>
+						{phases.map((phase) => (
+							<Phase
+								key={phase.name}
+								phase={phase.name}
+								outputText={results[phase.name] || ''}
+								processOutput={phase.processOutput}
+							/>
+						))}
 					</div>
 				</div>
 			</div>
