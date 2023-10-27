@@ -69,15 +69,15 @@ export default function Home() {
 					href="/chat/entity-memory"
 				/>
 				<Item
-					title="Conversational Memory"
+					title="Conversational Summary Memory"
 					description="Conversational memory without LangChain"
-					// href="/chat/conversational-memory"
+					href="/chat/conversational-summary"
+					// TODO NOTES: Show summary alongside chat
 				/>
 				<Item
-					title="Model Status Component"
-					description="Reusable component for managing the loaded model"
-					// TODO NOTES: by default if model is loaded, show as just a green dot. if model is loading, show as a yellow dot. if model is not loaded, show as a red dot. hover to reveal a menu for choosing a model to load.
-					//   make a standalone demo first, then make it a component to be added to other pages
+					title="Code Summarizer"
+					description="Summarize code"
+					// href="/chat/conversational-memory"
 				/>
 				{/* After: Make library to allow using different LLMs that works across the different demos */}
 				<Item
@@ -85,11 +85,23 @@ export default function Home() {
 					description="Demonstrate giving the LLM tools to use"
 				/>
 			</List>
-			<List title="Task List">
-				<li>
-					Add a central, site-wide place to set up things like API keys - Could
-					just make a page to manage localstorage? Would that break SSR?
-				</li>
+			<List title="Component Tests">
+				<Item
+					title="Test Prompt"
+					description="Button to fill a random test prompt"
+					href="/tests/test-prompts"
+				/>
+				<Item
+					title="Model Status Component"
+					description="Reusable component for managing the loaded model"
+					// TODO NOTES: by default if model is loaded, show as just a green dot. if model is loading, show as a yellow dot. if model is not loaded, show as a red dot. hover to reveal a menu for choosing a model to load.
+					//   make a standalone demo first, then make it a component to be added to other pages
+				/>
+				<Item
+					title="Chat Box Component"
+					description="Reusable component for displaying a chat"
+					// TODO NOTES: add some options and make the options configurable on the page
+				/>
 			</List>
 		</main>
 	);
