@@ -6,7 +6,7 @@ import * as prompts from './prompts';
 
 const params: Partial<GenerateParams> = {
 	temperature: 0.01,
-	top_k: 20,
+	// top_k: 20,
 	guidance_scale: 1.25,
 	stopping_strings: ['Q:', '\n'],
 };
@@ -192,11 +192,10 @@ function ThoughtChain() {
 						</button>
 						<button
 							onClick={() => {
-								const prompt =
-									prompts.testPrompts[
-										Math.floor(Math.random() * prompts.testPrompts.length)
-									];
-								handleSend(prompt);
+								const i = Math.round(
+									Math.random() * prompts.testPrompts.length
+								);
+								handleSend(prompts.testPrompts[i]);
 							}}
 							className="mr-2"
 						>
