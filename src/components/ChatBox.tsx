@@ -213,7 +213,7 @@ export const ChatBox = ({
 									onClick={() => {
 										if (msg.type === 'thought') {
 											toggleCollapse(msg.id);
-										} else {
+										} else if (!readOnly) {
 											setEditingMsg(msg.id);
 											setTempMsgContent(msg.content);
 										}
