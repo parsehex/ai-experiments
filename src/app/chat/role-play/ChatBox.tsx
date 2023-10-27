@@ -2,26 +2,20 @@ import { Message } from '@/app/types';
 import { useEffect, useRef, useState } from 'react';
 
 export const ChatBox = ({
+	roles = ['USER', 'ASSISTANT'],
 	messages,
+	setMessages,
 	deleteMessage,
-	editingMsg,
-	setEditingMsg,
-	tempMsgContent,
-	setTempMsgContent,
-	handleMessageEdit,
-	toggleRole,
 	regenerateMessage,
 }: {
+	roles?: string[];
 	messages: Message[];
-	deleteMessage: (id: string) => void;
-	editingMsg: string | null;
-	setEditingMsg: (editingMsg: string | null) => void;
-	tempMsgContent: string;
-	setTempMsgContent: (tempMsgContent: string) => void;
-	handleMessageEdit: (id: string, newContent: string) => void;
-	toggleRole: (role: string) => void;
-	regenerateMessage: (id: string) => void;
+	setMessages: (value: any) => void;
+	deleteMessage?: (id: string) => void;
+	regenerateMessage?: (id: string) => void;
 }) => {
+	const [tempMsgContent, setTempMsgContent] = useState('');
+	const [editingMsg, setEditingMsg] = useState<string | null>(null);
 	const messagesEndRef = useRef<null | HTMLDivElement>(null);
 	const [selectedMessages, setSelectedMessages] = useState<Set<string>>(
 		new Set()
@@ -39,6 +33,31 @@ export const ChatBox = ({
 		}
 	}, [messages]);
 
+	const handleMessageEdit = (id: string, newContent: string) => {
+		setMessages((prevMessages: any) => {
+			return prevMessages.map((msg: Message) => {
+				if (msg.id === id) {
+					return { ...msg, content: newContent };
+				}
+				return msg;
+			});
+		});
+	};
+
+	const toggleRole = (messageId: string) => {
+		setMessages((prevMessages: any) => {
+			return prevMessages.map((msg: Message) => {
+				if (msg.id === messageId) {
+					// console.log(msg);
+					const currentIndex = roles.indexOf(msg.role);
+					const nextRole = roles[(currentIndex + 1) % roles.length];
+					return { ...msg, role: nextRole };
+				}
+				return msg;
+			});
+		});
+	};
+
 	const getRoleClass = (role: string) => {
 		if (role === 'ACTION') return 'action';
 
@@ -49,6 +68,42 @@ export const ChatBox = ({
 			return nextClass;
 		}
 		return roleClassMap[role];
+	};
+
+	const handleSelect = (
+		e: React.ChangeEvent<HTMLInputElement>,
+		msg: Message,
+		idx: number
+	) => {
+		const updatedSelection = new Set(selectedMessages);
+
+		// @ts-ignore
+		if (e.nativeEvent.shiftKey && lastClickedIndex !== null) {
+			// Get the start and end of the selection range
+			const start = Math.min(lastClickedIndex, idx);
+			const end = Math.max(lastClickedIndex, idx);
+
+			// Determine the desired check state based on the last message
+			const endMessageCheckState = !selectedMessages.has(messages[end].id);
+
+			for (let i = start; i <= end; i++) {
+				const messageId = messages[i].id;
+				if (endMessageCheckState) {
+					updatedSelection.add(messageId);
+				} else {
+					updatedSelection.delete(messageId);
+				}
+			}
+		} else {
+			if (updatedSelection.has(msg.id)) {
+				updatedSelection.delete(msg.id);
+			} else {
+				updatedSelection.add(msg.id);
+			}
+			setLastClickedIndex(idx);
+		}
+
+		setSelectedMessages(updatedSelection);
 	};
 	return (
 		<div className="chatBox" ref={messagesEndRef}>
@@ -70,52 +125,20 @@ export const ChatBox = ({
 							type="checkbox"
 							className="absolute top-2 left-2"
 							checked={selectedMessages.has(msg.id) ? true : false}
-							onChange={(e) => {
-								const updatedSelection = new Set(selectedMessages);
-
-								// @ts-ignore
-								if (e.nativeEvent.shiftKey && lastClickedIndex !== null) {
-									// Get the start and end of the selection range
-									const start = Math.min(lastClickedIndex, idx);
-									const end = Math.max(lastClickedIndex, idx);
-
-									// Determine the desired check state based on the end message
-									const endMessageCheckState = !selectedMessages.has(
-										messages[end].id
-									);
-
-									// Apply the desired check state to all messages in the range
-									for (let i = start; i <= end; i++) {
-										const messageId = messages[i].id;
-										if (endMessageCheckState) {
-											updatedSelection.add(messageId);
-										} else {
-											updatedSelection.delete(messageId);
-										}
-									}
-								} else {
-									if (updatedSelection.has(msg.id)) {
-										updatedSelection.delete(msg.id);
-									} else {
-										updatedSelection.add(msg.id);
-									}
-									// Set the last clicked index
-									setLastClickedIndex(idx);
-								}
-
-								setSelectedMessages(updatedSelection);
-							}}
+							onChange={(e) => handleSelect(e, msg, idx)}
 						/>
 
 						<div className="flex-1 flex flex-col">
 							<div className="flex items-center">
 								<span className="message-header  flex items-center">
-									<button
-										className="delete mr-2"
-										onClick={() => deleteMessage(msg.id)}
-									>
-										Delete
-									</button>
+									{deleteMessage && (
+										<button
+											className="delete mr-2"
+											onClick={() => deleteMessage(msg.id)}
+										>
+											Delete
+										</button>
+									)}
 									<button
 										className="copy mr-2"
 										onClick={() => navigator.clipboard.writeText(msg.content)}
@@ -123,12 +146,14 @@ export const ChatBox = ({
 										Copy
 									</button>
 
-									<button
-										className="regenerate mr-2"
-										onClick={() => regenerateMessage(msg.id)}
-									>
-										Regenerate
-									</button>
+									{regenerateMessage && (
+										<button
+											className="regenerate mr-2"
+											onClick={() => regenerateMessage(msg.id)}
+										>
+											Regenerate
+										</button>
+									)}
 
 									<span
 										className={
@@ -166,7 +191,7 @@ export const ChatBox = ({
 					</div>
 				);
 			})}
-			{selectedMessages.size > 0 && (
+			{deleteMessage && selectedMessages.size > 0 && (
 				<button
 					className="bulk-delete"
 					onClick={() => {

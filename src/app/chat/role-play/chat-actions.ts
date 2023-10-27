@@ -63,14 +63,6 @@ class MessageHandler {
 		};
 	}
 
-	handleMessageEdit = (id: string, newContent: string) => {
-		this.options.setMessages((prevMessages: any) =>
-			prevMessages.map((msg: any) =>
-				msg.id === id ? { ...msg, content: newContent } : msg
-			)
-		);
-	};
-
 	handleAdd = () => {
 		const { messages, setMessages, selectedCharacter, setInput, input } =
 			this.options;

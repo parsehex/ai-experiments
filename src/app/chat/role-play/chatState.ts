@@ -9,8 +9,6 @@ export const useChatState = () => {
 	const [description, setDescription] = useState('');
 	const [editingChar, setEditingChar] = useState<string | null>(null);
 	const [tempCharName, setTempCharName] = useState('');
-	const [editingMsg, setEditingMsg] = useState<string | null>(null);
-	const [tempMsgContent, setTempMsgContent] = useState('');
 	const [oneAtATime, setOneAtATime] = useState(true);
 	const [mainButton, setMainButton] = useState<
 		'Send' | 'Test' | 'Fill' | 'Add' | 'Continue'
@@ -62,10 +60,6 @@ export const useChatState = () => {
 		setEditingChar,
 		tempCharName,
 		setTempCharName,
-		editingMsg,
-		setEditingMsg,
-		tempMsgContent,
-		setTempMsgContent,
 		oneAtATime,
 		setOneAtATime,
 		mainButton,

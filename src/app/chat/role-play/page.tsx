@@ -80,10 +80,6 @@ function Chat() {
 		setEditingChar,
 		tempCharName,
 		setTempCharName,
-		editingMsg,
-		setEditingMsg,
-		tempMsgContent,
-		setTempMsgContent,
 		oneAtATime,
 		setOneAtATime,
 		mainButton,
@@ -96,7 +92,6 @@ function Chat() {
 		handleMainAction,
 		handleSelectAction,
 		handleSend,
-		handleMessageEdit,
 		regenerateMessage,
 	} = useMessageHandler({
 		messages,
@@ -124,23 +119,6 @@ function Chat() {
 	// useEffect(() => {
 	// 	initializeModel(preferredModels);
 	// }, []);
-
-	const toggleRole = (messageId: string) => {
-		console.log(selectedCharacter, characters);
-		const toggleableRoles = characters.filter((char) => char !== 'ACTION');
-		setMessages((prevMessages) => {
-			return prevMessages.map((msg) => {
-				if (msg.id === messageId) {
-					console.log(msg);
-					const currentIndex = toggleableRoles.indexOf(msg.role);
-					const nextRole =
-						toggleableRoles[(currentIndex + 1) % toggleableRoles.length];
-					return { ...msg, role: nextRole };
-				}
-				return msg;
-			});
-		});
-	};
 
 	const deleteMessage = (id: string) => {
 		setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== id));
@@ -175,14 +153,10 @@ function Chat() {
 			<div className="container">
 				<ChatBox
 					messages={messages}
+					setMessages={setMessages}
 					deleteMessage={deleteMessage}
-					editingMsg={editingMsg}
-					setEditingMsg={setEditingMsg}
-					tempMsgContent={tempMsgContent}
-					setTempMsgContent={setTempMsgContent}
-					handleMessageEdit={handleMessageEdit}
-					toggleRole={toggleRole}
 					regenerateMessage={regenerateMessage}
+					roles={characters.filter((char) => char !== 'ACTION')}
 				/>
 				<div className="input-container mt-2">
 					<select
