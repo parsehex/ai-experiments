@@ -7,28 +7,28 @@ import { v4 } from 'uuid';
 
 const innerMonologue = async (messages: Message[]) => {
 	// there should be at least 2 messages, pick the last 2
-	let prompt = 'Think about how to respond to the following conversation:\n';
+	let prompt = 'Think about how to respond to the following chat:\n';
 	const lastMessage = messages[messages.length - 1];
 	prompt += `${lastMessage.role}: ${lastMessage.content}\n`;
 	const secondLastMessage = messages[messages.length - 2];
 	prompt += `${secondLastMessage.role}: ${secondLastMessage.content}\n`;
-	prompt += '\nTHOUGHTS: ';
+	prompt += 'THOUGHTS: ';
 	const result = await ooba.generateText({
 		prompt,
 		temperature: 0.15,
 		guidance_scale: 2,
-		stopping_strings: ['RESPONSE:'],
+		stopping_strings: ['RESPONSE:', 'INPUT:', '\n'],
 	});
 	console.log(prompt, result);
 	return result.results[0].text;
 };
 
 const summarize = async (messages: Message[], summary?: string) => {
-	let prompt = 'Summarize the following conversation:\n';
+	let prompt = 'Summarize the following chat in one paragraph:\n';
 	if (summary) {
-		prompt = `This is a summary of the conversation so far: ${summary}\n`;
+		prompt = `This is a summary of the chat so far: ${summary}\n`;
 		prompt +=
-			'Revise the summary based on the following new messages in the conversation:\n';
+			'Revise the summary based on the following new messages in the chat in one paragraph:\n';
 	}
 	for (let msg of messages) {
 		prompt += `${msg.role}: ${msg.content}\n`;
@@ -49,9 +49,9 @@ const constructPrompt = (
 	summary?: string,
 	thoughts?: string
 ) => {
-	const s = `\nThis is a summary of the conversation so far: ${summary}`;
+	const s = `\nThis is a summary of the chat so far: ${summary}`;
 	const t = `\nThese are your thoughts on how to respond: ${thoughts}`;
-	return `Continue the following conversation between USER and ASSISTANT by responding to the INPUT in one paragraph or less.${
+	return `Continue the following chat between USER and ASSISTANT by responding to the INPUT in one paragraph or less.${
 		summary ? s : ''
 	}${thoughts ? t : ''}
 ${lastMessageWithRole}
