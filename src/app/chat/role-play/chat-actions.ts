@@ -5,8 +5,6 @@ import { delay } from '@/app/utils';
 import { Message } from '@/app/types';
 import { v4 } from 'uuid';
 import { testPrompts } from '../prompts';
-import { useState } from 'react';
-import { useChatState } from './chatState';
 
 interface MessagesOptions {
 	messages: Message[];
@@ -170,16 +168,10 @@ class MessageHandler {
 		const result = await ooba.generateText(options);
 		let response = result?.results[0]?.text || '';
 		response = response.trim();
-		// console.log(response);
 
 		const generatedMessages = parseResponse(response);
-		// limit to `count` messages
 		const diff = generatedMessages.length - count;
-		// console.log('diff', diff, 'count', count);
-		if (count > 0) {
-			generatedMessages.splice(count);
-		}
-		// if we dont generate enough, generate more
+		if (count > 0) generatedMessages.splice(count);
 		if (diff < 0) {
 			console.log('Not enough messages generated, retrying...');
 			await delay(50);
@@ -190,7 +182,6 @@ class MessageHandler {
 		}
 		if (response && generatedMessages.length > 0) {
 			const updatedMessages = [...msgs, ...generatedMessages];
-			// console.log(updatedMessages);
 			setMessages(updatedMessages);
 		} else {
 			console.log('No messages generated, retrying...');
@@ -251,13 +242,10 @@ class MessageHandler {
 		}
 		this.isGenerating = true;
 		const { constructPrompt, messages, setMessages } = this.options;
-		// Get the index of the message to be regenerated.
 		const index = messages.findIndex((msg) => msg.id === msgId);
 
-		// Get messages up to the one to be regenerated.
 		const messagesUpToMsg = messages.slice(0, index);
 
-		// Generate a new response based on the provided messages.
 		const prompt = constructPrompt(
 			messagesUpToMsg,
 			'Write the next line based on the following conversation.',
@@ -315,16 +303,6 @@ class MessageHandler {
 	};
 }
 
-// Usage:
-// const handler = new MessageHandler({
-// 	messages,
-// 	setMessages,
-// 	selectedCharacter,
-// 	setInput,
-// 	input,
-// 	oneAtATime,
-// });
-// handler.handleAdd();
 export const useMessageHandler = (options: MessageHandlerOptions) => {
 	const handler = new MessageHandler(options);
 	return handler;
