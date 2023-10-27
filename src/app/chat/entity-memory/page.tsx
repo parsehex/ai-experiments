@@ -117,9 +117,6 @@ function Chat() {
 	return (
 		<div>
 			<h1>Chat - Entity Memory</h1>
-			<p>
-				<a href="/chat">Main Chat</a>
-			</p>
 			<input
 				value={openaiKey}
 				className="input"
