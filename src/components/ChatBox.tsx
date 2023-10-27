@@ -23,6 +23,9 @@ export const ChatBox = ({
 		new Set()
 	);
 	const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
+	const [collapsedThoughts, setCollapsedThoughts] = useState<Set<string>>(
+		new Set()
+	);
 
 	const [roleClassMap, setRoleClassMap] = useState(
 		{} as Record<string, string>
@@ -108,6 +111,17 @@ export const ChatBox = ({
 
 		setSelectedMessages(updatedSelection);
 	};
+	const toggleCollapse = (messageId: string) => {
+		setCollapsedThoughts((prev) => {
+			const newSet = new Set(prev);
+			if (newSet.has(messageId)) {
+				newSet.delete(messageId);
+			} else {
+				newSet.add(messageId);
+			}
+			return newSet;
+		});
+	};
 	return (
 		<div className="chatBox" ref={messagesEndRef}>
 			{messages.map((msg, idx) => {
@@ -117,6 +131,8 @@ export const ChatBox = ({
 					newMessages.splice(idx, 1);
 					return null; // return null to avoid rendering this item
 				}
+				const isThought = msg.type === 'thought';
+				const isCollapsed = collapsedThoughts.has(msg.id);
 				return (
 					<div
 						key={idx}
@@ -131,7 +147,11 @@ export const ChatBox = ({
 							onChange={(e) => handleSelect(e, msg, idx)}
 						/>
 
-						<div className="flex-1 flex flex-col">
+						<div
+							className={`flex-1 flex flex-col ${
+								isThought && isCollapsed ? 'collapsed' : ''
+							}`}
+						>
 							<div className="flex items-center">
 								<span className="message-header  flex items-center">
 									{deleteMessage && !readOnly && (
@@ -180,12 +200,23 @@ export const ChatBox = ({
 										}
 									}}
 								/>
+							) : msg.type === 'thought' && !collapsedThoughts.has(msg.id) ? (
+								<div
+									className="thought-message"
+									onClick={() => toggleCollapse(msg.id)}
+								>
+									Thought...
+								</div>
 							) : (
 								<span
+									className={msg.type === 'thought' ? 'thought-message' : ''}
 									onClick={() => {
-										if (readOnly) return;
-										setEditingMsg(msg.id);
-										setTempMsgContent(msg.content);
+										if (msg.type === 'thought') {
+											toggleCollapse(msg.id);
+										} else {
+											setEditingMsg(msg.id);
+											setTempMsgContent(msg.content);
+										}
 									}}
 								>
 									{msg.content}
