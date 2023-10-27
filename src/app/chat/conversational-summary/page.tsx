@@ -118,9 +118,9 @@ function ConversationalSummaryChat() {
 						<p>{summary}</p>
 					</div>
 				)}
-				<div className="input-container">
+				<div className="input-container px-2">
 					<input
-						className="input mr-2"
+						className="input mr-2 grow"
 						type="text"
 						onKeyDown={(e) => e.key === 'Enter' && handleSend()}
 						value={input}

@@ -27,16 +27,12 @@ body {
 		)
 		rgb(var(--background-start-rgb));
 	background-repeat: no-repeat;
-	font-family: 'Inter', sans-serif; /* Assuming you use the Inter font, which is common with Tailwind projects */
+	font-family: 'Inter', sans-serif;
 	@apply bg-gray-100 dark:bg-gray-900;
 }
 
-/* h1 {
-	@apply text-2xl font-bold mb-4;
-} */
-
 .container {
-	@apply flex flex-col items-center justify-center p-4 max-w-2xl min-h-screen mx-auto;
+	@apply flex flex-col items-center p-4 max-w-6xl min-h-screen mx-auto;
 	max-height: 100vh;
 }
 
