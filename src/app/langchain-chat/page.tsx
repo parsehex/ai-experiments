@@ -72,10 +72,9 @@ function Chat() {
 		initializeExecutor();
 	}, [openaiKey, googleApiKey, googleCseId]);
 
-	const handleSend = async () => {
+	const handleSend = async (content: string) => {
 		if (!executor) return;
-		const userInput = input;
-		setInput('');
+		const userInput = content || input;
 
 		setMessages([
 			...messages,
@@ -112,8 +111,8 @@ function Chat() {
 	};
 
 	const handleTest = async () => {
-		setInput(testPrompts[Math.floor(Math.random() * testPrompts.length)]);
-		handleSend();
+		const p = testPrompts[Math.floor(Math.random() * testPrompts.length)];
+		handleSend(p);
 	};
 
 	return (
@@ -146,8 +145,12 @@ function Chat() {
 				placeholder="Google CSE ID..."
 			/>
 			<div className="container">
-				<ChatBox messages={messages} setMessages={setMessages} />
-				<div className="input-container">
+				<ChatBox
+					messages={messages}
+					setMessages={setMessages}
+					handleSend={handleSend}
+				/>
+				{/* <div className="input-container">
 					<input
 						className="input mr-2"
 						type="text"
@@ -158,7 +161,7 @@ function Chat() {
 					/>
 					<button onClick={handleTest}>Test</button>
 					<button onClick={handleSend}>Send</button>c
-				</div>
+				</div> */}
 			</div>
 		</div>
 	);

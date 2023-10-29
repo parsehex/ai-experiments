@@ -7,7 +7,8 @@ import { v4 } from 'uuid';
 
 const innerMonologue = async (messages: Message[]) => {
 	// there should be at least 2 messages, pick the last 2
-	let prompt = 'Think about how to respond to the following chat:\n';
+	let prompt =
+		'Prepare some thoughts on how to respond to the following chat:\n';
 	const lastMessage = messages[messages.length - 1];
 	prompt += `${lastMessage.role}: ${lastMessage.content}\n`;
 	const secondLastMessage = messages[messages.length - 2];
@@ -15,7 +16,7 @@ const innerMonologue = async (messages: Message[]) => {
 	prompt += 'THOUGHTS: ';
 	const result = await ooba.generateText({
 		prompt,
-		temperature: 0.15,
+		temperature: 0.5,
 		guidance_scale: 2,
 		stopping_strings: ['RESPONSE:', 'INPUT:', '\n'],
 	});
@@ -68,9 +69,11 @@ const sendInput = async (
 	const prompt = constructPrompt(input, lastMessageWithRole, summary, thoughts);
 	const result = await ooba.generateText({
 		prompt,
-		temperature: 1,
+		temperature: 0.25,
 		guidance_scale: 1.5,
 		stopping_strings: ['INPUT:', 'RESPONSE:'],
+		mirostat_mode: 2,
+		// mirostat_tau: 0.5,
 	});
 	console.log(prompt, result);
 	return result.results[0].text;

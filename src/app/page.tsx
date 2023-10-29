@@ -54,7 +54,7 @@ export default function Home() {
 				<Item
 					title="Role Play"
 					description="Character-based chat/role play without LangChain"
-					href="/chat/role-play"
+					href="/role-play"
 				/>
 				<Item
 					title="Thought Chain"
@@ -65,7 +65,7 @@ export default function Home() {
 				<Item
 					title="Conversational Summary Memory"
 					description="Conversational memory without LangChain"
-					href="/chat/conversational-summary"
+					href="/conversational-summary"
 					// TODO NOTES: Show summary alongside chat
 				/>
 				<Item
@@ -78,17 +78,17 @@ export default function Home() {
 				<Item
 					title="LangChain Chat"
 					description="Prototype chat app using LangChain"
-					href="/chat"
+					href="/langchain-chat"
 				/>
 				<Item
 					title="Entity Memory"
 					description="Entity memory for LangChain"
-					href="/chat/entity-memory"
+					href="/entity-memory"
 				/>
 				<Item
 					title="Code Summarizer"
 					description="Summarize code"
-					// href="/chat/conversational-memory"
+					// href="/code-summarizer"
 				/>
 				<Item
 					title="Document QA"
