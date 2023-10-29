@@ -69,6 +69,11 @@ export default function Home() {
 					// TODO NOTES: Show summary alongside chat
 				/>
 				<Item
+					title="Simple Chat"
+					description="Simple chat meant to be a guide for other demos"
+					href="/simple-chat"
+				/>
+				<Item
 					title="Redacter"
 					description="Paste any text and remove identifying information"
 					href="/redacter"
@@ -84,6 +89,10 @@ export default function Home() {
 					title="Entity Memory"
 					description="Entity memory for LangChain"
 					href="/entity-memory"
+				/>
+				<Item
+					title="Embeddings & Search"
+					description="Search for similar documents using embeddings in a directory"
 				/>
 				<Item
 					title="Code Summarizer"
