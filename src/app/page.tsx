@@ -85,22 +85,23 @@ export default function Home() {
 					description="Demonstrate giving the LLM tools to use"
 				/>
 			</List>
-			<List title="Component Tests">
+			<List title="Component Demos">
 				<Item
-					title="Test Prompt"
-					description="Button to fill a random test prompt"
-					href="/tests/test-prompts"
+					title="Chat Box"
+					description="Reusable component for displaying a chat"
+					href="/chatbox-demo"
+					// TODO NOTES: add some options and make the options configurable on the page
 				/>
 				<Item
-					title="Model Status Component"
+					title="Test Prompt Button"
+					description="Button to fill a random test prompt"
+					href="/test-prompts"
+				/>
+				<Item
+					title="Model Status"
 					description="Reusable component for managing the loaded model"
 					// TODO NOTES: by default if model is loaded, show as just a green dot. if model is loading, show as a yellow dot. if model is not loaded, show as a red dot. hover to reveal a menu for choosing a model to load.
 					//   make a standalone demo first, then make it a component to be added to other pages
-				/>
-				<Item
-					title="Chat Box Component"
-					description="Reusable component for displaying a chat"
-					// TODO NOTES: add some options and make the options configurable on the page
 				/>
 			</List>
 		</main>
