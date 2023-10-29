@@ -66,7 +66,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 				}`}
 			>
 				<span
-					className="message-header flex items-center"
+					className="message-header"
 					style={{ display: message.type === 'thought' ? 'none' : 'flex' }}
 				>
 					<span

@@ -82,7 +82,7 @@ textarea.input {
 	@apply flex flex-col items-start rounded-lg p-1 whitespace-pre-wrap;
 }
 .chatBox .message-header {
-	@apply flex flex-row items-center justify-center w-full;
+	@apply flex flex-row items-center w-full ml-2;
 }
 .chatBox .message button.regenerate,
 .chatBox .message button.delete,
