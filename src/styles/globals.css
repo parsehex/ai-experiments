@@ -55,23 +55,31 @@ textarea.input {
 }
 
 .roleColor1 {
-	@apply bg-blue-500 text-white;
+	/* @apply bg-blue-500 text-white; */
+	background-color: #3b82f6 !important;
+	color: #fff !important;
 }
 .roleColor2 {
-	@apply bg-green-500 text-black;
+	/* @apply bg-green-500 text-black; */
+	background-color: #10b981 !important;
+	color: #000 !important;
 }
 .roleColor3 {
-	@apply bg-purple-500 text-white;
+	/* @apply bg-purple-500 text-white; */
+	background-color: #8b5cf6 !important;
+	color: #fff !important;
 }
 .roleColor4 {
-	@apply bg-orange-500 text-white;
+	/* @apply bg-orange-500 text-white; */
+	background-color: #f59e0b !important;
+	color: #fff !important;
 }
 
 .chatBox .message.action {
 	@apply bg-gray-200 text-black italic w-full mx-auto text-center items-center;
 }
 .chatBox .message {
-	@apply flex flex-col items-start rounded-lg p-2 mt-2;
+	@apply flex flex-col items-start rounded-lg p-1 whitespace-pre-wrap;
 }
 .chatBox .message-header {
 	@apply flex flex-row items-center justify-center w-full;
@@ -92,7 +100,7 @@ textarea.input {
 }
 .chatBox .message .role {
 	font-size: 12px;
-	@apply ml-2;
+	@apply text-xs text-gray-500 ml-4 mr-2 py-1 rounded-sm bg-gray-100 px-1 font-bold;
 }
 .chatBox button.bulk-delete {
 	@apply bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full fixed bottom-24 right-4;
@@ -102,11 +110,17 @@ textarea.input {
 } */
 
 .chatBox .user {
-	@apply bg-blue-500 text-white rounded-lg p-1 ml-5;
+	/* @apply important:bg-blue-500 text-white; */
+	/* background-color: #3b82f6 !important; */
+	/* need darker blue */
+	background-color: #1d4ed8 !important;
+	color: #fff !important;
 }
 
 .chatBox .assistant {
-	@apply bg-gray-300 text-black rounded-lg p-1 mr-5;
+	/* @apply bg-gray-300 text-black; */
+	background-color: #d1d5db !important;
+	color: #000 !important;
 }
 
 .assistant-thinking {

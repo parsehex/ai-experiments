@@ -50,7 +50,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
 	return (
 		<div
-			className={`message relative flex items-center ${extraClass}`}
+			className={`message relative mb-1 flex items-center ${extraClass}`}
 			key={index}
 		>
 			<input
@@ -65,42 +65,37 @@ const MessageItem: React.FC<MessageItemProps> = ({
 					isThoughtCollapsed ? 'collapsed' : ''
 				}`}
 			>
-				<div className="flex items-center pb-2">
+				<span
+					className="message-header flex items-center"
+					style={{ display: message.type === 'thought' ? 'none' : 'flex' }}
+				>
 					<span
-						className="message-header flex items-center"
-						style={{ display: message.type === 'thought' ? 'none' : 'flex' }}
+						className={`role ${message.role.toLowerCase().replace(/ /g, '_')}`}
+						onClick={() => !readOnly && toggleRole(message.id)}
 					>
-						{!readOnly && (
-							<button
-								className="delete mr-2"
-								onClick={() => onDelete(message.id)}
-							>
-								Delete
-							</button>
-						)}
-						<button className="copy mr-2" onClick={() => onCopy(message.id)}>
-							Copy
-						</button>
-
-						{!readOnly && (
-							<button
-								className="regenerate mr-2"
-								onClick={() => onRegenerate(message.id)}
-							>
-								Regenerate
-							</button>
-						)}
-
-						<span
-							className={`role ${message.role
-								.toLowerCase()
-								.replace(/ /g, '_')}`}
-							onClick={() => !readOnly && toggleRole(message.id)}
-						>
-							{message.role}
-						</span>
+						{message.role}
 					</span>
-				</div>
+					{!readOnly && (
+						<button
+							className="delete mr-2"
+							onClick={() => onDelete(message.id)}
+						>
+							Delete
+						</button>
+					)}
+					<button className="copy mr-2" onClick={() => onCopy(message.id)}>
+						Copy
+					</button>
+
+					{!readOnly && (
+						<button
+							className="regenerate mr-2"
+							onClick={() => onRegenerate(message.id)}
+						>
+							Regenerate
+						</button>
+					)}
+				</span>
 				{editingMsg === message.id ? (
 					<textarea
 						className="input w-96"
@@ -121,7 +116,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
 					</div>
 				) : (
 					<span
-						className={message.type === 'thought' ? 'thought-message' : ''}
+						className={
+							message.type === 'thought' ? 'thought-message' : 'message'
+						}
 						onClick={() => {
 							if (message.type === 'thought') {
 								toggleCollapse(message.id);
