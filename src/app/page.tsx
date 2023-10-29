@@ -8,8 +8,8 @@ const Item = ({
 	href?: string;
 }) => (
 	<li
-		className="flex items-center justify-center flex-col p-2 m-3 grow"
-		style={{ maxWidth: '20%', minWidth: '200px' }}
+		className="flex items-center justify-start flex-col p-2 m-3 grow"
+		style={{ maxWidth: '20%', minWidth: '150px' }}
 	>
 		{href ? (
 			<a className="block w-full" href={href}>
@@ -24,12 +24,20 @@ const Item = ({
 const List = ({
 	children,
 	title,
+	description,
 }: {
 	children: React.ReactNode;
 	title?: string;
+	description?: string;
 }) => (
 	<section className="flex flex-col items-center justify-center w-full">
 		{title && <h2 className="text-2xl font-bold">{title}</h2>}
+		{description && (
+			<small
+				className="italic text-gray-400"
+				dangerouslySetInnerHTML={{ __html: description }}
+			/>
+		)}
 		<ul className="flex flex-row w-full flex-wrap justify-center">
 			{children}
 		</ul>
@@ -39,7 +47,10 @@ const List = ({
 export default function Home() {
 	return (
 		<main className="flex min-h-screen flex-col items-center p-12">
-			<List title="In Progress">
+			<List
+				title="In Progress Demos"
+				description="Demos in a usable state, <b>mostly</b> in order of how much they work"
+			>
 				<Item
 					title="Role Play"
 					description="Character-based chat/role play without LangChain"
@@ -62,13 +73,13 @@ export default function Home() {
 					description="Paste any text and remove identifying information"
 					href="/redacter"
 				/>
+			</List>
+			<List title="TODO">
 				<Item
-					title="Chat using LangChain"
+					title="LangChain Chat"
 					description="Prototype chat app using LangChain"
 					href="/chat"
 				/>
-			</List>
-			<List title="TODO">
 				<Item
 					title="Entity Memory"
 					description="Entity memory for LangChain"
@@ -78,6 +89,11 @@ export default function Home() {
 					title="Code Summarizer"
 					description="Summarize code"
 					// href="/chat/conversational-memory"
+				/>
+				<Item
+					title="Document QA"
+					description="Answer questions about a document, demo using vector stores, etc"
+					// href="/document-qa"
 				/>
 				{/* After: Make library to allow using different LLMs that works across the different demos */}
 				<Item
