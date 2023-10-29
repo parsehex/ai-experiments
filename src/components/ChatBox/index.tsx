@@ -1,6 +1,7 @@
 import { Message } from '@/app/types';
 import { useEffect, useRef, useState } from 'react';
 import MessageItem from './MessageItem';
+import InputBox from './InputBox';
 
 export const ChatBox = ({
 	roles = ['USER', 'ASSISTANT'],
@@ -9,6 +10,8 @@ export const ChatBox = ({
 	deleteMessage,
 	regenerateMessage,
 	readOnly = false,
+	handleSend,
+	multiline = false,
 }: {
 	roles?: string[];
 	messages: Message[];
@@ -16,6 +19,8 @@ export const ChatBox = ({
 	deleteMessage?: (id: string) => void;
 	regenerateMessage?: (id: string) => void;
 	readOnly?: boolean;
+	handleSend?: (content: string) => void;
+	multiline?: boolean;
 }) => {
 	const [tempMsgContent, setTempMsgContent] = useState('');
 	const [editingMsg, setEditingMsg] = useState<string | null>(null);
@@ -38,18 +43,6 @@ export const ChatBox = ({
 			messagesEndRef.current.scroll({ top, behavior: 'smooth' });
 		}
 	}, [messages]);
-
-	const handleMessageEdit = (id: string, newContent: string) => {
-		if (readOnly) return;
-		setMessages((prevMessages: any) => {
-			return prevMessages.map((msg: Message) => {
-				if (msg.id === id) {
-					return { ...msg, content: newContent };
-				}
-				return msg;
-			});
-		});
-	};
 
 	const toggleRole = (messageId: string) => {
 		setMessages((prevMessages: any) => {
@@ -153,6 +146,14 @@ export const ChatBox = ({
 				>
 					Delete Selected
 				</button>
+			)}
+			{handleSend && (
+				<InputBox
+					onMessageSubmit={handleSend}
+					input={tempMsgContent}
+					setInput={setTempMsgContent}
+					multiline={multiline}
+				/>
 			)}
 		</div>
 	);
