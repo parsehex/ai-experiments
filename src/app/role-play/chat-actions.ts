@@ -4,7 +4,7 @@ import * as ooba from '@/app/ooba-api';
 import { delay } from '@/app/utils';
 import { Message } from '@/app/types';
 import { v4 } from 'uuid';
-import { testPrompts } from '../prompts';
+import { testPrompts } from './prompts';
 
 interface MessagesOptions {
 	messages: Message[];

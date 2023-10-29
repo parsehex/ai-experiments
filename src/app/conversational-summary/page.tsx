@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/app/types';
-import * as ooba from '../../ooba-api';
+import * as ooba from '@/app/ooba-api';
 import { v4 } from 'uuid';
 
 const innerMonologue = async (messages: Message[]) => {

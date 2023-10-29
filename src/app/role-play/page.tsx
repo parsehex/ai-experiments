@@ -1,20 +1,11 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import { testPrompts } from './prompts';
-import * as ooba from '../../ooba-api';
-import { delay } from '@/app/utils';
-import { GenerateParams } from '@/app/ooba-types';
-import { Message } from '@/app/types';
-import { initializeModel, parseResponse } from '@/app/ooba-utils';
-import { DescriptionTextArea } from './DescriptionTextArea';
+import React, { useState, useEffect } from 'react';
+import { ChatBox } from '@/components/ChatBox';
 import { CharacterManager } from './CharacterManager';
 import { ChatOptions } from './ChatOptions';
-import { ChatBox } from '@/components/ChatBox';
 import { useChatState } from './chatState';
 import { useMessageHandler } from './chat-actions';
-
-// TODO add other chat routes to prototype other agents
-// chat page that uses entity memory and displays entities, able to edit them
+import { DescriptionTextArea } from './DescriptionTextArea';
 
 function Chat() {
 	useEffect(() => {
@@ -29,7 +20,6 @@ function Chat() {
 				);
 		}
 		loadMessages();
-		(window as any).ooba = ooba;
 	}, []);
 
 	const addCharacter = (newCharacter: string) => {

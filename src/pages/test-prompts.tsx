@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import RootLayout from '@/components/Layout';
 
+// TODO i think we might end up integrating the Test button into the chatbox but we do need a separate component for it to use elsewhere besides chat demos
+
 const prompts = {
 	simple: [
 		"What's your name?",
