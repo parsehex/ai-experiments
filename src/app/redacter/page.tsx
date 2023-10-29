@@ -16,13 +16,13 @@ const fadeStyles = `
 }
 `;
 
+const params: Partial<GenerateParams> = {
+	temperature: 0.01,
+	top_k: 20,
+	guidance_scale: 1.05,
+	stopping_strings: ['<|im_end|>'],
+};
 function Redacter() {
-	const params: Partial<GenerateParams> = {
-		temperature: 0.01,
-		top_k: 20,
-		guidance_scale: 1.05,
-		stopping_strings: ['<|im_end|>'],
-	};
 	const loadInput = () => {
 		const input = localStorage.getItem('redacter-input');
 		if (input) setInputText(input);
@@ -41,7 +41,6 @@ function Redacter() {
 			const timer = setTimeout(() => {
 				setShowSuccess(false);
 			}, 900);
-
 			return () => clearTimeout(timer);
 		}
 	}, [showSuccess]);
@@ -71,33 +70,31 @@ ${inputText}<|im_end|>
 		<div>
 			<style>{fadeStyles}</style>
 			<h1>Redacter</h1>
-			<div>
-				<div className="mt-2">
-					<textarea
-						className="input mr-2"
-						style={{ height: '36em', width: '45%' }}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' && e.shiftKey) {
-								e.preventDefault();
-								handleSend();
-							}
-						}}
-						value={inputText}
-						onChange={(e) => setInputText(e.target.value)}
-						placeholder="Type your message..."
-					/>
-					<textarea
-						className="input mr-2"
-						style={{ height: '36em', width: '45%' }}
-						value={responseText}
-						readOnly
-					/>
-					<div className="relative">
-						<button onClick={() => handleSend()} className="mr-2">
-							Send
-						</button>
-						{showSuccess && <span className="fade">Success</span>}
-					</div>
+			<div className="mt-2">
+				<textarea
+					className="input mr-2"
+					style={{ height: '36em', width: '45%' }}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' && e.shiftKey) {
+							e.preventDefault();
+							handleSend();
+						}
+					}}
+					value={inputText}
+					onChange={(e) => setInputText(e.target.value)}
+					placeholder="Type your message..."
+				/>
+				<textarea
+					className="input mr-2"
+					style={{ height: '36em', width: '45%' }}
+					value={responseText}
+					readOnly
+				/>
+				<div className="relative">
+					<button onClick={() => handleSend()} className="mr-2">
+						Send
+					</button>
+					{showSuccess && <span className="fade">Success</span>}
 				</div>
 			</div>
 		</div>
