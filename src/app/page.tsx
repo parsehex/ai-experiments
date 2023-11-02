@@ -66,7 +66,11 @@ export default function Home() {
 					title="Conversational Summary Memory"
 					description="Conversational memory without LangChain"
 					href="/conversational-summary"
-					// TODO NOTES: Show summary alongside chat
+				/>
+				<Item
+					title="Inner Monologue Chat"
+					description="Chat where AI considers how to respond"
+					href="/inner-monologue"
 				/>
 				<Item
 					title="Simple Chat"

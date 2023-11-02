@@ -5,25 +5,6 @@ import { Message } from '@/app/types';
 import * as ooba from '@/app/ooba-api';
 import { v4 } from 'uuid';
 
-const innerMonologue = async (messages: Message[]) => {
-	// there should be at least 2 messages, pick the last 2
-	let prompt =
-		'Prepare some thoughts on how to respond to the following chat:\n';
-	const lastMessage = messages[messages.length - 1];
-	prompt += `${lastMessage.role}: ${lastMessage.content}\n`;
-	const secondLastMessage = messages[messages.length - 2];
-	prompt += `${secondLastMessage.role}: ${secondLastMessage.content}\n`;
-	prompt += 'THOUGHTS: ';
-	const result = await ooba.generateText({
-		prompt,
-		temperature: 0.5,
-		guidance_scale: 2,
-		stopping_strings: ['RESPONSE:', 'INPUT:', '\n'],
-	});
-	console.log(prompt, result);
-	return result.results[0].text;
-};
-
 const summarize = async (messages: Message[], summary?: string) => {
 	let prompt = 'Summarize the following chat in one paragraph:\n';
 	if (summary) {
@@ -40,21 +21,19 @@ const summarize = async (messages: Message[], summary?: string) => {
 		temperature: 0.01,
 		guidance_scale: 1.2,
 	});
-	console.log(prompt, result);
+	console.log('summary', prompt, result);
 	return result.results[0].text;
 };
 
 const constructPrompt = (
 	input: string,
 	lastMessageWithRole: string,
-	summary?: string,
-	thoughts?: string
+	summary?: string
 ) => {
 	const s = `\nThis is a summary of the chat so far: ${summary}`;
-	const t = `\nThese are your thoughts on how to respond: ${thoughts}`;
-	return `Continue the following chat between USER and ASSISTANT by responding to the INPUT in one paragraph or less.${
+	return `Continue the following chat between USER and ASSISTANT by responding to the INPUT in a submissive manner.${
 		summary ? s : ''
-	}${thoughts ? t : ''}
+	}
 ${lastMessageWithRole}
 INPUT: ${input}
 RESPONSE: `;
@@ -63,30 +42,25 @@ RESPONSE: `;
 const sendInput = async (
 	input: string,
 	lastMessageWithRole: string,
-	summary?: string,
-	thoughts?: string
+	summary?: string
 ) => {
-	const prompt = constructPrompt(input, lastMessageWithRole, summary, thoughts);
+	const prompt = constructPrompt(input, lastMessageWithRole, summary);
 	const result = await ooba.generateText({
 		prompt,
+		max_new_tokens: 1500,
 		temperature: 0.25,
 		guidance_scale: 1.5,
 		stopping_strings: ['INPUT:', 'RESPONSE:'],
-		mirostat_mode: 2,
-		// mirostat_tau: 0.5,
 	});
-	console.log(prompt, result);
+	console.log('message', prompt, result);
 	return result.results[0].text;
 };
-
-// idea: inner monologue - at each summarize step, also generate a prompt to the LLM to think how to respond. this will be included in later prompts
-//   for this, we also need to extend chatbox to allow for collapsed messages to express thoughts.
 
 function ConversationalSummaryChat() {
 	const [messages, setMessages] = useState([
 		{
 			role: 'ASSISTANT',
-			content: "Hi, I'm a chatbot. How can I help you?",
+			content: 'Hi, what do you want to talk about?',
 		},
 	] as Message[]);
 	const [input, setInput] = useState('');
@@ -105,20 +79,16 @@ function ConversationalSummaryChat() {
 		] as Message[];
 		setMessages(newMessages);
 
-		const thoughts = await innerMonologue(newMessages);
-		newMessages = [
-			...newMessages,
-			{ role: 'ASSISTANT', content: thoughts, id: v4(), type: 'thought' },
-		];
-		setMessages(newMessages);
-
 		const chatSummary = summary || '';
 		const lastMessage = messages[messages.length - 1];
+		let lastMessageWithRole = '';
+		if (lastMessage) {
+			lastMessageWithRole = `${lastMessage.role}: ${lastMessage.content}`;
+		}
 		const response = await sendInput(
 			userInput,
-			`${lastMessage.role}: ${lastMessage.content.trim()}`,
-			chatSummary,
-			thoughts
+			lastMessageWithRole,
+			chatSummary
 		);
 
 		newMessages = [
@@ -127,9 +97,7 @@ function ConversationalSummaryChat() {
 		];
 		setMessages(newMessages);
 
-		const msgsToSummarize = [
-			...newMessages.filter((msg) => msg.type !== 'thought'),
-		];
+		const msgsToSummarize = [...newMessages];
 		// we should only summarize the new messages
 		if (msgsToSummarize.length > 2 && summary) {
 			msgsToSummarize.splice(0, msgsToSummarize.length - 2);
@@ -138,10 +106,20 @@ function ConversationalSummaryChat() {
 		setSummary(result);
 	};
 
+	const handleClear = () => {
+		console.clear();
+		setMessages([]);
+		setSummary('');
+		setInput('');
+	};
+
 	return (
 		<div>
 			<h1>Chat - Conversational Summary</h1>
 			<div className="container">
+				<button className="clear-button" onClick={handleClear}>
+					Clear
+				</button>
 				<ChatBox
 					messages={messages}
 					setMessages={setMessages}
