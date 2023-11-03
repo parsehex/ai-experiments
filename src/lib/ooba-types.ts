@@ -115,6 +115,7 @@ export type GenerateParams = {
 	skip_special_tokens?: boolean;
 	/** Default: [] */
 	stopping_strings?: string[];
+	[key: string]: any;
 };
 
 export type ChatParams = {

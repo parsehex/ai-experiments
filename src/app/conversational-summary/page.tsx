@@ -1,42 +1,25 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import { v4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
-import * as ooba from '@/lib/ooba-api';
-import { v4 } from 'uuid';
+import { generate } from '@/lib/llm';
+import { PromptPart } from '@/lib/llm/types';
 
 const summarize = async (messages: Message[], summary?: string) => {
-	let prompt = 'Summarize the following chat in one paragraph:\n';
-	if (summary) {
-		prompt = `This is a summary of the chat so far: ${summary}\n`;
-		prompt +=
-			'Revise the summary based on the following new messages in the chat in one paragraph:\n';
-	}
-	for (let msg of messages) {
-		prompt += `${msg.role}: ${msg.content}\n`;
-	}
-	prompt += '\nSUMMARY: ';
-	const result = await ooba.generateText({
-		prompt,
-		temperature: 0.01,
-		guidance_scale: 1.2,
-	});
+	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}\n`).join('');
+	const parts: PromptPart[] = [
+		{ str: 'Summarize the following chat in one paragraph:\n', if: !summary },
+		{
+			str: `This is a summary of the chat so far: ${summary}
+Revise the summary based on the following new messages in the chat in one paragraph:\n`,
+			if: !!summary,
+		},
+		{ str: `${msgs}\nSUMMARY: ` },
+	];
+	const result = await generate(parts, { cfg: 1.2 });
 	console.log('summary', prompt, result);
-	return result.results[0].text;
-};
-
-const constructPrompt = (
-	input: string,
-	lastMessageWithRole: string,
-	summary?: string
-) => {
-	const s = `\nThis is a summary of the chat so far: ${summary}`;
-	return `Continue the following chat between USER and ASSISTANT by responding to the INPUT in a submissive manner.${
-		summary ? s : ''
-	}
-${lastMessageWithRole}
-INPUT: ${input}
-RESPONSE: `;
+	return result;
 };
 
 const sendInput = async (
@@ -44,16 +27,25 @@ const sendInput = async (
 	lastMessageWithRole: string,
 	summary?: string
 ) => {
-	const prompt = constructPrompt(input, lastMessageWithRole, summary);
-	const result = await ooba.generateText({
-		prompt,
-		max_new_tokens: 1500,
-		temperature: 0.25,
-		guidance_scale: 1.5,
-		stopping_strings: ['INPUT:', 'RESPONSE:'],
+	const parts = [
+		{
+			str: `Continue the following chat between USER and ASSISTANT by responding to the INPUT.\n`,
+		},
+		{
+			str: `This is a summary of the chat so far: ${summary}\n`,
+			if: !!summary,
+		},
+		{ str: `${lastMessageWithRole}`, suf: '\n' },
+		{ str: `INPUT: ${input}\nRERSPONSE: ` },
+	];
+	const result = await generate(parts, {
+		cfg: 1.5,
+		temp: 0.25,
+		max: 1500,
+		stop: ['INPUT:', 'RESPONSE:'],
 	});
 	console.log('message', prompt, result);
-	return result.results[0].text;
+	return result;
 };
 
 function ConversationalSummaryChat() {
