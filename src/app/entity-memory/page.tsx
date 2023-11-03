@@ -8,8 +8,8 @@ import { StructuredTool, Tool } from 'langchain/tools';
 import { Serialized } from 'langchain/load/serializable';
 import { EntityMemory } from 'langchain/memory';
 import { ChatBox } from '@/components/ChatBox';
-import { getLLM } from '@/app/llms';
-import { Message } from '@/app/types';
+import { getLLM } from '@/lib/llms';
+import { Message } from '@/lib/types';
 import { testPrompts } from './prompts';
 
 // TODO add other chat routes to prototype other agents

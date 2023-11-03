@@ -1,9 +1,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'react-tooltip';
-import * as ooba from '@/app/ooba-api';
-import { GenerateParams } from '@/app/ooba-types';
-import { PhaseType } from '@/app/types';
+import * as ooba from '@/lib/ooba-api';
+import { GenerateParams } from '@/lib/ooba-types';
+import { PhaseType } from '@/lib/types';
 import * as prompts from './prompts';
 
 const phases: PhaseType[] = [

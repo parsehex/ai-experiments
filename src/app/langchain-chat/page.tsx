@@ -4,13 +4,13 @@ import {
 	AgentExecutor,
 	initializeAgentExecutorWithOptions,
 } from 'langchain/agents';
-import { getTool } from '../tools';
-import { getLLM } from '../llms';
-import { Tool } from 'langchain/tools';
 import { Serialized } from 'langchain/load/serializable';
-import { testPrompts } from './prompts';
+import { Tool } from 'langchain/tools';
 import { ChatBox } from '@/components/ChatBox';
-import { Message } from '../types';
+import { getLLM } from '@/lib/llms';
+import { getTool } from '@/lib/tools';
+import { Message } from '@/lib/types';
+import { testPrompts } from './prompts';
 
 // TODO add other chat routes to prototype other agents
 // chat page that uses entity memory and displays entities, able to edit them

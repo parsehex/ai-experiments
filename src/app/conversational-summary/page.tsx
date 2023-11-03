@@ -1,8 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { ChatBox } from '@/components/ChatBox';
-import { Message } from '@/app/types';
-import * as ooba from '@/app/ooba-api';
+import { Message } from '@/lib/types';
+import * as ooba from '@/lib/ooba-api';
 import { v4 } from 'uuid';
 
 const summarize = async (messages: Message[], summary?: string) => {

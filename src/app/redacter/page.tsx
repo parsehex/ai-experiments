@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import * as ooba from '@/app/ooba-api';
-import { GenerateParams } from '@/app/ooba-types';
+import * as ooba from '@/lib/ooba-api';
+import { GenerateParams } from '@/lib/ooba-types';
 
 const fadeStyles = `
 @keyframes fadeInOut {

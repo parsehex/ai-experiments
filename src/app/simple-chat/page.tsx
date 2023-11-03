@@ -1,9 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Message } from '@/app/types';
 import { ChatBox } from '@/components/ChatBox';
-import * as ooba from '@/app/ooba-api';
+import * as ooba from '@/lib/ooba-api';
+import { Message } from '@/lib/types';
 
 function SimpleChat() {
 	const [messages, setMessages] = useState<Message[]>([

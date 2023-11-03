@@ -1,9 +1,9 @@
 'use client';
 import React, { useState } from 'react';
-import { ChatBox } from '@/components/ChatBox';
-import { Message } from '@/app/types';
-import * as ooba from '@/app/ooba-api';
 import { v4 as uuidv4 } from 'uuid';
+import { ChatBox } from '@/components/ChatBox';
+import { Message } from '@/lib/types';
+import * as ooba from '@/lib/ooba-api';
 
 const innerMonologue = async (messages: Message[]) => {
 	let prompt =
