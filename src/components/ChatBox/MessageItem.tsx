@@ -1,4 +1,4 @@
-import { Message } from '@/app/types';
+import { Message } from '@/lib/types';
 import React from 'react';
 
 interface MessageItemProps {
