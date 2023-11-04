@@ -91,9 +91,9 @@ const HoverMenuButton: React.FC<HoverMenuButtonProps> = ({
 				{label}
 			</button>
 			{showMenu && (
-				<div className="absolute left-0 p-4 bg-white rounded-md shadow-xl z-10">
+				<div className="absolute left-0 p-2 bg-white rounded-md shadow-xl z-10">
 					{fields.map((field) => (
-						<label key={field.name} className="block mb-2">
+						<label key={field.name} className="block">
 							{field.label}
 							{renderField(field)}
 						</label>
