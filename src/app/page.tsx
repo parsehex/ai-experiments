@@ -82,6 +82,11 @@ export default function Home() {
 					description="Paste any text and remove identifying information"
 					href="/redacter"
 				/>
+				<Item
+					title="Story Generator"
+					description="Generate a story using a character, setting, and plot"
+					href="/story-generator"
+				/>
 			</List>
 			<List title="TODO">
 				<Item

@@ -126,3 +126,44 @@ export const Lines = ({
 ${vars}`;
 	return str;
 };
+
+export const CharacterObject = () => {
+	return `root ::= Character
+Objectives ::= "{"   ws   "\\\"shortTerm\\\":"   ws   string   ","   ws   "\\\"longTerm\\\":"   ws   string   "}"
+Objectiveslist ::= "[]" | "["   ws   Objectives   (","   ws   Objectives)*   "]"
+Character ::= "{"   ws   "\\\"name\\\":"   ws   string   ","   ws   "\\\"description\\\":"   ws   string   ","   ws   "\\\"state\\\":"   ws   string   ","   ws   "\\\"objectives\\\":"   ws   Objectives   "}"
+Characterlist ::= "[]" | "["   ws   Character   (","   ws   Character)*   "]"
+string ::= "\\\""   ([a-zA-Z' ,.!?&;-]+)   "\\\""
+boolean ::= "true" | "false"
+ws ::= [ \t\n]*
+number ::= [0-9]+   "."?   [0-9]*
+stringlist ::= "["   ws   "]" | "["   ws   string   (","   ws   string)*   ws   "]"
+numberlist ::= "["   ws   "]" | "["   ws   string   (","   ws   number)*   ws   "]"
+`;
+};
+
+export const SettingObject = () => {
+	return `root ::= Setting
+Setting ::= "{"   ws   "\\\"location\\\":"   ws   string   ","   ws   "\\\"timePeriod\\\":"   ws   string   "}"
+Settinglist ::= "[]" | "["   ws   Setting   (","   ws   Setting)*   "]"
+string ::= "\\\""   ([a-zA-Z' ,.!?&;-]+)   "\\\""
+boolean ::= "true" | "false"
+ws ::= [ \t\n]*
+number ::= [0-9]+   "."?   [0-9]*
+stringlist ::= "["   ws   "]" | "["   ws   string   (","   ws   string)*   ws   "]"
+numberlist ::= "["   ws   "]" | "["   ws   string   (","   ws   number)*   ws   "]"
+`;
+};
+
+export const ActionObject = () => {
+	return `root ::= Thing
+Type ::= "\\\"Narrative\\\"" | "\\\"Dialogue\\\""
+Thing ::= "{"   ws   "\\\"type\\\":"   ws   Type   ","   ws   "\\\"str\\\":"   ws   string   ","   ws   ("\\\"characterName\\\":"   ws   string)?   "}"
+Thinglist ::= "[]" | "["   ws   Thing   (","   ws   Thing)*   "]"
+string ::= "\\\""   ([a-zA-Z' ,.!?&;-]+)   "\\\""
+boolean ::= "true" | "false"
+ws ::= [ \t\n]*
+number ::= [0-9]+   "."?   [0-9]*
+stringlist ::= "["   ws   "]" | "["   ws   string   (","   ws   string)*   ws   "]"
+numberlist ::= "["   ws   "]" | "["   ws   string   (","   ws   number)*   ws   "]"`;
+};
