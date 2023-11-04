@@ -5,6 +5,9 @@ import * as ooba from '@/lib/ooba-api';
 import { GenerateParams } from '@/lib/ooba-types';
 import { PhaseType } from '@/lib/types';
 import * as prompts from './prompts';
+import { withPage } from '@/components/Page';
+
+const title = 'Thought Chain';
 
 const phases: PhaseType[] = [
 	{
@@ -192,58 +195,53 @@ function ThoughtChain() {
 	};
 
 	return (
-		<div>
-			<h1>Thought Chain</h1>
-			<div>
-				<div className="mt-2 flex flex-row justify-center">
-					<textarea
-						className="input mr-2"
-						style={{ height: '6em', width: '45%' }}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' && e.shiftKey) {
-								e.preventDefault();
-								handleSend();
-							}
+		<>
+			<div className="mt-2 flex flex-row justify-center">
+				<textarea
+					className="input mr-2"
+					style={{ height: '6em', width: '45%' }}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' && e.shiftKey) {
+							e.preventDefault();
+							handleSend();
+						}
+					}}
+					value={inputText}
+					onChange={(e) => setInputText(e.target.value)}
+					placeholder="Type your message..."
+				/>
+				<div className="inline-flex flex-col">
+					<button onClick={() => handleSend()} className="mr-2">
+						Send
+					</button>
+					<button
+						onClick={() => {
+							const i = Math.round(Math.random() * prompts.testPrompts.length);
+							handleSend(prompts.testPrompts[i]);
 						}}
-						value={inputText}
-						onChange={(e) => setInputText(e.target.value)}
-						placeholder="Type your message..."
-					/>
-					<div className="inline-flex flex-col">
-						<button onClick={() => handleSend()} className="mr-2">
-							Send
-						</button>
-						<button
-							onClick={() => {
-								const i = Math.round(
-									Math.random() * prompts.testPrompts.length
-								);
-								handleSend(prompts.testPrompts[i]);
-							}}
-							className="mr-2"
-						>
-							Test
-						</button>
-						{currentPhase && <span className="fade">{currentPhase}</span>}
-					</div>
-				</div>
-				<div
-					className="mb-4 flex flex-row flex-wrap pb-5"
-					style={{ height: '30em' }}
-				>
-					{phases.map((phase) => (
-						<Phase
-							key={phase.name}
-							phase={phase.name}
-							outputText={results[phase.name]?.output || ''}
-							processOutput={phase.processOutput}
-							tooltipContent={results[phase.name]?.prompt}
-						/>
-					))}
+						className="mr-2"
+					>
+						Test
+					</button>
+					{currentPhase && <span className="fade">{currentPhase}</span>}
 				</div>
 			</div>
-		</div>
+			<div
+				className="mb-4 flex flex-row flex-wrap pb-5"
+				style={{ height: '30em' }}
+			>
+				{phases.map((phase) => (
+					<Phase
+						key={phase.name}
+						phase={phase.name}
+						outputText={results[phase.name]?.output || ''}
+						processOutput={phase.processOutput}
+						tooltipContent={results[phase.name]?.prompt}
+					/>
+				))}
+			</div>
+		</>
 	);
 }
 
-export default ThoughtChain;
+export default withPage({ title })(ThoughtChain);

@@ -30,18 +30,32 @@ export function makePrompt(parts: PromptPart[]): string {
 		return prompt;
 	}, '');
 }
-
-interface GenerateOptions {
+interface GenerateOptions extends Partial<GenerateParams> {
 	temp?: number;
 	cfg?: number;
 	max?: number;
 	stop?: string[];
+	grammar?: string;
+	// log is an array of at most 2 strings, which are either 'prompt' or 'response'
+	log?: {
+		prompt?: string;
+		response?: string;
+	};
 }
-const KeyMap: Record<string, keyof GenerateOptions> = {
-	temperature: 'temp',
-	guidance_scale: 'cfg',
-	max_new_tokens: 'max',
-	stopping_strings: 'stop',
+// const KeyMap: Record<string, keyof GenerateOptions> = {
+// 	temperature: 'temp',
+// 	guidance_scale: 'cfg',
+// 	max_new_tokens: 'max',
+// 	stopping_strings: 'stop',
+// 	grammar_string: 'grammar',
+// };
+// keymap is backwards
+const KeyMap: Record<keyof GenerateOptions, keyof GenerateParams> = {
+	temp: 'temperature',
+	cfg: 'guidance_scale',
+	max: 'max_new_tokens',
+	stop: 'stopping_strings',
+	grammar: 'grammar_string',
 };
 
 export async function generate(
@@ -52,15 +66,20 @@ export async function generate(
 	const params: GenerateParams = { prompt };
 	if (options) {
 		for (const [key, value] of Object.entries(options)) {
-			const paramKey = KeyMap[key];
+			const paramKey = KeyMap[key as keyof GenerateOptions];
 			if (paramKey) {
 				params[paramKey] = value;
 			} else {
-				params[key] = value;
+				params[key as keyof GenerateParams] = value;
 			}
 		}
 	}
-	console.log(prompt);
+	if (options?.log && options.log.prompt) {
+		console.log(options.log.prompt, prompt);
+	}
 	const res = await generateText(params);
+	if (options?.log && options.log.response) {
+		console.log(options.log.response, res.results[0].text);
+	}
 	return res.results[0].text;
 }

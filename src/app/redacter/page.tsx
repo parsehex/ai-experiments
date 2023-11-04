@@ -2,8 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import * as ooba from '@/lib/ooba-api';
 import { GenerateParams } from '@/lib/ooba-types';
+import { withPage } from '@/components/Page';
 
-const fadeStyles = `
+const title = 'Redacter';
+
+const extraStyles = `
 @keyframes fadeInOut {
     0% {opacity: 1;}
     50% {opacity: 0.5;}
@@ -67,38 +70,34 @@ ${inputText}<|im_end|>
 	};
 
 	return (
-		<div>
-			<style>{fadeStyles}</style>
-			<h1>Redacter</h1>
-			<div className="mt-2">
-				<textarea
-					className="input mr-2"
-					style={{ height: '36em', width: '45%' }}
-					onKeyDown={(e) => {
-						if (e.key === 'Enter' && e.shiftKey) {
-							e.preventDefault();
-							handleSend();
-						}
-					}}
-					value={inputText}
-					onChange={(e) => setInputText(e.target.value)}
-					placeholder="Type your message..."
-				/>
-				<textarea
-					className="input mr-2"
-					style={{ height: '36em', width: '45%' }}
-					value={responseText}
-					readOnly
-				/>
-				<div className="relative">
-					<button onClick={() => handleSend()} className="mr-2">
-						Send
-					</button>
-					{showSuccess && <span className="fade">Success</span>}
-				</div>
+		<div className="mt-2">
+			<textarea
+				className="input mr-2"
+				style={{ height: '36em', width: '45%' }}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter' && e.shiftKey) {
+						e.preventDefault();
+						handleSend();
+					}
+				}}
+				value={inputText}
+				onChange={(e) => setInputText(e.target.value)}
+				placeholder="Type your message..."
+			/>
+			<textarea
+				className="input mr-2"
+				style={{ height: '36em', width: '45%' }}
+				value={responseText}
+				readOnly
+			/>
+			<div className="relative">
+				<button onClick={() => handleSend()} className="mr-2">
+					Send
+				</button>
+				{showSuccess && <span className="fade">Success</span>}
 			</div>
 		</div>
 	);
 }
 
-export default Redacter;
+export default withPage({ title, extraStyles })(Redacter);

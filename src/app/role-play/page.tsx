@@ -6,8 +6,11 @@ import { ChatOptions } from './ChatOptions';
 import { useChatState } from './chatState';
 import { useMessageHandler } from './chat-actions';
 import { DescriptionTextArea } from './DescriptionTextArea';
+import { withPage } from '@/components/Page';
 
-function Chat() {
+const title = 'Role Play';
+
+function RolePlay() {
 	useEffect(() => {
 		if (typeof window !== 'undefined') {
 			if (localStorage.getItem('chat-description'))
@@ -114,123 +117,123 @@ function Chat() {
 	};
 	const [continueCount, setContinueCount] = useState(0);
 
-	return (
-		<div>
-			<h1>Chat - Role Play</h1>
-			<div className="flex">
-				<DescriptionTextArea
-					description={description}
-					setDescription={setDescription}
-				/>
-				<CharacterManager
-					characters={characters}
-					addCharacter={addCharacter}
-					removeCharacter={removeCharacter}
-					editCharacter={editCharacter}
-					editingChar={editingChar}
-					setEditingChar={setEditingChar}
-					tempCharName={tempCharName}
-					setTempCharName={setTempCharName}
-				/>
-				<ChatOptions oneAtATime={oneAtATime} setOneAtATime={setOneAtATime} />
-				<div>
-					<button onClick={() => saveMessages()}>Save</button>
-					<button onClick={() => loadMessages()}>Load</button>
-				</div>
+	const Controls = (
+		<div className="flex">
+			<DescriptionTextArea
+				description={description}
+				setDescription={setDescription}
+			/>
+			<CharacterManager
+				characters={characters}
+				addCharacter={addCharacter}
+				removeCharacter={removeCharacter}
+				editCharacter={editCharacter}
+				editingChar={editingChar}
+				setEditingChar={setEditingChar}
+				tempCharName={tempCharName}
+				setTempCharName={setTempCharName}
+			/>
+			<ChatOptions oneAtATime={oneAtATime} setOneAtATime={setOneAtATime} />
+			<div>
+				<button onClick={() => saveMessages()}>Save</button>
+				<button onClick={() => loadMessages()}>Load</button>
 			</div>
-
-			<div className="container">
-				<ChatBox
-					messages={messages}
-					setMessages={setMessages}
-					deleteMessage={deleteMessage}
-					regenerateMessage={regenerateMessage}
-					roles={characters.filter((char) => char !== 'ACTION')}
+		</div>
+	);
+	const ChatArea = (
+		<div className="container">
+			<ChatBox
+				messages={messages}
+				setMessages={setMessages}
+				deleteMessage={deleteMessage}
+				regenerateMessage={regenerateMessage}
+				roles={characters.filter((char) => char !== 'ACTION')}
+			/>
+			<div className="input-container mt-2">
+				<select
+					className="input mr-2"
+					value={selectedCharacter}
+					onChange={(e) => setSelectedCharacter(e.target.value)}
+				>
+					{characters.map((char) => (
+						<option key={char} value={char}>
+							{char}
+						</option>
+					))}
+					<option value="ACTION">ACTION</option>
+				</select>
+				<textarea
+					className="input mr-2"
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' && e.shiftKey) {
+							e.preventDefault();
+							handleSend();
+						}
+					}}
+					value={input}
+					onChange={(e) => setInput(e.target.value)}
+					placeholder="Type your message..."
 				/>
-				<div className="input-container mt-2">
-					<select
-						className="input mr-2"
-						value={selectedCharacter}
-						onChange={(e) => setSelectedCharacter(e.target.value)}
+				<div className="relative">
+					<button
+						onClick={() => setMessages([])}
+						className="mr-2"
+						title="Clear chat"
 					>
-						{characters.map((char) => (
-							<option key={char} value={char}>
-								{char}
-							</option>
-						))}
-						<option value="ACTION">ACTION</option>
-					</select>
-					<textarea
-						className="input mr-2"
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' && e.shiftKey) {
-								e.preventDefault();
-								handleSend();
-							}
-						}}
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
-						placeholder="Type your message..."
-					/>
-					<div className="relative">
-						<button
-							onClick={() => setMessages([])}
-							className="mr-2"
-							title="Clear chat"
-						>
-							Clear
-						</button>
-						<button
-							onClick={() => handleMainAction(mainButton)}
-							className="mr-2"
-						>
-							{mainButton}
-						</button>
-						<button onClick={() => setShowOtherButtons(!showOtherButtons)}>
-							{showOtherButtons ? '\u25BC' : '\u25B2'}
-						</button>
-						{showOtherButtons && (
-							<div className="absolute bottom-full right-0 z-10 bg-white dark:bg-gray-800 shadow-md rounded-md p-2">
-								{['Test', 'Send', 'Fill', 'Add', 'Continue'].map((action) => (
-									<span key={action} className="flex">
-										<button
-											className="text-sm"
-											onClick={() => setMainButton(action as any)}
-										>
-											&#x25BC;
-										</button>
-										<button
-											className="text-sm"
-											onClick={() =>
-												handleSelectAction(
-													action,
-													action === 'Continue' ? continueCount : undefined
-												)
-											}
-										>
-											{action}
-										</button>
-										{action === 'Continue' && (
-											<input
-												type="number"
-												value={continueCount}
-												onChange={(e) =>
-													setContinueCount(Number(e.target.value))
-												}
-												min="0"
-												step="1"
-												className="input w-12 mx-2 text-center"
-											/>
-										)}
-									</span>
-								))}
-							</div>
-						)}
-					</div>
+						Clear
+					</button>
+					<button onClick={() => handleMainAction(mainButton)} className="mr-2">
+						{mainButton}
+					</button>
+					<button onClick={() => setShowOtherButtons(!showOtherButtons)}>
+						{showOtherButtons ? '\u25BC' : '\u25B2'}
+					</button>
+					{showOtherButtons && (
+						<div className="absolute bottom-full right-0 z-10 bg-white dark:bg-gray-800 shadow-md rounded-md p-2">
+							{['Test', 'Send', 'Fill', 'Add', 'Continue'].map((action) => (
+								<span key={action} className="flex">
+									<button
+										className="text-sm"
+										onClick={() => setMainButton(action as any)}
+									>
+										&#x25BC;
+									</button>
+									<button
+										className="text-sm"
+										onClick={() =>
+											handleSelectAction(
+												action,
+												action === 'Continue' ? continueCount : undefined
+											)
+										}
+									>
+										{action}
+									</button>
+									{action === 'Continue' && (
+										<input
+											type="number"
+											value={continueCount}
+											onChange={(e) => setContinueCount(Number(e.target.value))}
+											min="0"
+											step="1"
+											className="input w-12 mx-2 text-center"
+										/>
+									)}
+								</span>
+							))}
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
 	);
+
+	return (
+		<>
+			{Controls}
+			{ChatArea}
+		</>
+	);
 }
 
-export default Chat;
+export default withPage({ title })(RolePlay);

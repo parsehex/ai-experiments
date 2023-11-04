@@ -5,6 +5,9 @@ import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
 import { generate } from '@/lib/llm';
 import { PromptPart } from '@/lib/llm/types';
+import { withPage } from '@/components/Page';
+
+const title = 'Conversational Summary Chat';
 
 const summarize = async (messages: Message[], summary?: string) => {
 	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}\n`).join('');
@@ -106,38 +109,31 @@ function ConversationalSummaryChat() {
 	};
 
 	return (
-		<div>
-			<h1>Chat - Conversational Summary</h1>
-			<div className="container">
-				<button className="clear-button" onClick={handleClear}>
-					Clear
-				</button>
-				<ChatBox
-					messages={messages}
-					setMessages={setMessages}
-					readOnly={true}
-				/>
-				{summary && (
-					<div className="summaryBox">
-						<h2>Generated Summary</h2>
-						<p>{summary}</p>
-					</div>
-				)}
-				<div className="input-container px-2">
-					<input
-						className="input mr-2 grow"
-						type="text"
-						onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
-						placeholder="Type your message..."
-						autoFocus
-					/>
-					<button onClick={handleSend}>Send</button>
+		<div className="container">
+			<button className="clear-button" onClick={handleClear}>
+				Clear
+			</button>
+			<ChatBox messages={messages} setMessages={setMessages} readOnly={true} />
+			{summary && (
+				<div className="summaryBox">
+					<h2>Generated Summary</h2>
+					<p>{summary}</p>
 				</div>
+			)}
+			<div className="input-container px-2">
+				<input
+					className="input mr-2 grow"
+					type="text"
+					onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+					value={input}
+					onChange={(e) => setInput(e.target.value)}
+					placeholder="Type your message..."
+					autoFocus
+				/>
+				<button onClick={handleSend}>Send</button>
 			</div>
 		</div>
 	);
 }
 
-export default ConversationalSummaryChat;
+export default withPage({ title })(ConversationalSummaryChat);

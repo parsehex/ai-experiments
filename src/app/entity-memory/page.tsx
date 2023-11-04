@@ -11,11 +11,14 @@ import { ChatBox } from '@/components/ChatBox';
 import { getLLM } from '@/lib/llms';
 import { Message } from '@/lib/types';
 import { testPrompts } from './prompts';
+import { withPage } from '@/components/Page';
+
+const title = 'Entity Memory Chat';
 
 // TODO add other chat routes to prototype other agents
 // chat page that uses entity memory and displays entities, able to edit them
 
-function Chat() {
+function EntityMemoryChat() {
 	const [messages, setMessages] = useState([
 		{
 			role: 'assistant',
@@ -115,8 +118,7 @@ function Chat() {
 	};
 
 	return (
-		<div>
-			<h1>Chat - Entity Memory</h1>
+		<>
 			<input
 				value={openaiKey}
 				className="input"
@@ -155,8 +157,8 @@ function Chat() {
 					<button onClick={handleSend}>Send</button>
 				</div>
 			</div>
-		</div>
+		</>
 	);
 }
 
-export default Chat;
+export default withPage({ title })(EntityMemoryChat);

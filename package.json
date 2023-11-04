@@ -17,6 +17,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-tooltip": "^5.21.6",
+    "sass": "^1.69.5",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

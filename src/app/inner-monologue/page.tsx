@@ -4,6 +4,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
 import * as ooba from '@/lib/ooba-api';
+import { withPage } from '@/components/Page';
+
+const title = 'Inner Monologue Chat';
 
 const innerMonologue = async (messages: Message[]) => {
 	let prompt =
@@ -102,32 +105,25 @@ function InnerMonologueChat() {
 	};
 
 	return (
-		<div>
-			<h1>Inner Monologue Chat</h1>
-			<div className="container">
-				<button className="clear-button" onClick={handleClear}>
-					Clear
-				</button>
-				<ChatBox
-					messages={messages}
-					setMessages={setMessages}
-					readOnly={true}
+		<div className="container">
+			<button className="clear-button" onClick={handleClear}>
+				Clear
+			</button>
+			<ChatBox messages={messages} setMessages={setMessages} readOnly={true} />
+			<div className="input-container px-2">
+				<input
+					className="input mr-2 grow"
+					type="text"
+					onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+					value={input}
+					onChange={(e) => setInput(e.target.value)}
+					placeholder="Type your message..."
+					autoFocus
 				/>
-				<div className="input-container px-2">
-					<input
-						className="input mr-2 grow"
-						type="text"
-						onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
-						placeholder="Type your message..."
-						autoFocus
-					/>
-					<button onClick={handleSend}>Send</button>
-				</div>
+				<button onClick={handleSend}>Send</button>
 			</div>
 		</div>
 	);
 }
 
-export default InnerMonologueChat;
+export default withPage({ title })(InnerMonologueChat);
