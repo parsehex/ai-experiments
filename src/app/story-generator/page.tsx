@@ -202,15 +202,13 @@ const StoryGenerator = () => {
 		p: Plot = plot
 	) => {
 		const parts = genTone(c, p);
-		const result = JSON.parse(
-			await generate(parts, {
-				temp: 0.5,
-				cfg: 1.5,
-				grammar: Sentences(1),
-				max: 100,
-				log: { response: 'Tone:' },
-			})
-		);
+		const result = await generate(parts, {
+			temp: 0.25,
+			cfg: 1.15,
+			grammar: Sentences(1),
+			max: 100,
+			log: { response: 'Tone:' },
+		});
 		handlePlotChange('tone')({ target: { value: result } } as any);
 		return result;
 	};

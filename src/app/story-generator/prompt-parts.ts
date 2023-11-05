@@ -115,14 +115,13 @@ Return an object with the following keys:
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
 		{ str: `SETTING:\n` },
 	];
-	// TODO try using grammar for filling in (if there's already a value)
-	// (Make the model return whatever the value is, then generate more of it)
 }
 export function genTone(chars: Character[], plot: Plot): PromptPart[] {
 	return [
 		{
-			str: `Write a brief, 1-sentence Tone for how the following story should be written.
-Important: Use the given story info to write a tone that makes sense with the story.\n\n`,
+			str: `Write a Tone to guide how the following story should be written.
+The tone should be a brief sentence that provides guidance to write the story, but should not be specific to the story itself in any way. It should properly convey the tone in which the story will be written.
+A simple example would be "Dark and gritty but realistic."\n\n`,
 			// Important: The tone should make sense with the following story info.\n\n`,
 			suf: `STORY INFO:\n`,
 		},
@@ -135,10 +134,8 @@ Important: Use the given story info to write a tone that makes sense with the st
 			str: `${SettingString(plot)}\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ str: `SETTING:\n` },
+		{ str: `TONE:\n` },
 	];
-	// TODO try using grammar for filling in (if there's already a value)
-	// (Make the model return whatever the value is, then generate more of it)
 }
 
 export function genStarter(chars: Character[], plot: Plot): PromptPart[] {
