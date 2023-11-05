@@ -352,8 +352,7 @@ const StoryGenerator = () => {
 					value={plot.tone}
 					onChange={handlePlotChange('tone')}
 				/>
-				{/* @ts-ignore */}
-				<button onClick={handleGenerateTone}>Generate Tone</button>
+				<button onClick={() => handleGenerateTone()}>Generate Tone</button>
 				<br />
 				<label htmlFor="storyDescription">Story Description:</label>
 				<textarea
@@ -361,8 +360,9 @@ const StoryGenerator = () => {
 					value={plot.storyDescription}
 					onChange={handlePlotChange('storyDescription')}
 				/>
-				{/* @ts-ignore */}
-				<button onClick={generateStoryDescription}>Generate Description</button>
+				<button onClick={() => generateStoryDescription()}>
+					Generate Description
+				</button>
 				<br />
 				<label htmlFor="location">Location:</label>
 				<input
@@ -376,8 +376,9 @@ const StoryGenerator = () => {
 					value={plot.timePeriod}
 					onChange={handlePlotChange('timePeriod')}
 				/>
-				{/* @ts-ignore */}
-				<button onClick={handleGenerateSetting}>Generate Setting</button>
+				<button onClick={() => handleGenerateSetting()}>
+					Generate Setting
+				</button>
 			</div>
 		</CollapsibleSection>
 	);
@@ -416,8 +417,7 @@ const StoryGenerator = () => {
 					value={storyStarter}
 					onChange={(e) => setStoryStarter(e.target.value)}
 				/>
-				{/* @ts-ignore */}
-				<button onClick={generateStoryStarter}>Generate</button>
+				<button onClick={() => generateStoryStarter()}>Generate</button>
 			</div>
 			{StoryBox}
 		</>
