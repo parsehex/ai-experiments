@@ -1,29 +1,28 @@
 import { PromptPart } from '@/lib/llm/types';
 import { Character, Plot, Action } from './types';
 
-const CharacterString = (chars: Character[]) => {
-	return chars
-		.map((c) => {
-			let str = `- ${c.name}`;
-			if (
-				c.description ||
-				c.state ||
-				c.objectives.longTerm ||
-				c.objectives.shortTerm
-			) {
-				str += ' ';
-			}
-			if (c.description) str += `- DESCRIPTION: ${c.description} `;
-			if (c.state) str += `- STATE: ${c.state} `;
-			if (c.objectives.longTerm)
-				str += `- LONG-TERM OBJECTIVE: ${c.objectives.longTerm} `;
-			if (c.objectives.shortTerm)
-				str += `- SHORT-TERM OBJECTIVE: ${c.objectives.shortTerm} `;
-			return str.trim();
-		})
-		.join('\n');
-};
-const SettingString = (plot: Plot) => {
+function CharacterString(chars: Character[]) {
+	const mapFunc = (c: Character) => {
+		let str = `- ${c.name}`;
+		if (
+			c.description ||
+			c.state ||
+			c.objectives.longTerm ||
+			c.objectives.shortTerm
+		) {
+			str += ' ';
+		}
+		if (c.description) str += `- DESCRIPTION: ${c.description} `;
+		if (c.state) str += `- STATE: ${c.state} `;
+		if (c.objectives.longTerm)
+			str += `- LONG-TERM OBJECTIVE: ${c.objectives.longTerm} `;
+		if (c.objectives.shortTerm)
+			str += `- SHORT-TERM OBJECTIVE: ${c.objectives.shortTerm} `;
+		return str.trim();
+	};
+	return chars.map(mapFunc).join('\n');
+}
+function SettingString(plot: Plot) {
 	let settingStr = `SETTING: `;
 	if (plot.location) settingStr += `${plot.location}`;
 	if (plot.timePeriod) {
@@ -31,8 +30,8 @@ const SettingString = (plot: Plot) => {
 		settingStr += plot.timePeriod;
 	}
 	return settingStr;
-};
-const ActionString = (actions: Action[]) => {
+}
+function ActionString(actions: Action[]) {
 	return actions
 		.map((a) => {
 			let str = '';
@@ -41,22 +40,33 @@ const ActionString = (actions: Action[]) => {
 			return str;
 		})
 		.join('\n');
-};
+}
+function PlotString(plot: Plot) {
+	let str = '';
+	if (plot.storyDescription) str += `DESCRIPTION: ${plot.storyDescription}\n`;
+	if (plot.tone) str += `TONE: ${plot.tone}\n`;
+	if (plot.location || plot.timePeriod) str += `${SettingString(plot)}\n`;
+	return str;
+}
 
 export function genStoryDescription(
 	chars: Character[],
 	plot: Plot
 ): PromptPart[] {
 	// use whatever info we have to generate a story description
-	const settingStr = SettingString(plot);
 	const charStr = CharacterString(chars);
 	return [
 		{
 			str: 'Write a short story description based on the following info. The description should concisely explain what the story is mainly about, making sure not to go into too much detail. It should be compelling and creative.\n\n',
+			suf: `STORY INFO:\n`,
+		},
+		{
+			if: !!plot.tone,
+			str: `TONE: ${plot.tone}\n`,
 		},
 		{
 			if: !!(plot.location || plot.timePeriod),
-			str: `${settingStr}\n\n`,
+			str: `${SettingString(plot)}\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${charStr}\n` },
 		{ str: 'DESCRIPTION:\n' },
@@ -65,7 +75,6 @@ export function genStoryDescription(
 
 export function genCharacters(chars: Character[], plot: Plot): PromptPart[] {
 	// use whatever info we have to generate a story description
-	const settingStr = SettingString(plot);
 	const charStr = CharacterString(chars);
 	return [
 		{
@@ -82,12 +91,7 @@ export function genCharacters(chars: Character[], plot: Plot): PromptPart[] {
 			suf: `STORY INFO:\n`,
 		},
 		{
-			if: !!plot.storyDescription,
-			str: `DESCRIPTION: ${plot.storyDescription}\n`,
-		},
-		{
-			if: !!(plot.location || plot.timePeriod),
-			str: `${settingStr}\n`,
+			str: `${PlotString(plot)}\n`,
 		},
 		{ if: chars.length > 0, str: `EXISTING CHARACTERS:\n${charStr}\n` },
 		{ str: `CHARACTERS:\n` },
@@ -114,6 +118,28 @@ Return an object with the following keys:
 	// TODO try using grammar for filling in (if there's already a value)
 	// (Make the model return whatever the value is, then generate more of it)
 }
+export function genTone(chars: Character[], plot: Plot): PromptPart[] {
+	return [
+		{
+			str: `Write a brief, 1-sentence Tone for how the following story should be written.
+Important: Use the given story info to write a tone that makes sense with the story.\n\n`,
+			// Important: The tone should make sense with the following story info.\n\n`,
+			suf: `STORY INFO:\n`,
+		},
+		{
+			if: !!plot.storyDescription,
+			str: `DESCRIPTION: ${plot.storyDescription}\n`,
+		},
+		{
+			if: !!(plot.location || plot.timePeriod),
+			str: `${SettingString(plot)}\n`,
+		},
+		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
+		{ str: `SETTING:\n` },
+	];
+	// TODO try using grammar for filling in (if there's already a value)
+	// (Make the model return whatever the value is, then generate more of it)
+}
 
 export function genStarter(chars: Character[], plot: Plot): PromptPart[] {
 	return [
@@ -122,12 +148,8 @@ export function genStarter(chars: Character[], plot: Plot): PromptPart[] {
 Return a string that starts the story.\n\n`,
 			suf: `STORY INFO:\n`,
 		},
-		{
-			if: !!plot.storyDescription,
-			str: `DESCRIPTION: ${plot.storyDescription}\n`,
-		},
+		{ str: `${PlotString(plot)}\n` },
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ str: `${SettingString(plot)}\n` },
 		{ str: `STORY START:\n` },
 	];
 }
@@ -146,15 +168,8 @@ Return an object with the following keys:
 "characterName": Name of the character who is speaking, if dialogue.\n\n`,
 			suf: `STORY INFO:\n`,
 		},
-		{
-			if: !!plot.storyDescription,
-			str: `DESCRIPTION: ${plot.storyDescription}\n`,
-		},
+		{ str: `${PlotString(plot)}\n` },
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{
-			if: !!(plot.location || plot.timePeriod),
-			str: `${SettingString(plot)}\n`,
-		},
 		{ if: actions.length > 0, str: `STORY:\n${ActionString(actions)}\n` },
 		{ str: `THOUGHT:\n` },
 	];
@@ -166,8 +181,8 @@ export function genWriteAction(
 	actions: Action[],
 	thisActionThoughts: string
 ): PromptPart[] {
-	// TODO: the story's description shouldn't be treated as part of the story
-	//   as in, if there's a piece of info in the description, it still needs to be
+	// TODO: fix prompt so that story description isn't treated as part of the story
+	//   as in, if there's a piece of info in the description, that info still needs to be
 	//   included in the story with an ntroduction and such
 	return [
 		{
@@ -178,15 +193,8 @@ Return an object with the following keys:
 "characterName": Name of the character who is speaking, if Dialogue.\n\n`,
 			suf: `STORY INFO:\n`,
 		},
-		{
-			if: !!plot.storyDescription,
-			str: `DESCRIPTION: ${plot.storyDescription}\n`,
-		},
+		{ str: `${PlotString(plot)}\n` },
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{
-			if: !!(plot.location || plot.timePeriod),
-			str: `${SettingString(plot)}\n`,
-		},
 		{ if: actions.length > 0, str: `STORY:\n${ActionString(actions)}\n` },
 		{
 			if: !!thisActionThoughts,

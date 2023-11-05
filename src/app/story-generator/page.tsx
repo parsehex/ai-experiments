@@ -9,6 +9,7 @@ import {
 	CharacterObject,
 	SettingObject,
 	ActionObject,
+	Sentences,
 } from '@/lib/llm/grammar';
 import { addCharacterOptions } from './hover-menus';
 import {
@@ -17,6 +18,7 @@ import {
 	genSetting,
 	genStarter,
 	genStoryDescription,
+	genTone,
 	genWriteAction,
 } from './prompt-parts';
 import { MainStarter } from './starters';
@@ -195,6 +197,23 @@ const StoryGenerator = () => {
 		setPlot((prevPlot) => ({ ...prevPlot, ...newSetting }));
 		return newSetting as Pick<Plot, 'location' | 'timePeriod'>;
 	};
+	const handleGenerateTone = async (
+		c: Character[] = characters,
+		p: Plot = plot
+	) => {
+		const parts = genTone(c, p);
+		const result = JSON.parse(
+			await generate(parts, {
+				temp: 0.5,
+				cfg: 1.5,
+				grammar: Sentences(1),
+				max: 100,
+				log: { response: 'Tone:' },
+			})
+		);
+		handlePlotChange('tone')({ target: { value: result } } as any);
+		return result;
+	};
 	const generateStoryStarter = async (
 		c: Character[] = characters,
 		p: Plot = plot
@@ -270,6 +289,7 @@ const StoryGenerator = () => {
 				storyDescription: '',
 				location: '',
 				timePeriod: '',
+				tone: '',
 				storySummary: '',
 				upcomingEvents: [],
 			},
@@ -293,6 +313,11 @@ const StoryGenerator = () => {
 			const newStoryDesc = await generateStoryDescription(c);
 			tempState.plot.storyDescription = newStoryDesc;
 			p = { ...p, storyDescription: newStoryDesc };
+		}
+		if (!p.tone) {
+			const newTone = await handleGenerateTone(c, p);
+			tempState.plot.tone = newTone;
+			p = { ...p, tone: newTone };
 		}
 		const action = await generateStoryStarter(c, p);
 		a = [action];
@@ -321,6 +346,15 @@ const StoryGenerator = () => {
 	const StoryInfoBox = (
 		<CollapsibleSection title="Story Info">
 			<div>
+				<label htmlFor="tone">Tone:</label>
+				<input
+					id="tone"
+					value={plot.tone}
+					onChange={handlePlotChange('tone')}
+				/>
+				{/* @ts-ignore */}
+				<button onClick={handleGenerateTone}>Generate Tone</button>
+				<br />
 				<label htmlFor="storyDescription">Story Description:</label>
 				<textarea
 					id="storyDescription"
@@ -343,7 +377,7 @@ const StoryGenerator = () => {
 					onChange={handlePlotChange('timePeriod')}
 				/>
 				{/* @ts-ignore */}
-				<button onClick={handleGenerateSetting}>Generate</button>
+				<button onClick={handleGenerateSetting}>Generate Setting</button>
 			</div>
 		</CollapsibleSection>
 	);
@@ -353,16 +387,12 @@ const StoryGenerator = () => {
 			<span className="story-header flex">
 				<h2>Story</h2>
 				{canGenerate && (
-					// ideas for hover menu:
-					// - choose how much the next part should deviate from the current story
-					//   (tries to prevent the AI from writng a part that covers a bunch of time at once and changes the story too much)
-					// - choose how many parts to generate at once
 					<button onClick={() => startStory()}>
 						{actions.length ? 'Continue' : 'Start Story'}
 					</button>
 				)}
 				{!!actions.length && (
-					<button onClick={handleClearActions}>Clear</button>
+					<button onClick={handleClearActions}>Reset Story</button>
 				)}
 			</span>
 			<div className="story-actions">

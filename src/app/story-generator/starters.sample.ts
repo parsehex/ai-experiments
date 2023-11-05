@@ -17,15 +17,17 @@ export const MainStarter = (): Obj => {
 			longTerm: '',
 		},
 	});
+	const storyDescription = '';
 	const location = '';
 	const timePeriod = '';
-	const storyDescription = '';
+	const tone = '';
 	return {
 		defCharacters: [Char],
 		defPlot: {
 			storyDescription,
 			location,
 			timePeriod,
+			tone,
 			// not used yet:
 			storySummary: '',
 			upcomingEvents: [],
