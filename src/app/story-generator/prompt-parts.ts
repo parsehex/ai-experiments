@@ -1,7 +1,7 @@
 import { PromptPart } from '@/lib/llm/types';
 import { Character, Plot, Action } from './types';
 
-function CharacterString(chars: Character[]) {
+function CharacterString(chars: Character[], isThought = true) {
 	const mapFunc = (c: Character) => {
 		let str = `- ${c.name}`;
 		if (
@@ -14,9 +14,9 @@ function CharacterString(chars: Character[]) {
 		}
 		if (c.description) str += `- DESCRIPTION: ${c.description} `;
 		if (c.state) str += `- STATE: ${c.state} `;
-		if (c.objectives.longTerm)
+		if (isThought && c.objectives.longTerm)
 			str += `- LONG-TERM OBJECTIVE: ${c.objectives.longTerm} `;
-		if (c.objectives.shortTerm)
+		if (isThought && c.objectives.shortTerm)
 			str += `- SHORT-TERM OBJECTIVE: ${c.objectives.shortTerm} `;
 		return str.trim();
 	};
@@ -29,9 +29,17 @@ function SettingString(plot: Plot) {
 		settingStr += plot.location ? ` in ` : 'Time Period - ';
 		settingStr += plot.timePeriod;
 	}
-	return settingStr;
+	return settingStr.trim();
 }
-function ActionString(actions: Action[]) {
+function PlotString(plot: Plot, isThought = true) {
+	let str = '';
+	if (isThought && plot.storyDescription)
+		str += `DESCRIPTION: ${plot.storyDescription}\n`;
+	if (plot.tone) str += `TONE: ${plot.tone}\n`;
+	if (plot.location || plot.timePeriod) str += `${SettingString(plot)}`;
+	return str;
+}
+function ActionsString(actions: Action[]) {
 	return actions
 		.map((a) => {
 			let str = '';
@@ -40,13 +48,6 @@ function ActionString(actions: Action[]) {
 			return str;
 		})
 		.join('\n');
-}
-function PlotString(plot: Plot) {
-	let str = '';
-	if (plot.storyDescription) str += `DESCRIPTION: ${plot.storyDescription}\n`;
-	if (plot.tone) str += `TONE: ${plot.tone}\n`;
-	if (plot.location || plot.timePeriod) str += `${SettingString(plot)}\n`;
-	return str;
 }
 
 export function genStoryDescription(
@@ -84,10 +85,10 @@ export function genCharacters(chars: Character[], plot: Plot): PromptPart[] {
 					: ''
 			} Return an array of objects, which should have the following keys:
 "name": Give the character a first name.
-"description": A short description of the character, describing their appearance, personality, and/or background.
-"state": The character's current state, such as their current location or emotional state.
+"description": A short description of the character, describing who they are and what they're like.
+"state": The character's current state, which describes what they're doing at the moment.
 "shortTermObjective": The character's short-term objective, which is what they want to accomplish in the short term.
-"longTermObjective": The character's long-term objective, which is what they want to accomplish in the long term.\n\n`,
+"longTermObjective": The character's long-term objective, which is what they want to accomplish over time, in the long term.\n\n`,
 			suf: `STORY INFO:\n`,
 		},
 		{
@@ -167,7 +168,7 @@ Return an object with the following keys:
 		},
 		{ str: `${PlotString(plot)}\n` },
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ if: actions.length > 0, str: `STORY:\n${ActionString(actions)}\n` },
+		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
 		{ str: `THOUGHT:\n` },
 	];
 }
@@ -186,13 +187,16 @@ export function genWriteAction(
 			str: `Write the next part of the following story. You should take your thoughts into account and expand on them when writing the part. It should be relevant to the given story info and should move the plot forward.
 Return an object with the following keys:
 "type": Either "Narrative" or "Dialogue".
-"str": Written response, using the provided guidance.
+"str": Written response, using your thoughts as guidance.
 "characterName": Name of the character who is speaking, if Dialogue.\n\n`,
 			suf: `STORY INFO:\n`,
 		},
-		{ str: `${PlotString(plot)}\n` },
-		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ if: actions.length > 0, str: `STORY:\n${ActionString(actions)}\n` },
+		{ str: `${PlotString(plot, false)}\n` },
+		{
+			if: chars.length > 0,
+			str: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
+		},
+		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
 		{
 			if: !!thisActionThoughts,
 			str: `THOUGHTS:\n(These are your thoughts on how to write the next part of the story.)\n${thisActionThoughts}\n`,
