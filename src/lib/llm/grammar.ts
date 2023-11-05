@@ -55,7 +55,7 @@ string ::=
 	)* "\\"" ws
 number ::= ("-"? ([0-9] | [1-9] [0-9]*)) ("." [0-9]+)? ([eE] [-+]? [0-9]+)? ws
 # Optional space: by convention, applied in this grammar after literal chars when allowed
-ws ::= ([ \t\n] ws)?`;
+ws ::= ([ \\t\\n] ws)?`;
 };
 
 export const Words = (n: number) => {
@@ -67,18 +67,19 @@ export const Words = (n: number) => {
 	wordStr = wordStr.trim();
 	return `root ::= ${wordStr}
 word ::= [a-zA-z'"()&,;:]+
-ws ::= [ \n]`;
+ws ::= [ ]`;
 };
-export const Sentences = (n: number) => {
+export const Sentences = (n: number, allowNewline = true) => {
 	let sentenceStr = '';
 	for (let i = 0; i < n; i++) {
-		sentenceStr += `sentence ws `;
+		sentenceStr += `sentence `;
+		if (i < n - 1) sentenceStr += `ws `;
 	}
 	sentenceStr = sentenceStr.trim();
 	return `root ::= ${sentenceStr}
-sentence ::= (word ws?)+ [.!?—]
-word ::= [a-zA-z'"()&,;:]+
-ws ::= [ \n]`;
+sentence ::= [A-Z](letter|"-")+ [.!?]
+letter ::= [a-zA-Z0-9 '"()&,;]
+ws ::= [ ${allowNewline ? '\\n' : ''}]`;
 };
 
 interface LinesOptions {
@@ -108,7 +109,7 @@ export const Lines = ({
 			max: s.max,
 			startWithWord: s.startWithWord,
 		});
-	const vars = `item ::= ${list ? '"- "' : ''} ${sent} "\n"`;
+	const vars = `item ::= ${list ? '"- "' : ''} ${sent} "\\n"`;
 	let itemStr = '';
 	if (n === 0) {
 		itemStr = `item+`;
@@ -117,7 +118,7 @@ export const Lines = ({
 		for (let i = 0; i < n; i++) {
 			itemStr += `item `;
 			if (i < n - 1) {
-				itemStr += `"\n"`;
+				itemStr += `"\\n"`;
 			}
 		}
 		// itemStr += ')';
@@ -135,7 +136,7 @@ Character ::= "{"   ws   "\\\"name\\\":"   ws   string   ","   ws   "\\\"descrip
 Characterlist ::= "[]" | "["   ws   Character   (","   ws   Character)*   "]"
 string ::= "\\\""   ([a-zA-Z' ,.!?&;-]+)   "\\\""
 boolean ::= "true" | "false"
-ws ::= [ \t\n]*
+ws ::= [ \\t\\n]*
 number ::= [0-9]+   "."?   [0-9]*
 stringlist ::= "["   ws   "]" | "["   ws   string   (","   ws   string)*   ws   "]"
 numberlist ::= "["   ws   "]" | "["   ws   string   (","   ws   number)*   ws   "]"
@@ -148,7 +149,7 @@ Setting ::= "{"   ws   "\\\"location\\\":"   ws   string   ","   ws   "\\\"timeP
 Settinglist ::= "[]" | "["   ws   Setting   (","   ws   Setting)*   "]"
 string ::= "\\\""   ([a-zA-Z' ,.!?&;-]+)   "\\\""
 boolean ::= "true" | "false"
-ws ::= [ \t\n]*
+ws ::= [ \\t\\n]*
 number ::= [0-9]+   "."?   [0-9]*
 stringlist ::= "["   ws   "]" | "["   ws   string   (","   ws   string)*   ws   "]"
 numberlist ::= "["   ws   "]" | "["   ws   string   (","   ws   number)*   ws   "]"
@@ -162,7 +163,7 @@ Thing ::= "{"   ws   "\\\"type\\\":"   ws   Type   ","   ws   "\\\"str\\\":"   w
 Thinglist ::= "[]" | "["   ws   Thing   (","   ws   Thing)*   "]"
 string ::= "\\\""   ([a-zA-Z' ,.!?&;-]+)   "\\\""
 boolean ::= "true" | "false"
-ws ::= [ \t\n]*
+ws ::= [ \\t\\n]*
 number ::= [0-9]+   "."?   [0-9]*
 stringlist ::= "["   ws   "]" | "["   ws   string   (","   ws   string)*   ws   "]"
 numberlist ::= "["   ws   "]" | "["   ws   string   (","   ws   number)*   ws   "]"`;
