@@ -1,10 +1,9 @@
 // copy this to ./starters.ts
 import { makeCharacter } from './story';
-import { Character, Plot, Setting } from './types';
+import { Character, Plot } from './types';
 
 interface Obj {
 	defCharacters: Character[];
-	defSetting: Setting;
 	defPlot: Plot;
 }
 
@@ -23,10 +22,11 @@ export const MainStarter = (): Obj => {
 	const storyDescription = '';
 	return {
 		defCharacters: [Char],
-		defSetting: { location, timePeriod },
 		defPlot: {
 			storyDescription,
-			// not used:
+			location,
+			timePeriod,
+			// not used yet:
 			storySummary: '',
 			upcomingEvents: [],
 		},

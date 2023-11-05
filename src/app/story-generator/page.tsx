@@ -21,15 +21,14 @@ import {
 } from './prompt-parts';
 import { MainStarter } from './starters';
 import { makeCharacter } from './story';
-import { Character, Setting, Plot, Action } from './types';
+import { Character, Plot, Action } from './types';
 import CollapsibleSection from '@/components/CollapsibleSection';
 
 const title = 'Story Generator';
 
 const StoryGenerator = () => {
-	const { defCharacters, defSetting, defPlot } = MainStarter();
+	const { defCharacters, defPlot } = MainStarter();
 	const [characters, setCharacters] = useState<Character[]>(defCharacters);
-	const [setting, setSetting] = useState<Setting>(defSetting);
 	const [plot, setPlot] = useState<Plot>(defPlot);
 	const [actions, setActions] = useState<Action[]>([]);
 	const [storyStarter, setStoryStarter] = useState<string>('');
@@ -38,18 +37,19 @@ const StoryGenerator = () => {
 	// watch the state and set canGenerate to true if required fields are filled
 	useEffect(() => {
 		if (
-			(characters.length || (setting.location && setting.timePeriod)) &&
+			(characters.length || (plot.location && plot.timePeriod)) &&
 			plot.storyDescription
 		) {
 			setCanGenerate(true);
 		} else {
 			setCanGenerate(false);
 		}
-	}, [characters, setting, plot]);
+	}, [characters, plot]);
 
-	const handleSettingChange =
-		(field: keyof Setting) => (e: React.ChangeEvent<HTMLInputElement>) => {
-			setSetting({ ...setting, [field]: e.target.value });
+	const handlePlotChange =
+		(field: keyof Plot) =>
+		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+			setPlot({ ...plot, [field]: e.target.value });
 		};
 
 	const handleAddCharacter = () => {
@@ -124,10 +124,9 @@ const StoryGenerator = () => {
 
 	const generateStoryDescription = async (
 		c: Character[] = characters,
-		s: Setting = setting,
 		p: Plot = plot
 	) => {
-		const parts = genStoryDescription(c, s, p);
+		const parts = genStoryDescription(c, p);
 		const generatedDescription = await generate(parts, {
 			temp: 0.25,
 			cfg: 1.5,
@@ -147,14 +146,13 @@ const StoryGenerator = () => {
 	const handleGenerateCharacters = async (
 		num: number,
 		c: Character[] = characters,
-		s: Setting = setting,
 		p: Plot = plot
 	) => {
 		const chars: Character[] = [...c];
 		if (!num) num = Math.floor(Math.random() * 5) + 1;
 		// console.log('Generating', num, 'characters');
 		for (let i = 0; i < num; i++) {
-			const parts = genCharacters([...chars], s, p);
+			const parts = genCharacters([...chars], p);
 			const result = await generate(parts, {
 				temp: 0.75,
 				cfg: 1.15,
@@ -179,10 +177,9 @@ const StoryGenerator = () => {
 	};
 	const handleGenerateSetting = async (
 		c: Character[] = characters,
-		s: Setting = setting,
 		p: Plot = plot
 	) => {
-		const parts = genSetting(c, s, p);
+		const parts = genSetting(c, p);
 		const result = JSON.parse(
 			await generate(parts, {
 				cfg: 1.25,
@@ -191,19 +188,18 @@ const StoryGenerator = () => {
 				log: { response: 'Setting:' },
 			})
 		);
-		const newSetting: Setting = {
+		const newSetting: Partial<Plot> = {
 			location: result.location,
 			timePeriod: result.timePeriod,
 		};
-		setSetting(newSetting);
-		return newSetting;
+		setPlot((prevPlot) => ({ ...prevPlot, ...newSetting }));
+		return newSetting as Pick<Plot, 'location' | 'timePeriod'>;
 	};
 	const generateStoryStarter = async (
 		c: Character[] = characters,
-		s: Setting = setting,
 		p: Plot = plot
 	) => {
-		const parts = genStarter(c, s, p);
+		const parts = genStarter(c, p);
 		const result = await generate(parts, {
 			cfg: 2,
 			temp: 0.5,
@@ -222,14 +218,13 @@ const StoryGenerator = () => {
 	};
 	const startStory = async (
 		c: Character[] = characters,
-		s: Setting = setting,
 		p: Plot = plot,
 		a: Action[] = actions
 	) => {
 		if (!actions.length) {
 			let starter = storyStarter;
 			if (!starter) {
-				const starterAction = await generateStoryStarter(c, s, p);
+				const starterAction = await generateStoryStarter(c, p);
 				starter = starterAction.str;
 			}
 			a = [
@@ -240,7 +235,7 @@ const StoryGenerator = () => {
 				},
 			];
 		}
-		const actionParts = genPickAction(c, s, p, a);
+		const actionParts = genPickAction(c, p, a);
 		const actionStr = await generate(actionParts, {
 			cfg: 1.1,
 			grammar: ActionObject(),
@@ -250,7 +245,7 @@ const StoryGenerator = () => {
 		const actionThoughts: Action = JSON.parse(actionStr);
 		actionThoughts.id = v4();
 
-		const action = genWriteAction(c, s, p, a, actionThoughts.str);
+		const action = genWriteAction(c, p, a, actionThoughts.str);
 		const result = await generate(action, {
 			cfg: 1.25,
 			grammar: ActionObject(),
@@ -264,40 +259,45 @@ const StoryGenerator = () => {
 
 	const handleAutoFill = async () => {
 		// TODO disable inputs while generating (& eventually provide a way to accept/reject or undo)
-		const tempState: any = {
+		interface TempState {
+			characters: Character[];
+			plot: Plot;
+			actions: Action[];
+		}
+		const tempState: TempState = {
 			characters: [],
-			setting: {
-				location: '',
-				timePeriod: '',
-			},
 			plot: {
 				storyDescription: '',
+				location: '',
+				timePeriod: '',
+				storySummary: '',
+				upcomingEvents: [],
 			},
 			actions: [],
 		};
 		let c = characters,
-			s = setting,
 			p = plot,
 			a = actions;
-		if (characters.length < 2) {
+		if (c.length < 2) {
 			const chars = await handleGenerateCharacters(2);
 			tempState.characters = chars;
 			c = chars;
 		}
-		if (!setting.location && !setting.timePeriod) {
+		if (!p.location && !p.timePeriod) {
 			const newSetting = await handleGenerateSetting(c);
-			tempState.setting = newSetting;
-			s = newSetting;
+			tempState.plot.location = newSetting.location;
+			tempState.plot.timePeriod = newSetting.timePeriod;
+			p = { ...p, ...newSetting };
 		}
-		if (!plot.storyDescription) {
-			const newStoryDesc = await generateStoryDescription(c, s);
+		if (!p.storyDescription) {
+			const newStoryDesc = await generateStoryDescription(c);
 			tempState.plot.storyDescription = newStoryDesc;
 			p = { ...p, storyDescription: newStoryDesc };
 		}
-		const action = await generateStoryStarter(c, s, p);
+		const action = await generateStoryStarter(c, p);
 		a = [action];
 		tempState.actions = a;
-		await startStory(c, s, p, a);
+		await startStory(c, p, a);
 	};
 
 	const handleClearActions = () => {
@@ -325,25 +325,22 @@ const StoryGenerator = () => {
 				<textarea
 					id="storyDescription"
 					value={plot.storyDescription}
-					onChange={(e) =>
-						setPlot({ ...plot, storyDescription: e.target.value })
-					}
+					onChange={handlePlotChange('storyDescription')}
 				/>
 				{/* @ts-ignore */}
 				<button onClick={generateStoryDescription}>Generate Description</button>
-			</div>
-			<div>
+				<br />
 				<label htmlFor="location">Location:</label>
 				<input
 					id="location"
-					value={setting.location}
-					onChange={handleSettingChange('location')}
+					value={plot.location}
+					onChange={handlePlotChange('location')}
 				/>
 				<label htmlFor="timePeriod">Time Period:</label>
 				<input
 					id="timePeriod"
-					value={setting.timePeriod}
-					onChange={handleSettingChange('timePeriod')}
+					value={plot.timePeriod}
+					onChange={handlePlotChange('timePeriod')}
 				/>
 				{/* @ts-ignore */}
 				<button onClick={handleGenerateSetting}>Generate</button>

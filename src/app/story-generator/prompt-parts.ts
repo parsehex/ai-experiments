@@ -1,5 +1,5 @@
 import { PromptPart } from '@/lib/llm/types';
-import { Character, Setting, Plot, Action } from './types';
+import { Character, Plot, Action } from './types';
 
 const CharacterString = (chars: Character[]) => {
 	return chars
@@ -23,12 +23,12 @@ const CharacterString = (chars: Character[]) => {
 		})
 		.join('\n');
 };
-const SettingString = (setting: Setting) => {
+const SettingString = (plot: Plot) => {
 	let settingStr = `SETTING: `;
-	if (setting.location) settingStr += `${setting.location}`;
-	if (setting.timePeriod) {
-		settingStr += setting.location ? ` in ` : 'Time Period - ';
-		settingStr += setting.timePeriod;
+	if (plot.location) settingStr += `${plot.location}`;
+	if (plot.timePeriod) {
+		settingStr += plot.location ? ` in ` : 'Time Period - ';
+		settingStr += plot.timePeriod;
 	}
 	return settingStr;
 };
@@ -45,18 +45,17 @@ const ActionString = (actions: Action[]) => {
 
 export function genStoryDescription(
 	chars: Character[],
-	setting: Setting,
 	plot: Plot
 ): PromptPart[] {
 	// use whatever info we have to generate a story description
-	const settingStr = SettingString(setting);
+	const settingStr = SettingString(plot);
 	const charStr = CharacterString(chars);
 	return [
 		{
 			str: 'Write a short story description based on the following info. The description should concisely explain what the story is mainly about, making sure not to go into too much detail. It should be compelling and creative.\n\n',
 		},
 		{
-			if: !!(setting.location || setting.timePeriod),
+			if: !!(plot.location || plot.timePeriod),
 			str: `${settingStr}\n\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${charStr}\n` },
@@ -64,13 +63,9 @@ export function genStoryDescription(
 	];
 }
 
-export function genCharacters(
-	chars: Character[],
-	setting: Setting,
-	plot: Plot
-): PromptPart[] {
+export function genCharacters(chars: Character[], plot: Plot): PromptPart[] {
 	// use whatever info we have to generate a story description
-	const settingStr = SettingString(setting);
+	const settingStr = SettingString(plot);
 	const charStr = CharacterString(chars);
 	return [
 		{
@@ -91,7 +86,7 @@ export function genCharacters(
 			str: `DESCRIPTION: ${plot.storyDescription}\n`,
 		},
 		{
-			if: !!(setting.location || setting.timePeriod),
+			if: !!(plot.location || plot.timePeriod),
 			str: `${settingStr}\n`,
 		},
 		{ if: chars.length > 0, str: `EXISTING CHARACTERS:\n${charStr}\n` },
@@ -99,11 +94,7 @@ export function genCharacters(
 	];
 }
 
-export function genSetting(
-	chars: Character[],
-	setting: Setting,
-	plot: Plot
-): PromptPart[] {
+export function genSetting(chars: Character[], plot: Plot): PromptPart[] {
 	return [
 		{
 			str: `Write a brief setting based on the following story info.
@@ -124,11 +115,7 @@ Return an object with the following keys:
 	// (Make the model return whatever the value is, then generate more of it)
 }
 
-export function genStarter(
-	chars: Character[],
-	setting: Setting,
-	plot: Plot
-): PromptPart[] {
+export function genStarter(chars: Character[], plot: Plot): PromptPart[] {
 	return [
 		{
 			str: `Write a start to the story based on the following story info. It should be relevant to the story, and provide a distinct starting point for the story to unfold from.
@@ -140,14 +127,13 @@ Return a string that starts the story.\n\n`,
 			str: `DESCRIPTION: ${plot.storyDescription}\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ str: `${SettingString(setting)}\n` },
+		{ str: `${SettingString(plot)}\n` },
 		{ str: `STORY START:\n` },
 	];
 }
 
 export function genPickAction(
 	chars: Character[],
-	setting: Setting,
 	plot: Plot,
 	actions: Action[]
 ): PromptPart[] {
@@ -165,7 +151,10 @@ Return an object with the following keys:
 			str: `DESCRIPTION: ${plot.storyDescription}\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ if: !!setting, str: `${SettingString(setting)}\n` },
+		{
+			if: !!(plot.location || plot.timePeriod),
+			str: `${SettingString(plot)}\n`,
+		},
 		{ if: actions.length > 0, str: `STORY:\n${ActionString(actions)}\n` },
 		{ str: `THOUGHT:\n` },
 	];
@@ -173,7 +162,6 @@ Return an object with the following keys:
 
 export function genWriteAction(
 	chars: Character[],
-	setting: Setting,
 	plot: Plot,
 	actions: Action[],
 	thisActionThoughts: string
@@ -195,7 +183,10 @@ Return an object with the following keys:
 			str: `DESCRIPTION: ${plot.storyDescription}\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ if: !!setting, str: `${SettingString(setting)}\n` },
+		{
+			if: !!(plot.location || plot.timePeriod),
+			str: `${SettingString(plot)}\n`,
+		},
 		{ if: actions.length > 0, str: `STORY:\n${ActionString(actions)}\n` },
 		{
 			if: !!thisActionThoughts,

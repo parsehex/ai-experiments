@@ -9,13 +9,11 @@ export interface Character {
 	};
 }
 
-export interface Setting {
-	location: string;
-	timePeriod: string;
-}
-
 export interface Plot {
 	storyDescription: string;
+	location: string;
+	timePeriod: string;
+	// Currently unused:
 	storySummary: string;
 	upcomingEvents: string[];
 }
