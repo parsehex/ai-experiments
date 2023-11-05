@@ -115,27 +115,25 @@ textarea.input {
 } */
 
 .chatBox .user {
-	/* @apply important:bg-blue-500 text-white; */
-	/* background-color: #3b82f6 !important; */
-	/* need darker blue */
 	background-color: #1d4ed8 !important;
 	color: #fff !important;
 }
 
 .chatBox .assistant {
-	/* @apply bg-gray-300 text-black; */
 	background-color: #d1d5db !important;
 	color: #000 !important;
 }
 
 .assistant-thinking {
-	/* You can modify these styles based on your design preference */
 	color: #aaa;
 	font-style: italic;
 }
 
 button {
 	@apply bg-blue-500 hover:bg-blue-600 text-white px-2 rounded-md p-1;
+}
+label {
+	@apply mx-1;
 }
 
 .character textarea {
