@@ -31,9 +31,12 @@ body {
 	@apply bg-gray-100 dark:bg-gray-900;
 }
 
-nav a {
-	/* make more link-like */
-	@apply text-blue-400 hover:text-blue-600 underline;
+nav {
+	@apply my-2 ml-3;
+	a {
+		/* make more like link buttons */
+		@apply text-blue-400 hover:text-blue-600 dark:hover:text-blue-400 underline px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-700;
+	}
 }
 
 .container {
@@ -52,7 +55,7 @@ nav a {
 	@apply grow;
 }
 
-.input {
+input.input {
 	@apply bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-full p-2 border focus:border-blue-500 focus:outline-none;
 }
 textarea.input {
@@ -136,8 +139,17 @@ label {
 	@apply mx-1;
 }
 
+input.resize {
+	width: auto;
+	min-width: 50px;
+}
+textarea.resize {
+	overflow-y: hidden;
+	min-height: 50px;
+}
+
 .character textarea {
 	border: 1px solid #ccc;
 	padding: 3px;
-	min-height: 100px;
+	min-height: 50px;
 }
