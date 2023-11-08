@@ -57,6 +57,11 @@ export default function Home() {
 					href="/role-play"
 				/>
 				<Item
+					title="Story Generator"
+					description="Generate a story using a character, setting, and plot"
+					href="/story-generator"
+				/>
+				<Item
 					title="Thought Chain"
 					description="Use LLM to answer questions in a multi-step process"
 					href="/thought-chain"
@@ -82,17 +87,17 @@ export default function Home() {
 					description="Paste any text and remove identifying information"
 					href="/redacter"
 				/>
-				<Item
-					title="Story Generator"
-					description="Generate a story using a character, setting, and plot"
-					href="/story-generator"
-				/>
 			</List>
 			<List title="TODO">
 				<Item
 					title="LangChain Chat"
 					description="Prototype chat app using LangChain"
 					href="/langchain-chat"
+				/>
+				<Item
+					title="Image Generator"
+					description="Interface to DALL-E 3 (for now)"
+					// href="/image-generator"
 				/>
 				<Item
 					title="Entity Memory"
