@@ -1,4 +1,4 @@
-import { GenerateParams } from './ooba-types';
+import { GenerateParams } from './ooba';
 
 export interface Message {
 	id: string;

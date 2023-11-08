@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'react-tooltip';
 import * as ooba from '@/lib/ooba-api';
-import { GenerateParams } from '@/lib/ooba-types';
+import { GenerateParams } from '@/lib/types/ooba';
 import { PhaseType } from '@/lib/types';
 import * as prompts from './prompts';
 import { withPage } from '@/components/Page';

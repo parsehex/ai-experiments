@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 import * as ooba from '@/lib/ooba-api';
-import { GenerateParams } from '@/lib/ooba-types';
+import { GenerateParams } from '@/lib/types/ooba';
 import { parseResponse } from '@/lib/ooba-utils';
 import { Message } from '@/lib/types';
 import { delay } from '@/lib/utils';

@@ -1,5 +1,5 @@
 import { generateText } from '../ooba-api';
-import { GenerateParams } from '../ooba-types';
+import { GenerateParams } from '../types/ooba';
 import { PromptPart } from './types';
 
 export const DefaultParams: Partial<GenerateParams> = {

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import * as ooba from '@/lib/ooba-api';
-import { GenerateParams } from '@/lib/ooba-types';
+import { GenerateParams } from '@/lib/types/ooba';
 import { withPage } from '@/components/Page';
 
 const title = 'Redacter';

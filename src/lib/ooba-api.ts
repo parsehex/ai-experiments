@@ -18,7 +18,7 @@ import {
 	ModelActionResponse,
 	ListModelsResponse,
 	ModelInfoResponse,
-} from './ooba-types';
+} from './types/ooba';
 
 let BASE_URL = 'http://localhost:5000';
 let host = location.host.split(':')[0]; // Remove port number if exists
