@@ -184,8 +184,9 @@ const StoryGenerator = () => {
 			} else {
 				chars.push(char);
 			}
+			setCharacters(chars);
 		}
-		setCharacters(chars);
+		// setCharacters(chars);
 		return chars;
 	};
 	const handleGenerateSetting = async (
