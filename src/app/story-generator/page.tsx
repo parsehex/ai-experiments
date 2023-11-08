@@ -14,6 +14,8 @@ import {
 import { addCharacterOptions } from './hover-menus';
 import {
 	genCharacters,
+	genDialogueAction,
+	genNarrativeAction,
 	genPickAction,
 	genSetting,
 	genStarter,
@@ -25,6 +27,7 @@ import { MainStarter } from './starters';
 import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
 import CollapsibleSection from '@/components/CollapsibleSection';
+import { PromptPart } from '@/lib/llm/types';
 
 const title = 'Story Generator';
 
@@ -251,6 +254,7 @@ const StoryGenerator = () => {
 		a: Action[] = actions
 	) => {
 		if (!actions.length) {
+			// no actions, make first
 			let starter = storyStarter;
 			if (!starter) {
 				const starterAction = await generateStoryStarter(c, p);
@@ -274,15 +278,30 @@ const StoryGenerator = () => {
 		const actionThoughts: Action = JSON.parse(actionStr);
 		actionThoughts.id = v4();
 
-		const action = genWriteAction(c, p, a, actionThoughts.str);
-		const result = await generate(action, {
+		let actionParts2: PromptPart[] = [];
+		if (actionThoughts.type === 'Narrative') {
+			actionParts2 = genNarrativeAction(c, p, a, actionThoughts.str);
+		} else if (actionThoughts.type === 'Dialogue') {
+			actionParts2 = genDialogueAction(
+				c,
+				p,
+				a,
+				actionThoughts.str,
+				actionThoughts.characterName || ''
+			);
+		}
+		const result = await generate(actionParts2, {
+			temp: 0.5,
 			cfg: 1.25,
-			grammar: ActionObject(),
-			max: 256,
+			grammar: Lines({ n: 1, sentences: { min: 1, max: 5 } }),
+			max: 512,
 			log: { response: 'Action:', prompt: 'Action Prompt:' },
 		});
-		const newAction: Action = JSON.parse(result);
-		newAction.id = v4();
+		const newAction: Action = {
+			id: v4(),
+			type: actionThoughts.type,
+			str: result.trim(),
+		};
 		setActions([...a, newAction]);
 	};
 

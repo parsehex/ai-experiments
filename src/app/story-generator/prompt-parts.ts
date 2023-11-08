@@ -204,3 +204,58 @@ Return an object with the following keys:
 		{ str: `NEXT PART:\n` },
 	];
 }
+
+// When actually writing the next line, include less info in the prompt
+// it'll have its thoughts, which were made with the full story info
+export function genNarrativeAction(
+	chars: Character[],
+	plot: Plot,
+	actions: Action[],
+	narrativeThought: string
+): PromptPart[] {
+	return [
+		{
+			str: `Write a narrative continuation based on the story's progression. Use descriptive language to depict the scene, actions, and emotions, drawing upon the previous story elements and the thoughts provided.\n\n`,
+		},
+		{ str: `${PlotString(plot, false)}\n` },
+		{
+			if: chars.length > 0,
+			str: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
+		},
+		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
+		{
+			if: !!narrativeThought,
+			str: `NARRATIVE THOUGHTS:\n(These are your thoughts on how to write the next narrative part of the story.)\n${narrativeThought}\n`,
+		},
+		{ str: `NARRATIVE:\n` },
+	];
+}
+
+export function genDialogueAction(
+	chars: Character[],
+	plot: Plot,
+	actions: Action[],
+	dialogueThought: string,
+	speakingCharacter: string
+): PromptPart[] {
+	return [
+		{
+			str: `Compose a piece of dialogue that fits the story's current context. Reflect the speaking character's personality, motivations, and the previous story elements. Use the thoughts provided as a guide for the character's speech.\n\n`,
+		},
+		{ str: `${PlotString(plot, false)}\n` },
+		{
+			if: chars.length > 0,
+			str: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
+		},
+		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
+		{
+			if: !!dialogueThought,
+			str: `DIALOGUE THOUGHTS:\n(These are your thoughts on what the character should say next in the dialogue.)\n${dialogueThought}\n`,
+		},
+		{
+			if: !!speakingCharacter,
+			str: `SPEAKING CHARACTER:\n${speakingCharacter}\n`,
+		},
+		{ str: `DIALOGUE:\n` },
+	];
+}
