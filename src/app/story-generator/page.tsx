@@ -28,6 +28,54 @@ import CollapsibleSection from '@/components/CollapsibleSection';
 
 const title = 'Story Generator';
 
+// resize to fit its content
+function autoResize(
+	event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+) {
+	const element = event.target;
+	const isTextarea = element.tagName.toLowerCase() === 'textarea';
+
+	if (isTextarea) {
+		element.style.height = 'inherit';
+		const computed = window.getComputedStyle(element);
+		// Calculate the height
+		const height =
+			parseInt(computed.getPropertyValue('border-top-width'), 10) +
+			parseInt(computed.getPropertyValue('padding-top'), 10) +
+			element.scrollHeight +
+			parseInt(computed.getPropertyValue('padding-bottom'), 10) +
+			parseInt(computed.getPropertyValue('border-bottom-width'), 10);
+		element.style.height = `${height}px`;
+
+		// render text in hidden clone, styled so the text doesnt wrap and get width
+		const clone = document.createElement('div');
+		clone.style.whiteSpace = 'pre';
+		clone.style.position = 'absolute';
+		clone.style.top = '0';
+		clone.style.left = '0';
+		clone.style.visibility = 'hidden';
+		clone.style.font = computed.getPropertyValue('font');
+		clone.textContent = element.value;
+		document.body.appendChild(clone);
+		const textWidth = clone.offsetWidth;
+		// is computed width less than the text width? if so, resize
+		if (textWidth < element.offsetWidth) {
+			element.style.width = `${textWidth}px`;
+		}
+	} else {
+		const span = document.createElement('span');
+		document.body.appendChild(span);
+
+		span.style.font = window.getComputedStyle(element).font;
+		span.style.visibility = 'hidden';
+		span.style.whiteSpace = 'pre';
+		span.textContent = element.value.replace(/ /g, '\u00a0'); // Replace spaces with non-breaking spaces to measure correctly
+
+		element.style.width = `${span.offsetWidth}px`;
+		document.body.removeChild(span);
+	}
+}
+
 const StoryGenerator = () => {
 	const { defCharacters, defPlot } = MainStarter();
 	const [characters, setCharacters] = useState<Character[]>(defCharacters);
@@ -35,6 +83,12 @@ const StoryGenerator = () => {
 	const [actions, setActions] = useState<Action[]>([]);
 	const [storyStarter, setStoryStarter] = useState<string>('');
 	const [canGenerate, setCanGenerate] = useState(false);
+
+	useEffect(() => {
+		document.querySelectorAll('.resize').forEach((element) => {
+			autoResize({ target: element } as any);
+		});
+	}, []);
 
 	// watch the state and set canGenerate to true if required fields are filled
 	useEffect(() => {
@@ -80,49 +134,6 @@ const StoryGenerator = () => {
 	const handleRemoveCharacter = (characterId: string) => {
 		setCharacters(characters.filter((char) => char.id !== characterId));
 	};
-
-	const renderCharacterFields = (character: Character) => (
-		<div key={character.id} className="character flex border-b-2 mb-2">
-			<input
-				placeholder="Name"
-				value={character.name}
-				onChange={(e) =>
-					handleCharacterChange(character.id, 'name', e.target.value)
-				}
-			/>
-			<textarea
-				placeholder="Description"
-				value={character.description}
-				onChange={(e) =>
-					handleCharacterChange(character.id, 'description', e.target.value)
-				}
-			/>
-			<textarea
-				placeholder="Current State"
-				value={character.state}
-				onChange={(e) =>
-					handleCharacterChange(character.id, 'state', e.target.value)
-				}
-			/>
-			<textarea
-				placeholder="Short Term Objective"
-				value={character.objectives.shortTerm}
-				onChange={(e) =>
-					handleCharacterChange(character.id, 'shortTerm', e.target.value)
-				}
-			/>
-			<textarea
-				placeholder="Long Term Objective"
-				value={character.objectives.longTerm}
-				onChange={(e) =>
-					handleCharacterChange(character.id, 'longTerm', e.target.value)
-				}
-			/>
-			<button onClick={() => handleRemoveCharacter(character.id)}>
-				Remove Character
-			</button>
-		</div>
-	);
 
 	const generateStoryDescription = async (
 		c: Character[] = characters,
@@ -327,6 +338,57 @@ const StoryGenerator = () => {
 		setActions([]);
 	};
 
+	const renderCharacterFields = (character: Character) => (
+		<div key={character.id} className="character flex border-b-2 mb-2">
+			<input
+				className="resize input h-9"
+				placeholder="Name"
+				value={character.name}
+				onChange={(e) => {
+					handleCharacterChange(character.id, 'name', e.target.value);
+					autoResize(e);
+				}}
+			/>
+			<textarea
+				className="resize input"
+				placeholder="Description"
+				value={character.description}
+				onChange={(e) =>
+					handleCharacterChange(character.id, 'description', e.target.value)
+				}
+			/>
+			<textarea
+				className="resize input"
+				placeholder="Current State"
+				value={character.state}
+				onChange={(e) =>
+					handleCharacterChange(character.id, 'state', e.target.value)
+				}
+			/>
+			<textarea
+				className="resize input"
+				placeholder="Short Term Objective"
+				value={character.objectives.shortTerm}
+				onChange={(e) =>
+					handleCharacterChange(character.id, 'shortTerm', e.target.value)
+				}
+			/>
+			<textarea
+				className="resize input"
+				placeholder="Long Term Objective"
+				value={character.objectives.longTerm}
+				onChange={(e) =>
+					handleCharacterChange(character.id, 'longTerm', e.target.value)
+				}
+			/>
+			<button onClick={() => handleRemoveCharacter(character.id)}>
+				Remove Character
+			</button>
+			{/* TODO: a button that shows if there are character fields missing, to fill missing values
+			probably need to generate each value or define a grammar function */}
+		</div>
+	);
+
 	const CharactersBox = (
 		<CollapsibleSection title="Characters">
 			{characters.map(renderCharacterFields)}
@@ -347,6 +409,7 @@ const StoryGenerator = () => {
 				<label htmlFor="tone">Tone:</label>
 				<input
 					id="tone"
+					className="input"
 					value={plot.tone}
 					onChange={handlePlotChange('tone')}
 				/>
@@ -355,6 +418,7 @@ const StoryGenerator = () => {
 				<label htmlFor="storyDescription">Story Description:</label>
 				<textarea
 					id="storyDescription"
+					className="input"
 					value={plot.storyDescription}
 					onChange={handlePlotChange('storyDescription')}
 				/>
@@ -365,12 +429,14 @@ const StoryGenerator = () => {
 				<label htmlFor="location">Location:</label>
 				<input
 					id="location"
+					className="input"
 					value={plot.location}
 					onChange={handlePlotChange('location')}
 				/>
 				<label htmlFor="timePeriod">Time Period:</label>
 				<input
 					id="timePeriod"
+					className="input"
 					value={plot.timePeriod}
 					onChange={handlePlotChange('timePeriod')}
 				/>
@@ -411,6 +477,7 @@ const StoryGenerator = () => {
 				<h2>Story Starter</h2>
 				<textarea
 					id="storyStarter"
+					className="input"
 					placeholder="How should the story start?"
 					value={storyStarter}
 					onChange={(e) => setStoryStarter(e.target.value)}
