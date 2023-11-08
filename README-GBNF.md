@@ -1,5 +1,9 @@
 # GBNF Grammar Notes
 
+Notes:
+
+- I've written grammar before that caused generation to run out of VRAM, so... uh, be careful.
+
 ## Usage in Strings
 
 When code returns a grammar string, you need to be mindful of the escaped characters.
