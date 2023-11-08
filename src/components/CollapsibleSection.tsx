@@ -1,29 +1,7 @@
-/*
-start from this:
-<div>
-	<h2
-		className="flex items-center cursor-pointer"
-		onClick={() => setIsCharactersCollapsed(!isCharactersCollapsed)}
-	>
-		Characters {isCharactersCollapsed ? '►' : '▼'}
-	</h2>
-	{!isCharactersCollapsed && characters.map(renderCharacterFields)}
-	{!isCharactersCollapsed && (
-		<span className="flex">
-			<button onClick={handleAddCharacter}>Add Character</button>
-			<HoverMenuButton
-				label="Generate Characters"
-				fields={addCharacterOptions}
-				onSubmit={(v) => handleGenerateCharacters(v.numChars)}
-			/>
-		</span>
-	)}
-</div>
-*/
+import React, { useState, HTMLAttributes } from 'react';
 
-import React, { useState } from 'react';
-
-export interface CollapsibleSectionProps {
+export interface CollapsibleSectionProps
+	extends HTMLAttributes<HTMLDivElement> {
 	title: string;
 	children: React.ReactNode;
 }
@@ -31,11 +9,12 @@ export interface CollapsibleSectionProps {
 const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 	title,
 	children,
+	...rest
 }) => {
 	const [isCollapsed, setIsCollapsed] = useState(false);
 
 	return (
-		<div>
+		<div {...rest}>
 			<h2
 				className="flex items-center cursor-pointer"
 				onClick={() => setIsCollapsed(!isCollapsed)}

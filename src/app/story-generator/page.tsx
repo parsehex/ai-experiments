@@ -287,6 +287,7 @@ const StoryGenerator = () => {
 	};
 
 	const handleAutoFill = async () => {
+		// debugger;
 		// TODO disable inputs while generating (& eventually provide a way to accept/reject or undo)
 		interface TempState {
 			characters: Character[];
@@ -391,7 +392,7 @@ const StoryGenerator = () => {
 	);
 
 	const CharactersBox = (
-		<CollapsibleSection title="Characters">
+		<CollapsibleSection title="Characters" className="overflow-x-auto">
 			{characters.map(renderCharacterFields)}
 			<span className="flex">
 				<button onClick={handleAddCharacter}>Add Character</button>
