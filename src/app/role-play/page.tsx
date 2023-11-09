@@ -97,13 +97,10 @@ function RolePlay() {
 		constructPrompt,
 	});
 
-	const saveToLocalStorage = () => {
+	useEffect(() => {
 		description && localStorage.setItem('chat-description', description);
 		characters.length &&
 			localStorage.setItem('chat-characters', JSON.stringify(characters));
-	};
-	useEffect(() => {
-		saveToLocalStorage();
 	}, [description, characters]);
 
 	// const preferredModels = ['Luna-AI-Llama2-Uncensored'];
