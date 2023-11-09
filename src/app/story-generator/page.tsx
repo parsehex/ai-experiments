@@ -402,7 +402,10 @@ const StoryGenerator = () => {
 					handleCharacterChange(character.id, 'longTerm', e.target.value)
 				}
 			/>
-			<button onClick={() => handleRemoveCharacter(character.id)}>
+			<button
+				className="basic"
+				onClick={() => handleRemoveCharacter(character.id)}
+			>
 				Remove Character
 			</button>
 			{/* TODO: a button that shows if there are character fields missing, to fill missing values
@@ -411,10 +414,12 @@ const StoryGenerator = () => {
 	);
 
 	const CharactersBox = (
-		<CollapsibleSection title="Characters" className="overflow-x-auto">
+		<CollapsibleSection title="Characters" className="">
 			{characters.map(renderCharacterFields)}
 			<span className="flex">
-				<button onClick={handleAddCharacter}>Add Character</button>
+				<button className="basic" onClick={handleAddCharacter}>
+					Add Character
+				</button>
 				<HoverMenuButton
 					label="Generate Characters"
 					fields={addCharacterOptions}
@@ -434,7 +439,9 @@ const StoryGenerator = () => {
 					value={plot.tone}
 					onChange={handlePlotChange('tone')}
 				/>
-				<button onClick={() => handleGenerateTone()}>Generate Tone</button>
+				<button className="basic" onClick={() => handleGenerateTone()}>
+					Generate Tone
+				</button>
 				<br />
 				<label htmlFor="storyDescription">Story Description:</label>
 				<textarea
@@ -443,7 +450,7 @@ const StoryGenerator = () => {
 					value={plot.storyDescription}
 					onChange={handlePlotChange('storyDescription')}
 				/>
-				<button onClick={() => generateStoryDescription()}>
+				<button className="basic" onClick={() => generateStoryDescription()}>
 					Generate Description
 				</button>
 				<br />
@@ -461,11 +468,27 @@ const StoryGenerator = () => {
 					value={plot.timePeriod}
 					onChange={handlePlotChange('timePeriod')}
 				/>
-				<button onClick={() => handleGenerateSetting()}>
+				<button className="basic" onClick={() => handleGenerateSetting()}>
 					Generate Setting
 				</button>
 			</div>
 		</CollapsibleSection>
+	);
+
+	const StoryStarter = (
+		<div>
+			<h2>Story Starter</h2>
+			<textarea
+				id="storyStarter"
+				className="input"
+				placeholder="How should the story start?"
+				value={storyStarter}
+				onChange={(e) => setStoryStarter(e.target.value)}
+			/>
+			<button className="basic" onClick={() => generateStoryStarter()}>
+				Generate
+			</button>
+		</div>
 	);
 
 	const StoryBox = (
@@ -473,7 +496,7 @@ const StoryGenerator = () => {
 			<span className="story-header flex">
 				<h2>Story</h2>
 				{canGenerate && (
-					<button onClick={() => startStory()}>
+					<button className="basic" onClick={() => startStory()}>
 						{actions.length ? 'Continue' : 'Start Story'}
 					</button>
 				)}
@@ -491,20 +514,12 @@ const StoryGenerator = () => {
 
 	return (
 		<>
-			<button onClick={handleAutoFill}>Auto-Fill</button>
+			<button className="basic" onClick={handleAutoFill}>
+				Auto-Fill
+			</button>
 			{StoryInfoBox}
 			{CharactersBox}
-			<div>
-				<h2>Story Starter</h2>
-				<textarea
-					id="storyStarter"
-					className="input"
-					placeholder="How should the story start?"
-					value={storyStarter}
-					onChange={(e) => setStoryStarter(e.target.value)}
-				/>
-				<button onClick={() => generateStoryStarter()}>Generate</button>
-			</div>
+			{StoryStarter}
 			{StoryBox}
 		</>
 	);

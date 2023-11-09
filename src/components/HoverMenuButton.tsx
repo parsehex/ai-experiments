@@ -87,7 +87,7 @@ const HoverMenuButton: React.FC<HoverMenuButtonProps> = ({
 			onMouseEnter={() => setShowMenu(true)}
 			onMouseLeave={() => setShowMenu(false)}
 		>
-			<button ref={buttonRef} onClick={handleClick} className="mx-3">
+			<button ref={buttonRef} onClick={handleClick} className="basic mx-3">
 				{label}
 			</button>
 			{showMenu && (
