@@ -87,6 +87,11 @@ export default function Home() {
 					description="Paste any text and remove identifying information"
 					href="/redacter"
 				/>
+				<Item
+					title="Transcribe Audio"
+					description="Transcribe audio from file"
+					href="/transcribe-audio"
+				/>
 			</List>
 			<List title="TODO">
 				<Item

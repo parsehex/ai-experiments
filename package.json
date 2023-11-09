@@ -10,11 +10,16 @@
     "cors-server": "node scripts/cors-anywhere.js"
   },
   "dependencies": {
+    "@types/fluent-ffmpeg": "^2.1.24",
+    "@types/formidable": "^3.4.5",
     "axios": "^1.5.1",
     "cheerio": "^1.0.0-rc.12",
     "cors-anywhere": "^0.4.4",
     "encoding": "^0.1.13",
+    "ffmpeg-static": "^5.2.0",
+    "formidable": "^3.5.1",
     "langchain": "^0.0.166",
+    "multipart": "^0.1.5",
     "next": "13.5.4",
     "react": "^18",
     "react-dom": "^18",
