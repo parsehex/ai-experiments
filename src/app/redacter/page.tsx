@@ -32,7 +32,6 @@ function Redacter() {
 	};
 	useEffect(() => {
 		loadInput();
-		(window as any).ooba = ooba;
 	}, []);
 
 	const [inputText, setInputText] = useState('');

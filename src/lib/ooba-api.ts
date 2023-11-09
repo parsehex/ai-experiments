@@ -1,12 +1,3 @@
-// base: http://localhost:5000
-// endpoints:
-// GET /api/v1/model : { result: { 'model_name', 'lora_names', 'shared.settings', 'shared.args'} }
-// POST /api/v1/generate (Parameters) : { results: [{ text }] }
-// POST /api/v1/chat (ParametersChat) : { results: [{ history }] }
-// POST /api/v1/stop-stream : { results: 'success' }
-// POST /api/v1/model (ModelOptions, [action=load|unload|list|info]) : { result: any }
-// POST /api/v1/token-count ({ prompt: string }) : { results: { tokens: number } }
-
 import {
 	ModelInfo,
 	GenerateParams,
@@ -19,21 +10,29 @@ import {
 	ListModelsResponse,
 	ModelInfoResponse,
 } from './types/ooba';
+import { cors } from './utils';
 
 let BASE_URL = 'http://localhost:5000';
-let host = location.host.split(':')[0]; // Remove port number if exists
+let adjusted = false;
 
-// Regular expression for IPv4 address
-let ipPattern = new RegExp(
-	'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
-);
-if (ipPattern.test(host)) {
-	BASE_URL = `http://${host}:5000`;
-} else if (host.includes('.')) {
-	// BASE_URL = '';
+function fixUrl() {
+	if (adjusted) return;
+	let host = location.host.split(':')[0]; // Remove port number if exists
+	// Regular expression for IPv4 address
+	let ipPattern = new RegExp(
+		'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+	);
+	if (ipPattern.test(host)) {
+		BASE_URL = `http://${host}:5000`;
+	} else if (host.includes('.')) {
+		// BASE_URL = '';
+	}
+	BASE_URL = cors(BASE_URL);
+	adjusted = true;
 }
 
 export async function getModel(): Promise<ModelInfo> {
+	if (!adjusted) fixUrl();
 	const response = await fetch(`${BASE_URL}/api/v1/model`);
 	return response.json();
 }
@@ -41,6 +40,7 @@ export async function getModel(): Promise<ModelInfo> {
 export async function generateText(
 	params: GenerateParams
 ): Promise<GenerateResponse> {
+	if (!adjusted) fixUrl();
 	const response = await fetch(`${BASE_URL}/api/v1/generate`, {
 		method: 'POST',
 		headers: {
@@ -52,6 +52,7 @@ export async function generateText(
 }
 
 export async function chat(params: ChatParams): Promise<ChatResponse> {
+	if (!adjusted) fixUrl();
 	const response = await fetch(`${BASE_URL}/api/v1/chat`, {
 		method: 'POST',
 		headers: {
@@ -63,6 +64,7 @@ export async function chat(params: ChatParams): Promise<ChatResponse> {
 }
 
 export async function stopStream(): Promise<StopStreamResponse> {
+	if (!adjusted) fixUrl();
 	const response = await fetch(`${BASE_URL}/api/v1/stop-stream`, {
 		method: 'POST',
 		headers: {
@@ -75,6 +77,7 @@ export async function stopStream(): Promise<StopStreamResponse> {
 export async function modelAction(
 	options: ModelOptions
 ): Promise<ModelActionResponse> {
+	if (!adjusted) fixUrl();
 	const response = await fetch(`${BASE_URL}/api/v1/model`, {
 		method: 'POST',
 		headers: {

@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 -p 8085",
+    "dev": "concurrently \"next dev -H 0.0.0.0 -p 8085\" \"npm run cors-server\"",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cors-server": "node scripts/cors-anywhere.js"
   },
   "dependencies": {
     "axios": "^1.5.1",
     "cheerio": "^1.0.0-rc.12",
+    "cors-anywhere": "^0.4.4",
     "encoding": "^0.1.13",
     "langchain": "^0.0.166",
     "next": "13.5.4",
@@ -25,6 +27,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10",
+    "concurrently": "^8.2.2",
     "eslint": "^8",
     "eslint-config-next": "13.5.4",
     "postcss": "^8",
