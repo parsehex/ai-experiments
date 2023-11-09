@@ -64,7 +64,7 @@ ${inputText}<|im_end|>
 		);
 		console.log('Got response');
 
-		setResponseText(response.results[0].text);
+		setResponseText(response.choices[0].text);
 		setShowSuccess(true);
 	};
 

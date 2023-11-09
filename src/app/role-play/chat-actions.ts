@@ -118,7 +118,7 @@ class MessageHandler {
 			options.ban_eos_token = true;
 		}
 		const result = await ooba.generateText(options);
-		let response = result?.results[0]?.text || '';
+		let response = result?.choices[0]?.text || '';
 		response = response.trim();
 		console.log(response);
 
@@ -158,7 +158,7 @@ class MessageHandler {
 		}
 
 		const result = await ooba.generateText(options);
-		let response = result?.results[0]?.text || '';
+		let response = result?.choices[0]?.text || '';
 		response = response.trim();
 
 		const generatedMessages = parseResponse(response);
@@ -215,7 +215,7 @@ class MessageHandler {
 			options.stopping_strings.push(char);
 		}
 		const result = await ooba.generateText(options);
-		const response = result?.results[0]?.text || '';
+		const response = result?.choices[0]?.text || '';
 		if (!response) {
 			console.log('No response generated, retrying...');
 			await delay(50);
@@ -251,7 +251,7 @@ class MessageHandler {
 				ban_eos_token: true,
 			})
 		);
-		const generatedMessage = parseResponse(result?.results[0]?.text.trim())[0];
+		const generatedMessage = parseResponse(result?.choices[0]?.text.trim())[0];
 		if (!generatedMessage) {
 			console.log('No response generated, retrying...');
 			await delay(50);

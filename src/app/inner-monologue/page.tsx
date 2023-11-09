@@ -24,7 +24,7 @@ const innerMonologue = async (messages: Message[]) => {
 		ban_eos_token: true,
 	});
 	console.log('thought', prompt, result);
-	return result.results[0].text;
+	return result.choices[0].text;
 };
 
 const constructPrompt = (
@@ -60,7 +60,7 @@ const sendInput = async (
 		mirostat_mode: 2,
 	});
 	console.log('message', prompt, result);
-	return result.results[0].text;
+	return result.choices[0].text;
 };
 
 function InnerMonologueChat() {

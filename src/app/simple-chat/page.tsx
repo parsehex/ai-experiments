@@ -51,7 +51,7 @@ ${messagesStr}<|im_end|>
 			temperature: 0.5,
 			max_new_tokens: 150,
 		});
-		return response.results[0].text;
+		return response.choices[0].text;
 	};
 
 	return (

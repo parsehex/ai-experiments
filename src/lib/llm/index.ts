@@ -53,7 +53,7 @@ interface GenerateOptions extends Partial<GenerateParams> {
 const KeyMap: Record<keyof GenerateOptions, keyof GenerateParams> = {
 	temp: 'temperature',
 	cfg: 'guidance_scale',
-	max: 'max_new_tokens',
+	max: 'max_tokens',
 	stop: 'stopping_strings',
 	grammar: 'grammar_string',
 };
@@ -79,7 +79,7 @@ export async function generate(
 	}
 	const res = await generateText(params);
 	if (options?.log && options.log.response) {
-		console.log(options.log.response, res.results[0].text);
+		console.log(options.log.response, res.choices[0].text);
 	}
-	return res.results[0].text;
+	return res.choices[0].text;
 }

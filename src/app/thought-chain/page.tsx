@@ -92,7 +92,7 @@ async function runPrompt(
 	console.log(prompt);
 	const options = Object.assign({}, params, extraParams, { prompt });
 	const response = await ooba.generateText(options);
-	const responseText = response.results[0].text;
+	const responseText = response.choices[0].text;
 	return responseText;
 }
 

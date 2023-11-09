@@ -9,6 +9,7 @@ import {
 	ModelActionResponse,
 	ListModelsResponse,
 	ModelInfoResponse,
+	NewModelInfo,
 } from './types/ooba';
 import { cors } from './utils';
 
@@ -33,7 +34,7 @@ function fixUrl() {
 
 export async function getModel(): Promise<ModelInfo> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/api/v1/model`);
+	const response = await fetch(`${BASE_URL}/v1/internal/model/info`);
 	return response.json();
 }
 
@@ -41,7 +42,7 @@ export async function generateText(
 	params: GenerateParams
 ): Promise<GenerateResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/api/v1/generate`, {
+	const response = await fetch(`${BASE_URL}/v1/completions#/generate`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -51,9 +52,9 @@ export async function generateText(
 	return response.json();
 }
 
-export async function chat(params: ChatParams): Promise<ChatResponse> {
+export async function chat(params: any): Promise<ChatResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/api/v1/chat`, {
+	const response = await fetch(`${BASE_URL}/v1/chat/completions`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -65,7 +66,8 @@ export async function chat(params: ChatParams): Promise<ChatResponse> {
 
 export async function stopStream(): Promise<StopStreamResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/api/v1/stop-stream`, {
+	// requires latest version of ooba
+	const response = await fetch(`${BASE_URL}/v1/internal/stop-generation`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -73,35 +75,49 @@ export async function stopStream(): Promise<StopStreamResponse> {
 	});
 	return response.json();
 }
-
-export async function modelAction(
-	options: ModelOptions
-): Promise<ModelActionResponse> {
+interface CurrentModelResponse {
+	model_name: string;
+	lora_names: string[];
+}
+export async function getCurrentModel(): Promise<CurrentModelResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/api/v1/model`, {
+	const response = await fetch(`${BASE_URL}/v1/internal/model/info`);
+	return response.json();
+}
+
+
+/** List models or get info on a specific model */
+export async function listModels(
+	name = ''
+): Promise<ListModelsResponse | NewModelInfo> {
+	if (!adjusted) fixUrl();
+	let url = `${BASE_URL}/v1/models`;
+	if (name) url += `/${name}`;
+	const response = await fetch(url);
+	return response.json();
+}
+export async function loadModel(modelName: string): Promise<ModelInfoResponse> {
+	if (!adjusted) fixUrl();
+	const response = await fetch(`${BASE_URL}/v1/internal/model/load`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 		},
-		body: JSON.stringify(options),
+		body: JSON.stringify({ model_name: modelName }),
 	});
 	return response.json();
 }
-export async function listModels(): Promise<ListModelsResponse> {
-	return await modelAction({ action: 'list' });
-}
-export async function modelInfo(): Promise<ModelInfoResponse> {
-	return await modelAction({ action: 'info' });
-}
-export async function loadModel(
-	model_name: string,
-	args?: Record<string, any>
-): Promise<ModelInfoResponse> {
-	return await modelAction({ action: 'load', model_name, args });
-}
-export async function unloadModel(): Promise<ModelInfoResponse> {
-	return await modelAction({ action: 'unload' });
+
+export async function tokenCount(str: string) {
+	if (!adjusted) fixUrl();
+	const response = await fetch(`${BASE_URL}/v1/internal/token-count`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ text: str }),
+	});
+	return response.json();
 }
 
-// sample args for Luna-AI-Llama2-Uncensored-GPTQ:
-// {'model_basename': 'gptq_model-4bit-128g', 'device': 'cuda:0', 'use_triton': True, 'inject_fused_attention': True, 'inject_fused_mlp': True, 'use_safetensors': True, 'trust_remote_code': False, 'max_memory': {0: '11GiB', 'cpu': '99GiB'}, 'quantize_config': None, 'use_cuda_fp16': True, 'disable_exllama': False}
+// no unload model endpoint
