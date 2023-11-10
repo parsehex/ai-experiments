@@ -353,10 +353,15 @@ const StoryGenerator = () => {
 	};
 
 	const renderCharacterFields = (character: Character) => (
-		<div key={character.id} className="character flex border-b-2 mb-2">
+		<div
+			key={character.id}
+			className="character flex border-b-2 mb-2"
+			ref={divRef}
+		>
 			<CopyableTextInput
 				className="h-9"
 				minWidth="8rem"
+				label="Name"
 				placeholder="Name"
 				value={[
 					character.name,
@@ -364,6 +369,7 @@ const StoryGenerator = () => {
 				]}
 			/>
 			<CopyableTextInput
+				label="Description"
 				placeholder="Description"
 				value={[
 					character.description,
@@ -372,6 +378,7 @@ const StoryGenerator = () => {
 				isTextarea
 			/>
 			<CopyableTextInput
+				label="State"
 				placeholder="Current State"
 				value={[
 					character.state,
@@ -380,6 +387,7 @@ const StoryGenerator = () => {
 				isTextarea
 			/>
 			<CopyableTextInput
+				label="Short Term Objective"
 				placeholder="Short Term Objective"
 				value={[
 					character.objectives.shortTerm,
@@ -388,6 +396,7 @@ const StoryGenerator = () => {
 				isTextarea
 			/>
 			<CopyableTextInput
+				label="Long Term Objective"
 				placeholder="Long Term Objective"
 				value={[
 					character.objectives.longTerm,

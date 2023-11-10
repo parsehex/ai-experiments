@@ -11,12 +11,16 @@ interface CopyableTextInputProps extends CommonInputProps {
 	value: [string, (value: string) => void];
 	isTextarea?: boolean;
 	minWidth?: string;
+	label?: string;
+	labelOrientation?: 'horizontal' | 'vertical';
 }
 
 const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
 	value: v,
 	isTextarea = false,
 	minWidth = '15rem',
+	label,
+	labelOrientation = 'vertical',
 	...rest
 }) => {
 	const [value, updateValue] = v;
@@ -70,9 +74,14 @@ const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
 		updateValue(e.target.value);
 		autoResize(e.target);
 	};
+	const labelClass =
+		labelOrientation === 'horizontal'
+			? 'inline-block text-sm font-medium text-gray-700 mr-2'
+			: 'block text-sm font-medium text-gray-700';
 
 	return (
 		<div className="relative inline-block">
+			{label && <label className={labelClass}>{label}</label>}
 			{isTextarea ? (
 				<textarea
 					ref={inputRef as React.RefObject<HTMLTextAreaElement>}
