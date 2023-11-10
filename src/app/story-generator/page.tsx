@@ -219,8 +219,8 @@ const StoryGenerator = () => {
 		const parts = genStarter(c, p);
 		const result = await generate(parts, {
 			cfg: 2,
-			temp: 0.5,
-			grammar: Lines({ n: 1, sentences: { min: 1, max: 2 } }),
+			temp: 0.25,
+			grammar: Sentences(1, false, 1, 2),
 			max: 256,
 			log: { response: 'Starter:', prompt: 'Starter Prompt:' },
 		});
