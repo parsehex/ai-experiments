@@ -13,7 +13,7 @@ const nSentences = ({
 }: SentenceOptions = {}) => {
 	// console.log('nSentences', { n, min, max, startWithWord });
 	const sentence = `(${
-		startWithWord ? '[a-zA-Z]' : ''
+		startWithWord ? '[A-Z][a-z\'"]+' : ''
 	}[a-zA-Z0-9'" ,&;-]+[.!?])`;
 	let str = '(';
 	if (n === 0) {
@@ -30,34 +30,6 @@ const nSentences = ({
 	return str.trim();
 };
 
-export const JsonObject = () => {
-	return `root   ::= (
-		"{" ws (
-			string ":" ws value
-("," ws string ":" ws value)*
-)? "}"
-)
-value  ::= object | array | string | number | ("true" | "false" | "null") ws
-object ::=
-	"{" ws (
-						string ":" ws value
-		("," ws string ":" ws value)*
-	)? "}" ws
-array  ::=
-	"[" ws (
-						value
-		("," ws value)*
-	)? "]" ws
-string ::=
-	"\\"" (
-		[^"\\] |
-		"\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]) # escapes
-	)* "\\"" ws
-number ::= ("-"? ([0-9] | [1-9] [0-9]*)) ("." [0-9]+)? ([eE] [-+]? [0-9]+)? ws
-# Optional space: by convention, applied in this grammar after literal chars when allowed
-ws ::= ([ \\t\\n] ws)?`;
-};
-
 export const Words = (n: number) => {
 	// we basically need to repeat "word ws" for n times
 	let wordStr = '';
@@ -69,15 +41,27 @@ export const Words = (n: number) => {
 word ::= [a-zA-z'"()&,;:]+
 ws ::= [ ]`;
 };
-export const Sentences = (n: number, allowNewline = true) => {
+export const Sentences = (
+	n: number,
+	allowNewline = true,
+	min?: number,
+	max?: number
+) => {
 	let sentenceStr = '';
+	// if min and max is provided, add `sentence` for `min` times, then add `sentence?` for remaining times
+	// add "ws" between each sentence
+	const hasMinMax = min !== undefined && max !== undefined;
 	for (let i = 0; i < n; i++) {
+		if (hasMinMax) break;
 		sentenceStr += `sentence `;
 		if (i < n - 1) sentenceStr += `ws `;
 	}
+	if (hasMinMax) {
+		sentenceStr += `${nSentences({ min, max, startWithWord: true })} `;
+	}
 	sentenceStr = sentenceStr.trim();
 	return `root ::= ${sentenceStr}
-sentence ::= [A-Z](letter|"-")+ [.!?]
+sentence ::= [A-Z][a-z'"]+ (letter|"-")+ [.!?]
 letter ::= [a-zA-Z0-9 '"()&,;]
 ws ::= [ ${allowNewline ? '\\n' : ''}]`;
 };
@@ -126,6 +110,34 @@ export const Lines = ({
 	let str = `root ::= ${itemStr}
 ${vars}`;
 	return str;
+};
+
+export const JsonObject = () => {
+	return `root   ::= (
+		"{" ws (
+			string ":" ws value
+("," ws string ":" ws value)*
+)? "}"
+)
+value  ::= object | array | string | number | ("true" | "false" | "null") ws
+object ::=
+	"{" ws (
+						string ":" ws value
+		("," ws string ":" ws value)*
+	)? "}" ws
+array  ::=
+	"[" ws (
+						value
+		("," ws value)*
+	)? "]" ws
+string ::=
+	"\\"" (
+		[^"\\] |
+		"\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]) # escapes
+	)* "\\"" ws
+number ::= ("-"? ([0-9] | [1-9] [0-9]*)) ("." [0-9]+)? ([eE] [-+]? [0-9]+)? ws
+# Optional space: by convention, applied in this grammar after literal chars when allowed
+ws ::= ([ \\t\\n] ws)?`;
 };
 
 export const CharacterObject = () => {

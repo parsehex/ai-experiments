@@ -280,7 +280,7 @@ const StoryGenerator = () => {
 		setActions([action]);
 		return action;
 	};
-	const startStory = async (
+	const startOrContinueStory = async (
 		c: Character[] = characters,
 		p: Plot = plot,
 		a: Action[] = actions
@@ -307,7 +307,7 @@ const StoryGenerator = () => {
 			max: 256,
 			log: { response: 'Thought:', prompt: 'Thought Prompt:' },
 		});
-		const actionThoughts: Action = JSON.parse(actionStr);
+		const actionThoughts: Omit<Action, 'aiThoughts'> = JSON.parse(actionStr);
 		actionThoughts.id = v4();
 
 		let actionParts2: PromptPart[] = [];
@@ -325,7 +325,8 @@ const StoryGenerator = () => {
 		const result = await generate(actionParts2, {
 			temp: 0.5,
 			cfg: 1.25,
-			grammar: Lines({ n: 1, sentences: { min: 1, max: 5 } }),
+			// grammar: Lines({ n: 1, sentences: { min: 1, max: 5 } }),
+			grammar: Sentences(1, false, 1, 3),
 			max: 512,
 			log: { response: 'Action:', prompt: 'Action Prompt:' },
 		});
@@ -333,6 +334,8 @@ const StoryGenerator = () => {
 			id: v4(),
 			type: actionThoughts.type,
 			str: result.trim(),
+			characterName: actionThoughts.characterName,
+			aiThoughts: actionThoughts.str,
 		};
 		setActions([...a, newAction]);
 	};
@@ -553,6 +556,11 @@ const StoryGenerator = () => {
 						key={action.id}
 						className="action-item hover:bg-gray-100 relative"
 					>
+						{action.aiThoughts && (
+							<Collapsible title="Thoughts" titleSize="sm" className="ml-1">
+								<div className="ai-thoughts ml-3">{action.aiThoughts}</div>
+							</Collapsible>
+						)}
 						{/* if dialogue, show character name */}
 						{action.type === 'Dialogue' && (
 							<span className="font-bold italic mr-2">
