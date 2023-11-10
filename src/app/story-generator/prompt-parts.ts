@@ -78,7 +78,7 @@ export function genStoryDescription(
 			str: `${SettingString(plot)}\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${charStr}\n` },
-		{ str: 'DESCRIPTION:\n' },
+		{ str: 'RESPONSE:\n' },
 	];
 }
 
@@ -104,7 +104,7 @@ export function genCharacters(chars: Character[], plot: Plot): PromptPart[] {
 			str: `${PlotString(plot)}\n`,
 		},
 		{ if: chars.length > 0, str: `EXISTING CHARACTERS:\n${charStr}\n` },
-		{ str: `CHARACTERS:\n` },
+		{ str: `RESPONSE:\n` },
 	];
 }
 
@@ -133,6 +133,7 @@ export function genFillCharacterDetails(
 		{ str: `STATE: \n`, if: !!character.state },
 		{ str: `SHORT-TERM OBJECTIVE: \n`, if: !!character.objectives.shortTerm },
 		{ str: `LONG-TERM OBJECTIVE: \n`, if: !!character.objectives.longTerm },
+		{ str: `RESPONSE:\n` },
 	];
 
 	return promptParts;
@@ -153,7 +154,7 @@ Return an object with the following keys:
 			str: `DESCRIPTION: ${plot.storyDescription}\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ str: `SETTING:\n` },
+		{ str: `RESPONSE:\n` },
 	];
 }
 export function genTone(chars: Character[], plot: Plot): PromptPart[] {
@@ -174,7 +175,7 @@ A simple example would be "Dark and gritty but realistic."\n\n`,
 			str: `${SettingString(plot)}\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ str: `TONE:\n` },
+		{ str: `RESPONSE:\n` },
 	];
 }
 
@@ -187,7 +188,7 @@ Return a string that starts the story.\n\n`,
 		},
 		{ str: `${PlotString(plot)}\n` },
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ str: `STORY START:\n` },
+		{ str: `RESPONSE:\n` },
 	];
 }
 
@@ -208,7 +209,7 @@ Return an object with the following keys:
 		{ str: `${PlotString(plot)}\n` },
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
 		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
-		{ str: `THOUGHT:\n` },
+		{ str: `RESPONSE:\n` },
 	];
 }
 
@@ -234,7 +235,7 @@ export function genNarrativeAction(
 			if: !!narrativeThought,
 			str: `NARRATIVE THOUGHTS:\n(These are your thoughts on how to write the next narrative part of the story.)\n${narrativeThought}\n`,
 		},
-		{ str: `NARRATIVE:\n` },
+		{ str: `RESPONSE:\n` },
 	];
 }
 
@@ -263,6 +264,6 @@ export function genDialogueAction(
 			if: !!speakingCharacter,
 			str: `SPEAKING CHARACTER:\n${speakingCharacter}\n`,
 		},
-		{ str: `DIALOGUE:\n` },
+		{ str: `RESPONSE:\n` },
 	];
 }
