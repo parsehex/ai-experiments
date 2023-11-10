@@ -49,6 +49,14 @@ function ActionsString(actions: Action[]) {
 		})
 		.join('\n');
 }
+function hasPlot(plot: Plot) {
+	return (
+		!!plot.storyDescription ||
+		!!plot.tone ||
+		!!plot.location ||
+		!!plot.timePeriod
+	);
+}
 
 export function genStoryDescription(
 	chars: Character[],
@@ -89,6 +97,7 @@ export function genCharacters(chars: Character[], plot: Plot): PromptPart[] {
 "state": The character's current state, which describes what they're doing at the moment.
 "shortTermObjective": The character's short-term objective, which is what they want to accomplish in the short term.
 "longTermObjective": The character's long-term objective, which is what they want to accomplish over time, in the long term.\n\n`,
+			// "description": A short description of the character, describing their appearance, personality, and/or background.
 			suf: `STORY INFO:\n`,
 		},
 		{
@@ -97,6 +106,36 @@ export function genCharacters(chars: Character[], plot: Plot): PromptPart[] {
 		{ if: chars.length > 0, str: `EXISTING CHARACTERS:\n${charStr}\n` },
 		{ str: `CHARACTERS:\n` },
 	];
+}
+
+export function genFillCharacterDetails(
+	character: Character,
+	allCharacters: Character[],
+	plot: Plot
+): PromptPart[] {
+	// Filter out the current character from the list of all characters
+	const otherCharacters = allCharacters.filter((c) => c.id !== character.id);
+	const otherCharsStr = CharacterString(otherCharacters);
+
+	const promptParts: PromptPart[] = [
+		{
+			str: `Generate detailed information for the following character based on the story's plot and other characters. Provide missing information only. Return an object with the updated details.\n\n`,
+		},
+		{ str: `${PlotString(plot)}\n`, if: hasPlot(plot) },
+		// Include other existing characters in the prompt
+		{
+			str: `OTHER CHARACTERS:\n${otherCharsStr}\n`,
+			if: otherCharacters.length > 0,
+		},
+		{ str: `CHARACTER INFO:\n` },
+		{ str: `Name: ${character.name}\n`, if: !!character.name },
+		{ str: `DESCRIPTION: \n`, if: !!character.description },
+		{ str: `STATE: \n`, if: !!character.state },
+		{ str: `SHORT-TERM OBJECTIVE: \n`, if: !!character.objectives.shortTerm },
+		{ str: `LONG-TERM OBJECTIVE: \n`, if: !!character.objectives.longTerm },
+	];
+
+	return promptParts;
 }
 
 export function genSetting(chars: Character[], plot: Plot): PromptPart[] {
@@ -170,38 +209,6 @@ Return an object with the following keys:
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
 		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
 		{ str: `THOUGHT:\n` },
-	];
-}
-
-export function genWriteAction(
-	chars: Character[],
-	plot: Plot,
-	actions: Action[],
-	thisActionThoughts: string
-): PromptPart[] {
-	// TODO: fix prompt so that story description isn't treated as part of the story
-	//   as in, if there's a piece of info in the description, that info still needs to be
-	//   included in the story with an ntroduction and such
-	return [
-		{
-			str: `Write the next part of the following story. You should take your thoughts into account and expand on them when writing the part. It should be relevant to the given story info and should move the plot forward.
-Return an object with the following keys:
-"type": Either "Narrative" or "Dialogue".
-"str": Written response, using your thoughts as guidance.
-"characterName": Name of the character who is speaking, if Dialogue.\n\n`,
-			suf: `STORY INFO:\n`,
-		},
-		{ str: `${PlotString(plot, false)}\n` },
-		{
-			if: chars.length > 0,
-			str: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
-		},
-		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
-		{
-			if: !!thisActionThoughts,
-			str: `THOUGHTS:\n(These are your thoughts on how to write the next part of the story.)\n${thisActionThoughts}\n`,
-		},
-		{ str: `NEXT PART:\n` },
 	];
 }
 

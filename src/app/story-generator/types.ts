@@ -7,6 +7,7 @@ export interface Character {
 		shortTerm: string;
 		longTerm: string;
 	};
+	isComplete(): boolean;
 }
 
 export interface Plot {

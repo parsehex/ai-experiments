@@ -15,13 +15,13 @@ import { addCharacterOptions } from './hover-menus';
 import {
 	genCharacters,
 	genDialogueAction,
+	genFillCharacterDetails,
 	genNarrativeAction,
 	genPickAction,
 	genSetting,
 	genStarter,
 	genStoryDescription,
 	genTone,
-	genWriteAction,
 } from './prompt-parts';
 import { MainStarter } from './starters';
 import { makeCharacter } from './story';
@@ -166,7 +166,7 @@ const StoryGenerator = () => {
 	) => {
 		const chars: Character[] = [...c];
 		if (!num) num = Math.floor(Math.random() * 5) + 1;
-		// console.log('Generating', num, 'characters');
+
 		for (let i = 0; i < num; i++) {
 			const parts = genCharacters([...chars], p);
 			const result = await generate(parts, {
@@ -177,21 +177,45 @@ const StoryGenerator = () => {
 				// log: { response: 'Character:' },
 			});
 			const char = JSON.parse(result) as Character;
+			const completeChar = makeCharacter({}, char);
+
 			const existingChar = chars.find(
-				(c) => c.name.toLowerCase().trim() === char.name.toLowerCase().trim()
+				(c) =>
+					c.name.toLowerCase().trim() === completeChar.name.toLowerCase().trim()
 			);
-			if (!char.id) char.id = v4();
+			if (!completeChar.id) completeChar.id = v4();
 			if (existingChar) {
-				// console.log('Updating existing character:', existingChar);
-				chars.splice(chars.indexOf(existingChar), 1, char);
+				chars.splice(chars.indexOf(existingChar), 1, completeChar);
 			} else {
-				chars.push(char);
+				chars.push(completeChar);
 			}
 			setCharacters(chars);
 		}
-		// setCharacters(chars);
 		return chars;
 	};
+	const fillCharacterDetails = async (character: Character) => {
+		if (character.isComplete()) return;
+
+		const parts = genFillCharacterDetails(character, characters, plot);
+		const result = await generate(parts, {
+			temp: 0.75,
+			cfg: 1.5,
+			grammar: CharacterObject(),
+			max: 512,
+			// log: { response: 'Character:' },
+		});
+		const updatedCharacter = JSON.parse(result) as Character;
+
+		// Re-create the Character instance
+		const completeCharacter = makeCharacter({}, updatedCharacter);
+
+		setCharacters(
+			characters.map((char) =>
+				char.id === character.id ? { ...char, ...completeCharacter } : char
+			)
+		);
+	};
+
 	const handleGenerateSetting = async (
 		c: Character[] = characters,
 		p: Plot = plot
@@ -408,8 +432,14 @@ const StoryGenerator = () => {
 			>
 				Remove Character
 			</button>
-			{/* TODO: a button that shows if there are character fields missing, to fill missing values
-			probably need to generate each value or define a grammar function */}
+			{!character.isComplete() && (
+				<button
+					className="basic"
+					onClick={() => fillCharacterDetails(character)}
+				>
+					Fill
+				</button>
+			)}
 		</div>
 	);
 
