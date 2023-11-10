@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { v4 } from 'uuid';
+import Collapsible from '@/components/Collapsible';
 import HoverMenuButton from '@/components/HoverMenuButton';
 import { withPage } from '@/components/Page';
 import { generate } from '@/lib/llm';
@@ -26,7 +27,6 @@ import {
 import { MainStarter } from './starters';
 import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
-import CollapsibleSection from '@/components/CollapsibleSection';
 import { PromptPart } from '@/lib/llm/types';
 import LLMModelStatus from '@/components/LLMModelStatus';
 
@@ -445,7 +445,7 @@ const StoryGenerator = () => {
 	);
 
 	const CharactersBox = (
-		<CollapsibleSection title="Characters" className="">
+		<Collapsible title="Characters" titleSize="md">
 			{characters.map(renderCharacterFields)}
 			<span className="flex">
 				<button className="basic" onClick={handleAddCharacter}>
@@ -457,11 +457,11 @@ const StoryGenerator = () => {
 					onSubmit={(v) => handleGenerateCharacters(v.numChars)}
 				/>
 			</span>
-		</CollapsibleSection>
+		</Collapsible>
 	);
 
 	const StoryInfoBox = (
-		<CollapsibleSection title="Story Info">
+		<Collapsible title="Story Info" titleSize="md">
 			<div>
 				<label htmlFor="tone">Tone:</label>
 				<input
@@ -503,13 +503,12 @@ const StoryGenerator = () => {
 					Generate Setting
 				</button>
 			</div>
-		</CollapsibleSection>
+		</Collapsible>
 	);
 
 	const StoryStarter = (
-		<div>
-			<h2>Story Starter</h2>
-			<textarea
+		<Collapsible title="Story Starter" titleSize="md">
+			<CopyableTextInput
 				id="storyStarter"
 				className="input"
 				placeholder="How should the story start?"
@@ -519,7 +518,7 @@ const StoryGenerator = () => {
 			<button className="basic" onClick={() => generateStoryStarter()}>
 				Generate
 			</button>
-		</div>
+		</Collapsible>
 	);
 
 	const StoryBox = (
