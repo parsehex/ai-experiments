@@ -487,7 +487,7 @@ const StoryGenerator = () => {
 	);
 
 	const StoryBox = (
-		<div className="story">
+		<div className="story w-2/3 mx-auto">
 			<span className="story-header flex">
 				<h2>Story</h2>
 				{canGenerate && (
