@@ -195,7 +195,8 @@ Return a string that starts the story.\n\n`,
 export function genPickAction(
 	chars: Character[],
 	plot: Plot,
-	actions: Action[]
+	actions: Action[],
+	userRequest: string | null
 ): PromptPart[] {
 	return [
 		{
@@ -209,6 +210,10 @@ Return an object with the following keys:
 		{ str: `${PlotString(plot)}\n` },
 		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
 		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
+		{
+			if: !!userRequest,
+			str: `USER INFLUENCE:\n(These are the user's thoughts on what should happen next in the story, you should not reference these in your answer.)\n${userRequest}\n`,
+		},
 		{ str: `RESPONSE:\n` },
 	];
 }

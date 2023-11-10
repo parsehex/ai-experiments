@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { v4 } from 'uuid';
 import Collapsible from '@/components/Collapsible';
 import HoverMenuButton from '@/components/HoverMenuButton';
+import LLMModelStatus from '@/components/LLMModelStatus';
 import { withPage } from '@/components/Page';
 import { generate } from '@/lib/llm';
 import {
@@ -27,7 +28,6 @@ import {
 import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
 import { PromptPart } from '@/lib/llm/types';
-import LLMModelStatus from '@/components/LLMModelStatus';
 import StarterPresets from './starters';
 import CopyableTextInput from '@/components/CopyableTextInput';
 
@@ -234,6 +234,7 @@ const StoryGenerator = () => {
 		return action;
 	};
 	const startOrContinueStory = async (
+		userRequest: string | null,
 		c: Character[] = characters,
 		p: Plot = plot,
 		a: Action[] = actions
@@ -253,11 +254,11 @@ const StoryGenerator = () => {
 				},
 			];
 		}
-		const actionParts = genPickAction(c, p, a);
+		const actionParts = genPickAction(c, p, a, userRequest);
 		const actionStr = await generate(actionParts, {
-			cfg: 1.1,
+			cfg: 1.15,
 			grammar: ActionObject(),
-			max: 256,
+			max: 384,
 			log: { response: 'Thought:', prompt: 'Thought Prompt:' },
 		});
 		const actionThoughts: Omit<Action, 'aiThoughts'> = JSON.parse(actionStr);
@@ -340,7 +341,7 @@ const StoryGenerator = () => {
 		const action = await generateStoryStarter(c, p);
 		a = [action];
 		tempState.actions = a;
-		await startStory(c, p, a);
+		await startOrContinueStory(null, c, p, a);
 	};
 
 	const handleClearActions = () => {
@@ -491,9 +492,19 @@ const StoryGenerator = () => {
 			<span className="story-header flex">
 				<h2>Story</h2>
 				{canGenerate && (
-					<button className="basic" onClick={() => startStory()}>
-						{actions.length ? 'Continue' : 'Start Story'}
-					</button>
+					<>
+						<button
+							className="basic"
+							onClick={() => startOrContinueStory(userRequest)}
+						>
+							{actions.length ? 'Continue' : 'Start Story'}
+						</button>
+						<CopyableTextInput
+							className="input sm"
+							placeholder="Influence the story"
+							value={[userRequest, setUserRequest]}
+						/>
+					</>
 				)}
 				{!!actions.length && (
 					<button className="basic" onClick={handleClearActions}>
