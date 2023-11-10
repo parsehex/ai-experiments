@@ -28,6 +28,7 @@ import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
 import CollapsibleSection from '@/components/CollapsibleSection';
 import { PromptPart } from '@/lib/llm/types';
+import LLMModelStatus from '@/components/LLMModelStatus';
 
 const title = 'Story Generator';
 
@@ -544,6 +545,7 @@ const StoryGenerator = () => {
 
 	return (
 		<>
+			<LLMModelStatus />
 			<button className="basic" onClick={handleAutoFill}>
 				Auto-Fill
 			</button>
