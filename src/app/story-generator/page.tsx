@@ -29,56 +29,9 @@ import { Character, Plot, Action } from './types';
 import { PromptPart } from '@/lib/llm/types';
 import LLMModelStatus from '@/components/LLMModelStatus';
 import StarterPresets from './starters';
+import CopyableTextInput from '@/components/CopyableTextInput';
 
 const title = 'Story Generator';
-
-// resize to fit its content
-function autoResize(
-	event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-) {
-	const element = event.target;
-	const isTextarea = element.tagName.toLowerCase() === 'textarea';
-
-	if (isTextarea) {
-		element.style.height = 'inherit';
-		const computed = window.getComputedStyle(element);
-		// Calculate the height
-		const height =
-			parseInt(computed.getPropertyValue('border-top-width'), 10) +
-			parseInt(computed.getPropertyValue('padding-top'), 10) +
-			element.scrollHeight +
-			parseInt(computed.getPropertyValue('padding-bottom'), 10) +
-			parseInt(computed.getPropertyValue('border-bottom-width'), 10);
-		element.style.height = `${height}px`;
-
-		// render text in hidden clone, styled so the text doesnt wrap and get width
-		const clone = document.createElement('div');
-		clone.style.whiteSpace = 'pre';
-		clone.style.position = 'absolute';
-		clone.style.top = '0';
-		clone.style.left = '0';
-		clone.style.visibility = 'hidden';
-		clone.style.font = computed.getPropertyValue('font');
-		clone.textContent = element.value;
-		document.body.appendChild(clone);
-		const textWidth = clone.offsetWidth;
-		// is computed width less than the text width? if so, resize
-		if (textWidth < element.offsetWidth) {
-			element.style.width = `${textWidth}px`;
-		}
-	} else {
-		const span = document.createElement('span');
-		document.body.appendChild(span);
-
-		span.style.font = window.getComputedStyle(element).font;
-		span.style.visibility = 'hidden';
-		span.style.whiteSpace = 'pre';
-		span.textContent = element.value.replace(/ /g, '\u00a0'); // Replace spaces with non-breaking spaces to measure correctly
-
-		element.style.width = `${span.offsetWidth}px`;
-		document.body.removeChild(span);
-	}
-}
 
 const StoryGenerator = () => {
 	const starter = StarterPresets[1];
@@ -400,46 +353,46 @@ const StoryGenerator = () => {
 
 	const renderCharacterFields = (character: Character) => (
 		<div key={character.id} className="character flex border-b-2 mb-2">
-			<input
-				className="resize input h-9"
+			<CopyableTextInput
+				className="h-9"
+				minWidth="8rem"
 				placeholder="Name"
-				value={character.name}
-				onChange={(e) => {
-					handleCharacterChange(character.id, 'name', e.target.value);
-					autoResize(e);
-				}}
+				value={[
+					character.name,
+					handleCharacterChange.bind(null, character.id, 'name'),
+				]}
 			/>
-			<textarea
-				className="resize input"
+			<CopyableTextInput
 				placeholder="Description"
-				value={character.description}
-				onChange={(e) =>
-					handleCharacterChange(character.id, 'description', e.target.value)
-				}
+				value={[
+					character.description,
+					handleCharacterChange.bind(null, character.id, 'description'),
+				]}
+				isTextarea
 			/>
-			<textarea
-				className="resize input"
+			<CopyableTextInput
 				placeholder="Current State"
-				value={character.state}
-				onChange={(e) =>
-					handleCharacterChange(character.id, 'state', e.target.value)
-				}
+				value={[
+					character.state,
+					handleCharacterChange.bind(null, character.id, 'state'),
+				]}
+				isTextarea
 			/>
-			<textarea
-				className="resize input"
+			<CopyableTextInput
 				placeholder="Short Term Objective"
-				value={character.objectives.shortTerm}
-				onChange={(e) =>
-					handleCharacterChange(character.id, 'shortTerm', e.target.value)
-				}
+				value={[
+					character.objectives.shortTerm,
+					handleCharacterChange.bind(null, character.id, 'shortTerm'),
+				]}
+				isTextarea
 			/>
-			<textarea
-				className="resize input"
+			<CopyableTextInput
 				placeholder="Long Term Objective"
-				value={character.objectives.longTerm}
-				onChange={(e) =>
-					handleCharacterChange(character.id, 'longTerm', e.target.value)
-				}
+				value={[
+					character.objectives.longTerm,
+					handleCharacterChange.bind(null, character.id, 'longTerm'),
+				]}
+				isTextarea
 			/>
 			<button
 				className="basic"
@@ -478,40 +431,38 @@ const StoryGenerator = () => {
 		<Collapsible title="Story Info" titleSize="md">
 			<div>
 				<label htmlFor="tone">Tone:</label>
-				<input
+				<CopyableTextInput
 					id="tone"
-					className="input"
-					value={plot.tone}
-					onChange={handlePlotChange('tone')}
+					value={[plot.tone, handlePlotChange.bind(null, 'tone')]}
 				/>
 				<button className="basic" onClick={() => handleGenerateTone()}>
 					Generate Tone
 				</button>
 				<br />
 				<label htmlFor="storyDescription">Story Description:</label>
-				<textarea
+				<CopyableTextInput
 					id="storyDescription"
-					className="input"
-					value={plot.storyDescription}
-					onChange={handlePlotChange('storyDescription')}
+					value={[
+						plot.storyDescription,
+						handlePlotChange.bind(null, 'storyDescription'),
+					]}
+					isTextarea
 				/>
 				<button className="basic" onClick={() => generateStoryDescription()}>
 					Generate Description
 				</button>
 				<br />
 				<label htmlFor="location">Location:</label>
-				<input
+				<CopyableTextInput
 					id="location"
 					className="input"
-					value={plot.location}
-					onChange={handlePlotChange('location')}
+					value={[plot.location, handlePlotChange.bind(null, 'location')]}
 				/>
 				<label htmlFor="timePeriod">Time Period:</label>
-				<input
+				<CopyableTextInput
 					id="timePeriod"
 					className="input"
-					value={plot.timePeriod}
-					onChange={handlePlotChange('timePeriod')}
+					value={[plot.timePeriod, handlePlotChange.bind(null, 'timePeriod')]}
 				/>
 				<button className="basic" onClick={() => handleGenerateSetting()}>
 					Generate Setting
@@ -526,8 +477,8 @@ const StoryGenerator = () => {
 				id="storyStarter"
 				className="input"
 				placeholder="How should the story start?"
-				value={storyStarter}
-				onChange={(e) => setStoryStarter(e.target.value)}
+				value={[storyStarter, setStoryStarter]}
+				isTextarea
 			/>
 			<button className="basic" onClick={() => generateStoryStarter()}>
 				Generate
