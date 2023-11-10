@@ -1,8 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import * as ooba from '@/lib/ooba-api';
-import { GenerateParams } from '@/lib/types/ooba';
 import { withPage } from '@/components/Page';
+import { GenerateOptions, generate } from '@/lib/llm';
 
 const title = 'Redacter';
 
@@ -19,11 +18,11 @@ const extraStyles = `
 }
 `;
 
-const params: Partial<GenerateParams> = {
-	temperature: 0.01,
+const params: GenerateOptions = {
+	temp: 0.01,
+	cfg: 1.05,
+	stop: ['<|im_end|>'],
 	top_k: 20,
-	guidance_scale: 1.05,
-	stopping_strings: ['<|im_end|>'],
 };
 function Redacter() {
 	const loadInput = () => {
@@ -59,12 +58,10 @@ Full Name, Phone/Email/Address/etc, Domain Name, IP, and more<|im_end|>
 <|im_start|>user
 ${inputText}<|im_end|>
 <|im_start|>assistant\n`;
-		const response = await ooba.generateText(
-			Object.assign({}, params, { prompt })
-		);
+		const response = await generate(prompt, Object.assign({}, params));
 		console.log('Got response');
 
-		setResponseText(response.choices[0].text);
+		setResponseText(response);
 		setShowSuccess(true);
 	};
 

@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
-import * as ooba from '@/lib/ooba-api';
 import { Message } from '@/lib/types';
 import { withPage } from '@/components/Page';
+import { generate } from '@/lib/llm';
 
 const title = 'Simple Chat';
 
@@ -46,12 +46,11 @@ ${messagesStr}<|im_end|>
 <|im_start|>assistant\n`;
 		console.log(prompt);
 
-		const response = await ooba.generateText({
-			prompt,
-			temperature: 0.5,
-			max_new_tokens: 150,
+		const response = await generate(prompt, {
+			temp: 0.5,
+			max: 150,
 		});
-		return response.choices[0].text;
+		return response;
 	};
 
 	return (

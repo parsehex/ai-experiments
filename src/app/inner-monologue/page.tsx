@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
-import * as ooba from '@/lib/ooba-api';
 import { withPage } from '@/components/Page';
+import { generate } from '@/lib/llm';
 
 const title = 'Inner Monologue Chat';
 
@@ -16,15 +16,14 @@ const innerMonologue = async (messages: Message[]) => {
 	});
 	prompt += 'THOUGHTS: ';
 
-	const result = await ooba.generateText({
-		prompt,
-		temperature: 0.5,
-		guidance_scale: 2,
+	const result = await generate(prompt, {
+		temp: 0.5,
+		cfg: 2,
 		stopping_strings: ['RESPONSE:', 'INPUT:', '\n'],
 		ban_eos_token: true,
 	});
 	console.log('thought', prompt, result);
-	return result.choices[0].text;
+	return result;
 };
 
 const constructPrompt = (
@@ -51,16 +50,15 @@ const sendInput = async (
 	thoughts?: string
 ) => {
 	const prompt = constructPrompt(input, messages, thoughts);
-	const result = await ooba.generateText({
-		prompt,
-		max_new_tokens: 1500,
-		temperature: 0.25,
-		guidance_scale: 1.5,
-		stopping_strings: ['INPUT:', 'RESPONSE:'],
+	const result = await generate(prompt, {
+		max: 1500,
+		temp: 0.25,
+		cfg: 1.5,
+		stop: ['INPUT:', 'RESPONSE:'],
 		mirostat_mode: 2,
 	});
 	console.log('message', prompt, result);
-	return result.choices[0].text;
+	return result;
 };
 
 function InnerMonologueChat() {

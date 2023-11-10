@@ -2,11 +2,6 @@ import { generateText } from '../ooba-api';
 import { GenerateParams } from '../types/ooba';
 import { PromptPart } from './types';
 
-export const DefaultParams: Partial<GenerateParams> = {
-	temperature: 0.01,
-	guidance_scale: 1.05,
-};
-
 /**
  * Constructs a prompt for AI generation by concatenating various prompt parts.
  * Each part can be conditionally included based on a boolean condition and can
@@ -30,39 +25,44 @@ export function makePrompt(parts: PromptPart[]): string {
 		return prompt;
 	}, '');
 }
-interface GenerateOptions extends Partial<GenerateParams> {
+export interface GenerateOptions extends Partial<GenerateParams> {
 	temp?: number;
 	cfg?: number;
 	max?: number;
 	stop?: string[];
 	grammar?: string;
-	// log is an array of at most 2 strings, which are either 'prompt' or 'response'
+	// log is an object with at most 2 strings, which are either 'prompt' or 'response'
 	log?: {
 		prompt?: string;
 		response?: string;
 	};
 }
-// const KeyMap: Record<string, keyof GenerateOptions> = {
-// 	temperature: 'temp',
-// 	guidance_scale: 'cfg',
-// 	max_new_tokens: 'max',
-// 	stopping_strings: 'stop',
-// 	grammar_string: 'grammar',
-// };
-// keymap is backwards
 const KeyMap: Record<keyof GenerateOptions, keyof GenerateParams> = {
 	temp: 'temperature',
 	cfg: 'guidance_scale',
-	max: 'max_tokens',
+	max: 'max_new_tokens',
+	// openai api:
+	// max: 'max_tokens',
 	stop: 'stopping_strings',
 	grammar: 'grammar_string',
 };
 
+/**
+ * Generates text from a prompt using the AI model. Wrapper around `generateText`.
+ *
+ * Options takes GenerateParams and provides some shorter keys for some of the params:
+ * - temp: temperature
+ * - cfg: guidance_scale
+ * - max: max_new_tokens
+ * - stop: stopping_strings
+ * - grammar: grammar_string
+ */
 export async function generate(
-	promptParts: PromptPart[],
+	promptParts: PromptPart[] | string,
 	options?: GenerateOptions
 ): Promise<string> {
-	const prompt = makePrompt(promptParts);
+	const prompt =
+		typeof promptParts === 'string' ? promptParts : makePrompt(promptParts);
 	const params: GenerateParams = { prompt };
 	if (options) {
 		for (const [key, value] of Object.entries(options)) {
@@ -79,7 +79,7 @@ export async function generate(
 	}
 	const res = await generateText(params);
 	if (options?.log && options.log.response) {
-		console.log(options.log.response, res.choices[0].text);
+		console.log(options.log.response, res.results[0].text);
 	}
-	return res.choices[0].text;
+	return res.results[0].text;
 }

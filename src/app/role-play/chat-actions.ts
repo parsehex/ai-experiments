@@ -1,6 +1,5 @@
 import { v4 } from 'uuid';
-import * as ooba from '@/lib/ooba-api';
-import { GenerateParams } from '@/lib/types/ooba';
+import { GenerateOptions, generate } from '@/lib/llm';
 import { parseResponse } from '@/lib/ooba-utils';
 import { Message } from '@/lib/types';
 import { delay } from '@/lib/utils';
@@ -40,10 +39,10 @@ interface ConstructPromptOptions {
 	) => string;
 }
 
-const baseParams: Partial<GenerateParams> = {
-	temperature: 0.75,
-	max_new_tokens: 512,
-	guidance_scale: 1.25,
+const baseParams: GenerateOptions = {
+	temp: 0.75,
+	max: 512,
+	cfg: 1.25,
 	repetition_penalty: 1.25,
 	repetition_penalty_range: 64,
 };
@@ -105,21 +104,16 @@ class MessageHandler {
 		let updatedMessages = [...messages, newMessage];
 
 		setMessages(updatedMessages);
-		const promptToSend = constructPrompt(updatedMessages);
+		const prompt = constructPrompt(updatedMessages);
 
-		const options: GenerateParams = Object.assign({}, baseParams, {
-			prompt: promptToSend,
-		});
-		if (oneAtATime) {
-			options.stopping_strings = [selectedCharacter || '\n'];
-		}
+		const options: GenerateOptions = { ...baseParams };
+		if (oneAtATime) options.stop = [selectedCharacter || '\n'];
 		if (tryNum === 4) {
 			// last try, try banning the STOP token
 			options.ban_eos_token = true;
 		}
-		const result = await ooba.generateText(options);
-		let response = result?.choices[0]?.text || '';
-		response = response.trim();
+		const result = await generate(prompt, options);
+		const response = result.trim() || '';
 		console.log(response);
 
 		const generatedMessages = parseResponse(response);
@@ -150,16 +144,11 @@ class MessageHandler {
 			'Continue the conversation based on the following. Your response should start with a character NAME, or be an action/narrative desribing what is happening.',
 			'prepend'
 		);
-		const options = Object.assign({}, baseParams, {
-			prompt,
-		});
-		if (count === 1) {
-			options.stopping_strings = ['\n'];
-		}
+		const options: GenerateOptions = Object.assign({}, baseParams);
+		if (count === 1) options.stop = ['\n'];
 
-		const result = await ooba.generateText(options);
-		let response = result?.choices[0]?.text || '';
-		response = response.trim();
+		const result = await generate(prompt, options);
+		const response = result.trim() || '';
 
 		const generatedMessages = parseResponse(response);
 		const diff = generatedMessages.length - count;
@@ -206,16 +195,13 @@ class MessageHandler {
 			prompt += input.trim();
 		}
 		console.log(prompt);
-		const options = Object.assign({}, baseParams, {
-			prompt,
+		const options: GenerateOptions = Object.assign({}, baseParams, {
 			ban_eos_token: true,
-			stopping_strings: ['\n'],
+			stop: ['\n'],
 		});
-		if (char) {
-			options.stopping_strings.push(char);
-		}
-		const result = await ooba.generateText(options);
-		const response = result?.choices[0]?.text || '';
+		if (char) options.stop?.push(char);
+		const result = await generate(prompt, options);
+		const response = result.trim() || '';
 		if (!response) {
 			console.log('No response generated, retrying...');
 			await delay(50);
@@ -243,15 +229,15 @@ class MessageHandler {
 			'Write the next line based on the following conversation.',
 			'prepend'
 		);
-		const result = await ooba.generateText(
+		const result = await generate(
+			prompt.trim() + '\n',
 			Object.assign({}, baseParams, {
-				prompt: prompt.trim() + '\n',
-				temperature: 0.75,
-				stopping_strings: ['\n'],
+				temp: 0.75,
+				stop: ['\n'],
 				ban_eos_token: true,
 			})
 		);
-		const generatedMessage = parseResponse(result?.choices[0]?.text.trim())[0];
+		const generatedMessage = parseResponse((result || '').trim())[0];
 		if (!generatedMessage) {
 			console.log('No response generated, retrying...');
 			await delay(50);

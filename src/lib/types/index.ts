@@ -1,4 +1,4 @@
-import { GenerateParams } from './ooba';
+import { GenerateOptions } from '../llm';
 
 export interface Message {
 	id: string;
@@ -14,7 +14,7 @@ export type PhaseType = {
 		input: string,
 		previousResults: Record<string, string>
 	) => Record<string, string>;
-	extraParams?: Partial<GenerateParams>;
+	extraParams?: GenerateOptions;
 	processOutput?: (output: string) => string;
 	shouldStop?: (output: string) => boolean;
 };

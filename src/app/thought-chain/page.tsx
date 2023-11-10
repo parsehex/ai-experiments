@@ -1,11 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'react-tooltip';
-import * as ooba from '@/lib/ooba-api';
-import { GenerateParams } from '@/lib/types/ooba';
 import { PhaseType } from '@/lib/types';
 import * as prompts from './prompts';
 import { withPage } from '@/components/Page';
+import { GenerateOptions, generate } from '@/lib/llm';
 
 const title = 'Thought Chain';
 
@@ -27,7 +26,7 @@ const phases: PhaseType[] = [
 			phase1Output: previousResults['Phase 1: Expertise Identification'],
 		}),
 		extraParams: {
-			temperature: 0.25,
+			temp: 0.25,
 		},
 	},
 	{
@@ -51,8 +50,8 @@ const phases: PhaseType[] = [
 		}),
 		shouldStop: (output) => output.trim().toUpperCase() === 'NO',
 		extraParams: {
-			stopping_strings: ['Q:'],
-			guidance_scale: 1.1,
+			stop: ['Q:'],
+			cfg: 1.1,
 		},
 	},
 	{
@@ -65,7 +64,7 @@ const phases: PhaseType[] = [
 			revision: previousResults['Phase 4: Response Revision'],
 		}),
 		extraParams: {
-			stopping_strings: ['Q:'],
+			stop: ['Q:'],
 		},
 	},
 ];
@@ -74,26 +73,25 @@ interface Result {
 	output: string;
 	prompt: string;
 }
-const params: Partial<GenerateParams> = {
-	temperature: 0.01,
-	guidance_scale: 1.25,
-	stopping_strings: ['Q:', '\n'],
+const params: GenerateOptions = {
+	temp: 0.01,
+	cfg: 1.25,
+	stop: ['Q:', '\n'],
 };
 
 async function runPrompt(
 	template: string,
 	variables: Record<string, string>,
-	extraParams?: Partial<GenerateParams>
+	extraParams?: GenerateOptions
 ) {
 	const prompt = template.replace(
 		/{{(.*?)}}/g,
 		(_, g) => variables[g.trim()] || ''
 	);
 	console.log(prompt);
-	const options = Object.assign({}, params, extraParams, { prompt });
-	const response = await ooba.generateText(options);
-	const responseText = response.choices[0].text;
-	return responseText;
+	const options = Object.assign({}, params, extraParams);
+	const response = await generate(prompt, options);
+	return response.trim();
 }
 
 const Phase = ({
