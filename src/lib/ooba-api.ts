@@ -27,7 +27,7 @@ function fixUrl() {
 	} else if (host.includes('.')) {
 		// BASE_URL = '';
 	}
-	BASE_URL = cors(BASE_URL);
+	// BASE_URL = cors(BASE_URL);
 	adjusted = true;
 }
 

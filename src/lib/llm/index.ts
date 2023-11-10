@@ -74,8 +74,9 @@ export async function generate(
 			}
 		}
 	}
-	if (options?.log && options.log.prompt) {
-		console.log(options.log.prompt, prompt);
+	if (options?.log) {
+		if (options.log.prompt) console.log(options.log.prompt, prompt);
+		delete params.log;
 	}
 	const res = await generateText(params);
 	if (options?.log && options.log.response) {
