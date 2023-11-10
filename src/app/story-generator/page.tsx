@@ -538,12 +538,25 @@ const StoryGenerator = () => {
 					</button>
 				)}
 				{!!actions.length && (
-					<button onClick={handleClearActions}>Reset Story</button>
+					<button className="basic" onClick={handleClearActions}>
+						Reset Story
+					</button>
 				)}
 			</span>
 			<div className="story-actions">
 				{actions.map((action) => (
-					<div key={action.id}>{action.str}</div>
+					<div
+						key={action.id}
+						className="action-item hover:bg-gray-100 relative"
+					>
+						{/* if dialogue, show character name */}
+						{action.type === 'Dialogue' && (
+							<span className="font-bold italic mr-2">
+								{action.characterName}
+							</span>
+						)}
+						{action.str}
+					</div>
 				))}
 			</div>
 		</div>
