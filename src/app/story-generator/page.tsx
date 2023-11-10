@@ -391,6 +391,10 @@ const StoryGenerator = () => {
 		setActions([]);
 	};
 
+	const handleDeleteAction = (actionId: string) => {
+		setActions(actions.filter((action) => action.id !== actionId));
+	};
+
 	const renderCharacterFields = (character: Character) => (
 		<div key={character.id} className="character flex border-b-2 mb-2">
 			<input
@@ -556,6 +560,12 @@ const StoryGenerator = () => {
 							</span>
 						)}
 						{action.str}
+						<button
+							className="delete-action-button hidden absolute top-0 right-0"
+							onClick={() => handleDeleteAction(action.id)}
+						>
+							Delete
+						</button>
 					</div>
 				))}
 			</div>
