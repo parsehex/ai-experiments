@@ -44,6 +44,13 @@ const StoryGenerator = () => {
 	const [canGenerate, setCanGenerate] = useState(false);
 	const [selectedPreset, setSelectedPreset] = useState<string>(starter.name);
 	const [userRequest, setUserRequest] = useState('');
+	const divRef = React.useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (divRef.current) {
+			divRef.current.scrollIntoView({ behavior: 'smooth' });
+		}
+	}, [actions]);
 
 	// watch the state and set canGenerate to true if required fields are filled
 	useEffect(() => {
