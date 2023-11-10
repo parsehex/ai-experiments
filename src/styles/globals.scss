@@ -57,6 +57,9 @@ nav {
 
 input.input {
 	@apply bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-full p-2 border focus:border-blue-500 focus:outline-none;
+	&.sm {
+		@apply h-8;
+	}
 }
 textarea.input {
 	@apply bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-md p-2 border focus:border-blue-500 focus:outline-none;
