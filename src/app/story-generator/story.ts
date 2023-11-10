@@ -4,7 +4,7 @@ import { Character } from './types';
 export function makeCharacter(
 	opt: Omit<Partial<Character>, 'id'> = {},
 	existingCharacter?: Character
-) {
+): Character {
 	const defaultCharacter: Character = {
 		id: v4(),
 		name: '',

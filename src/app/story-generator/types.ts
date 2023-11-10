@@ -25,4 +25,12 @@ export interface Action {
 	type: 'Narrative' | 'Dialogue';
 	str: string;
 	characterName?: string;
+	aiThoughts?: string;
+}
+
+export interface StarterPreset {
+	name: string;
+	description: string;
+	defaultCharacters: Character[];
+	defaultPlot: Plot;
 }

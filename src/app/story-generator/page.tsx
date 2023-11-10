@@ -24,11 +24,11 @@ import {
 	genStoryDescription,
 	genTone,
 } from './prompt-parts';
-import { MainStarter } from './starters';
 import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
 import { PromptPart } from '@/lib/llm/types';
 import LLMModelStatus from '@/components/LLMModelStatus';
+import StarterPresets from './starters';
 
 const title = 'Story Generator';
 
@@ -81,18 +81,16 @@ function autoResize(
 }
 
 const StoryGenerator = () => {
-	const { defCharacters, defPlot } = MainStarter();
+	const starter = StarterPresets[1];
+	const defCharacters = starter.defaultCharacters;
+	const defPlot = starter.defaultPlot;
 	const [characters, setCharacters] = useState<Character[]>(defCharacters);
 	const [plot, setPlot] = useState<Plot>(defPlot);
 	const [actions, setActions] = useState<Action[]>([]);
 	const [storyStarter, setStoryStarter] = useState<string>('');
 	const [canGenerate, setCanGenerate] = useState(false);
-
-	useEffect(() => {
-		document.querySelectorAll('.resize').forEach((element) => {
-			autoResize({ target: element } as any);
-		});
-	}, []);
+	const [selectedPreset, setSelectedPreset] = useState<string>(starter.name);
+	const [userRequest, setUserRequest] = useState('');
 
 	// watch the state and set canGenerate to true if required fields are filled
 	useEffect(() => {
@@ -105,6 +103,15 @@ const StoryGenerator = () => {
 			setCanGenerate(false);
 		}
 	}, [characters, plot]);
+
+	const applyPreset = (presetName: string) => {
+		const preset = StarterPresets.find((p) => p.name === presetName);
+		if (preset) {
+			setCharacters(preset.defaultCharacters);
+			setPlot(preset.defaultPlot);
+		}
+		setSelectedPreset(presetName);
+	};
 
 	const handlePlotChange =
 		(field: keyof Plot) =>
@@ -545,9 +552,21 @@ const StoryGenerator = () => {
 	return (
 		<>
 			<LLMModelStatus />
-			<button className="basic" onClick={handleAutoFill}>
-				Auto-Fill
-			</button>
+			<div>
+				<select
+					value={selectedPreset}
+					onChange={(e) => applyPreset(e.target.value)}
+				>
+					{StarterPresets.map((preset) => (
+						<option key={preset.name} value={preset.name}>
+							{preset.name}
+						</option>
+					))}
+				</select>
+				<button className="basic" onClick={handleAutoFill}>
+					Auto-Fill
+				</button>
+			</div>
 			{StoryInfoBox}
 			{CharactersBox}
 			{StoryStarter}
