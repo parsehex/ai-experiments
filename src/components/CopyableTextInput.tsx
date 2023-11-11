@@ -67,7 +67,7 @@ const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
 				// look at the text itself to judge, not the span
 				const text = textarea.value;
 				const words = text.split(' ');
-				if (words.length > 100) {
+				if (words.length > 35) {
 					isSingleLine = false;
 				}
 				console.log('single line', text);
