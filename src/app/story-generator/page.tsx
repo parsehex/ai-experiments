@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { IoTrash } from 'react-icons/io5';
 import { v4 } from 'uuid';
 import Collapsible from '@/components/Collapsible';
-import CopyableTextInput from '@/components/CopyableTextInput';
+import TextInput from '@/components/TextInput';
 import HoverMenuButton from '@/components/HoverMenuButton';
 import LLMModelStatus from '@/components/LLMModelStatus';
 import { withPage } from '@/components/Page';
@@ -365,7 +365,7 @@ const StoryGenerator = () => {
 			className="character border-b-2 mb-2 flex items-start"
 			ref={divRef}
 		>
-			<CopyableTextInput
+			<TextInput
 				className="h-9"
 				minWidth="8rem"
 				label="Name"
@@ -375,7 +375,7 @@ const StoryGenerator = () => {
 					handleCharacterChange.bind(null, character.id, 'name'),
 				]}
 			/>
-			<CopyableTextInput
+			<TextInput
 				label="Description"
 				placeholder="Description"
 				value={[
@@ -384,7 +384,7 @@ const StoryGenerator = () => {
 				]}
 				isTextarea
 			/>
-			<CopyableTextInput
+			<TextInput
 				label="State"
 				placeholder="Current State"
 				value={[
@@ -393,7 +393,7 @@ const StoryGenerator = () => {
 				]}
 				isTextarea
 			/>
-			<CopyableTextInput
+			<TextInput
 				label="Short Term Objective"
 				placeholder="Short Term Objective"
 				value={[
@@ -402,7 +402,7 @@ const StoryGenerator = () => {
 				]}
 				isTextarea
 			/>
-			<CopyableTextInput
+			<TextInput
 				label="Long Term Objective"
 				placeholder="Long Term Objective"
 				value={[
@@ -448,7 +448,7 @@ const StoryGenerator = () => {
 	const StoryInfoBox = (
 		<Collapsible title="Story Info" titleSize="md">
 			<div>
-				<CopyableTextInput
+				<TextInput
 					label="Tone"
 					labelOrientation="horizontal"
 					value={[plot.tone, handlePlotChange.bind(null, 'tone')]}
@@ -457,7 +457,7 @@ const StoryGenerator = () => {
 					Generate Tone
 				</button>
 				<br />
-				<CopyableTextInput
+				<TextInput
 					label="Story Description"
 					labelOrientation="horizontal"
 					value={[
@@ -470,13 +470,13 @@ const StoryGenerator = () => {
 					Generate Description
 				</button>
 				<br />
-				<CopyableTextInput
+				<TextInput
 					label="Location"
 					labelOrientation="horizontal"
 					className="input"
 					value={[plot.location, handlePlotChange.bind(null, 'location')]}
 				/>
-				<CopyableTextInput
+				<TextInput
 					label="Time Period"
 					labelOrientation="horizontal"
 					className="input"
@@ -491,7 +491,7 @@ const StoryGenerator = () => {
 
 	const StoryStarter = (
 		<Collapsible title="Story Starter" titleSize="md">
-			<CopyableTextInput
+			<TextInput
 				id="storyStarter"
 				className="input"
 				placeholder="How should the story start?"
@@ -516,10 +516,11 @@ const StoryGenerator = () => {
 						>
 							{actions.length ? 'Continue' : 'Start Story'}
 						</button>
-						<CopyableTextInput
+						<TextInput
 							className="input sm"
 							placeholder="Influence the story"
 							value={[userRequest, setUserRequest]}
+							canCopy={false}
 						/>
 					</>
 				)}

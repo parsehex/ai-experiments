@@ -11,6 +11,7 @@ type CommonInputProps = Omit<
 interface CopyableTextInputProps extends CommonInputProps {
 	value: [string, (value: string) => void];
 	isTextarea?: boolean;
+	canCopy?: boolean;
 	minWidth?: string;
 	label?: string;
 	labelOrientation?: 'horizontal' | 'vertical';
@@ -19,6 +20,7 @@ interface CopyableTextInputProps extends CommonInputProps {
 const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
 	value: v,
 	isTextarea = false,
+	canCopy = true,
 	minWidth = '15rem',
 	label,
 	labelOrientation = 'vertical',
@@ -166,15 +168,19 @@ const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
 					{...rest}
 				/>
 			)}
-			<button
-				onClick={handleCopyClick}
-				className="absolute top-0 right-0 p-1 opacity-50 hover:opacity-100"
-				title="Copy to clipboard"
-				type="button"
-			>
-				<IoClipboardOutline />
-			</button>
-			{copySuccess && <span className="text-sm">{copySuccess}</span>}
+			{canCopy && (
+				<>
+					<button
+						onClick={handleCopyClick}
+						className="absolute top-0 right-0 p-1 opacity-50 hover:opacity-100"
+						title="Copy to clipboard"
+						type="button"
+					>
+						<IoClipboardOutline />
+					</button>
+					{copySuccess && <span className="text-sm">{copySuccess}</span>}
+				</>
+			)}
 		</div>
 	);
 };
