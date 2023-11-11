@@ -60,6 +60,10 @@ const TranscribeAudio: React.FC = () => {
 
 	return (
 		<div className="flex">
+			<h2>
+				Note: This demo relies on the new, OpenAI-compatible API for Oobabooga,
+				cannot be used with its old one.
+			</h2>
 			<div className="inline-flex">
 				<div>
 					<h3>Tools</h3>
@@ -80,6 +84,7 @@ const TranscribeAudio: React.FC = () => {
 						<li>Change Whisper options in ui (model, language, prompt)</li>
 					</ul>
 				</div>
+				h
 			</div>
 			<div className="inline-flex">
 				<form onSubmit={handleFormSubmit}>
