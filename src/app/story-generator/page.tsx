@@ -127,6 +127,7 @@ const StoryGenerator = () => {
 	};
 	const handleGenerateCharacters = async (
 		num: number,
+		relevance = 'off',
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
@@ -134,7 +135,7 @@ const StoryGenerator = () => {
 		if (!num) num = Math.floor(Math.random() * 5) + 1;
 
 		for (let i = 0; i < num; i++) {
-			const parts = genCharacters([...chars], p);
+			const parts = genCharacters([...chars], p, relevance);
 			const result = await generate(parts, {
 				temp: 0.75,
 				cfg: 1.15,
@@ -223,7 +224,7 @@ const StoryGenerator = () => {
 	) => {
 		const parts = genStarter(c, p);
 		const result = await generate(parts, {
-			cfg: 2,
+			cfg: 1.25,
 			temp: 0.25,
 			grammar: Sentences(1, false, 1, 2),
 			max: 256,
@@ -436,7 +437,7 @@ const StoryGenerator = () => {
 				<HoverMenuButton
 					label="Generate Characters"
 					fields={addCharacterOptions}
-					onSubmit={(v) => handleGenerateCharacters(v.numChars)}
+					onSubmit={(v) => handleGenerateCharacters(v.numChars, v.relevance)}
 				/>
 			</span>
 		</Collapsible>

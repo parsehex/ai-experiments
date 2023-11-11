@@ -66,7 +66,7 @@ export function genStoryDescription(
 	const charStr = CharacterString(chars);
 	return [
 		{
-			str: 'Write a short story description based on the following info. The description should concisely explain what the story is mainly about, making sure not to go into too much detail. It should be compelling and creative.\n\n',
+			str: 'Write a short story description based on the following info. The description should concisely explain what the story is mainly about. Make sure not to go into too much detail. It should be compelling and creative.\n\n',
 			suf: `STORY INFO:\n`,
 		},
 		{
@@ -82,16 +82,27 @@ export function genStoryDescription(
 	];
 }
 
-export function genCharacters(chars: Character[], plot: Plot): PromptPart[] {
+export function genCharacters(
+	chars: Character[],
+	plot: Plot,
+	relevance: string
+): PromptPart[] {
 	// use whatever info we have to generate a story description
 	const charStr = CharacterString(chars);
+	const relevancePrompt = {
+		off: '',
+		low: 'The character should be somewhat relevant to the story.',
+		medium:
+			'The character should be relevant to the story, fitting mildly with existing elements.',
+		high: 'The character should be highly relevant and integral to the story.',
+	};
+	let relevanceStr = '';
+	if (relevance !== 'off' && chars.length > 0)
+		// @ts-ignore
+		relevanceStr = relevancePrompt[relevance];
 	return [
 		{
-			str: `Write characters based on the following story info.${
-				chars.length > 0
-					? 'Important: Characters should be different than existing ones, and make sense given the context.'
-					: ''
-			} Return an array of objects, which should have the following keys:
+			str: `Write a character based on the following story info.${relevanceStr} Return an array of objects, which should have the following keys:
 "name": Give the character a first name.
 "description": A short description of the character, describing who they are and what they're like.
 "state": The character's current state, which describes what they're doing at the moment.
@@ -182,7 +193,7 @@ A simple example would be "Dark and gritty but realistic."\n\n`,
 export function genStarter(chars: Character[], plot: Plot): PromptPart[] {
 	return [
 		{
-			str: `Write a start to the story based on the following story info. It should be relevant to the story, and provide a distinct starting point for the story to unfold from.
+			str: `Write a beginning to the story based on the following story info. It should be relevant to the story, and provide a distinct starting point for the story to unfold from.
 Return a string that starts the story.\n\n`,
 			suf: `STORY INFO:\n`,
 		},
@@ -238,7 +249,7 @@ export function genNarrativeAction(
 		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
 		{
 			if: !!narrativeThought,
-			str: `NARRATIVE THOUGHTS:\n(These are your thoughts on how to write the next narrative part of the story.)\n${narrativeThought}\n`,
+			str: `NARRATIVE THOUGHTS:\n(These are your thoughts on how the next narrative part of the story should go. Do not reference these thoughts in your answer.)\n${narrativeThought}\n`,
 		},
 		{ str: `RESPONSE:\n` },
 	];
@@ -263,7 +274,7 @@ export function genDialogueAction(
 		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
 		{
 			if: !!dialogueThought,
-			str: `DIALOGUE THOUGHTS:\n(These are your thoughts on what the character should say next in the dialogue.)\n${dialogueThought}\n`,
+			str: `DIALOGUE THOUGHTS:\n(These are your thoughts on what the character should say next in the dialogue. Do not reference these thoughts in your answer.)\n${dialogueThought}\n`,
 		},
 		{
 			if: !!speakingCharacter,
