@@ -1,11 +1,12 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { IoTrash } from 'react-icons/io5';
 import { v4 } from 'uuid';
 import Collapsible from '@/components/Collapsible';
+import CopyableTextInput from '@/components/CopyableTextInput';
 import HoverMenuButton from '@/components/HoverMenuButton';
 import LLMModelStatus from '@/components/LLMModelStatus';
 import { withPage } from '@/components/Page';
-import { generate } from '@/lib/llm';
 import {
 	Lines,
 	CharacterObject,
@@ -13,6 +14,8 @@ import {
 	ActionObject,
 	Sentences,
 } from '@/lib/llm/grammar';
+import { generate } from '@/lib/llm';
+import { PromptPart } from '@/lib/llm/types';
 import { addCharacterOptions } from './hover-menus';
 import {
 	genCharacters,
@@ -27,9 +30,7 @@ import {
 } from './prompt-parts';
 import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
-import { PromptPart } from '@/lib/llm/types';
 import StarterPresets from './starters';
-import CopyableTextInput from '@/components/CopyableTextInput';
 
 const title = 'Story Generator';
 
@@ -361,7 +362,7 @@ const StoryGenerator = () => {
 	const renderCharacterFields = (character: Character) => (
 		<div
 			key={character.id}
-			className="character flex border-b-2 mb-2"
+			className="character border-b-2 mb-2 flex items-start"
 			ref={divRef}
 		>
 			<CopyableTextInput
@@ -411,10 +412,11 @@ const StoryGenerator = () => {
 				isTextarea
 			/>
 			<button
-				className="basic"
+				className="delete"
 				onClick={() => handleRemoveCharacter(character.id)}
+				title="Delete Character"
 			>
-				Remove Character
+				<IoTrash />
 			</button>
 			{!character.isComplete() && (
 				<button
@@ -503,7 +505,7 @@ const StoryGenerator = () => {
 	);
 
 	const StoryBox = (
-		<div className="story w-2/3 mx-auto">
+		<div className="story w-2/3 mt-3 mx-auto">
 			<span className="story-header flex">
 				<h2>Story</h2>
 				{canGenerate && (
@@ -522,8 +524,12 @@ const StoryGenerator = () => {
 					</>
 				)}
 				{!!actions.length && (
-					<button className="basic" onClick={handleClearActions}>
-						Reset Story
+					<button
+						className="basic delete"
+						onClick={handleClearActions}
+						title="Clear Story"
+					>
+						Reset
 					</button>
 				)}
 			</span>
@@ -546,10 +552,11 @@ const StoryGenerator = () => {
 						)}
 						{action.str}
 						<button
-							className="delete-action-button hidden absolute top-0 right-0"
+							className="delete delete-action-button hidden absolute top-0 right-0"
 							onClick={() => handleDeleteAction(action.id)}
+							title="Delete Action Line"
 						>
-							Delete
+							<IoTrash />
 						</button>
 					</div>
 				))}
