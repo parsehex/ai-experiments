@@ -72,12 +72,10 @@ const StoryGenerator = () => {
 		}
 		setSelectedPreset(presetName);
 	};
-
-	const handlePlotChange =
-		(field: keyof Plot) =>
-		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-			setPlot({ ...plot, [field]: e.target.value });
-		};
+	type ChangeEvent = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
+	const handlePlotChange = (field: keyof Plot, value: string) => {
+		setPlot({ ...plot, [field]: value });
+	};
 
 	const handleAddCharacter = () => {
 		const newCharacter = makeCharacter();
@@ -216,7 +214,7 @@ const StoryGenerator = () => {
 			max: 100,
 			log: { response: 'Tone:' },
 		});
-		handlePlotChange('tone')({ target: { value: result } } as any);
+		handlePlotChange('tone', result.trim());
 		return result;
 	};
 	const generateStoryStarter = async (
@@ -447,18 +445,18 @@ const StoryGenerator = () => {
 	const StoryInfoBox = (
 		<Collapsible title="Story Info" titleSize="md">
 			<div>
-				<label htmlFor="tone">Tone:</label>
 				<CopyableTextInput
-					id="tone"
+					label="Tone"
+					labelOrientation="horizontal"
 					value={[plot.tone, handlePlotChange.bind(null, 'tone')]}
 				/>
 				<button className="basic" onClick={() => handleGenerateTone()}>
 					Generate Tone
 				</button>
 				<br />
-				<label htmlFor="storyDescription">Story Description:</label>
 				<CopyableTextInput
-					id="storyDescription"
+					label="Story Description"
+					labelOrientation="horizontal"
 					value={[
 						plot.storyDescription,
 						handlePlotChange.bind(null, 'storyDescription'),
@@ -469,15 +467,15 @@ const StoryGenerator = () => {
 					Generate Description
 				</button>
 				<br />
-				<label htmlFor="location">Location:</label>
 				<CopyableTextInput
-					id="location"
+					label="Location"
+					labelOrientation="horizontal"
 					className="input"
 					value={[plot.location, handlePlotChange.bind(null, 'location')]}
 				/>
-				<label htmlFor="timePeriod">Time Period:</label>
 				<CopyableTextInput
-					id="timePeriod"
+					label="Time Period"
+					labelOrientation="horizontal"
 					className="input"
 					value={[plot.timePeriod, handlePlotChange.bind(null, 'timePeriod')]}
 				/>
@@ -562,7 +560,10 @@ const StoryGenerator = () => {
 		<>
 			<LLMModelStatus />
 			<div>
+				<label htmlFor="preset">Preset:</label>
 				<select
+					id="preset"
+					className="p-1"
 					value={selectedPreset}
 					onChange={(e) => applyPreset(e.target.value)}
 				>
