@@ -15,6 +15,7 @@ export interface Plot {
 	location: string;
 	timePeriod: string;
 	tone: string;
+	storyIntro: string;
 	// Currently unused:
 	storySummary: string;
 	upcomingEvents: string[];

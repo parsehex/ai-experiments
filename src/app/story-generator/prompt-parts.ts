@@ -193,8 +193,7 @@ A simple example would be "Dark and gritty but realistic."\n\n`,
 export function genStarter(chars: Character[], plot: Plot): PromptPart[] {
 	return [
 		{
-			str: `Write a beginning to the story based on the following story info. It should be relevant to the story, and provide a distinct starting point for the story to unfold from.
-Return a string that starts the story.\n\n`,
+			str: `Write an introduction to the story based on the following story info. It should set the stage for the story, introducing key elements and providing a clear point for the story to continue from.\n\n`,
 			suf: `STORY INFO:\n`,
 		},
 		{ str: `${PlotString(plot)}\n` },

@@ -41,10 +41,10 @@ const StoryGenerator = () => {
 	const [characters, setCharacters] = useState<Character[]>(defCharacters);
 	const [plot, setPlot] = useState<Plot>(defPlot);
 	const [actions, setActions] = useState<Action[]>([]);
-	const [storyStarter, setStoryStarter] = useState<string>('');
+	const [storyIntro, setStoryIntro] = useState<string>(defPlot.storyIntro);
 	const [canGenerate, setCanGenerate] = useState(false);
 	const [selectedPreset, setSelectedPreset] = useState<string>(starter.name);
-	const [userRequest, setUserRequest] = useState('');
+	const [userInfluence, setUserInfluence] = useState('');
 	const divRef = React.useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -219,19 +219,19 @@ const StoryGenerator = () => {
 		handlePlotChange('tone', result.trim());
 		return result;
 	};
-	const generateStoryStarter = async (
+	const generateStoryIntro = async (
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
 		const parts = genStarter(c, p);
 		const result = await generate(parts, {
-			cfg: 1.25,
+			// cfg: 1.25,
 			temp: 0.25,
-			grammar: Sentences(1, false, 1, 2),
+			grammar: Sentences(1, false, 1, 3),
 			max: 256,
-			log: { response: 'Starter:', prompt: 'Starter Prompt:' },
+			log: { response: 'Intro:', prompt: 'Intro Prompt:' },
 		});
-		setStoryStarter(result.trim());
+		setStoryIntro(result.trim());
 		const action: Action = {
 			id: v4(),
 			type: 'Narrative',
@@ -248,9 +248,9 @@ const StoryGenerator = () => {
 	) => {
 		if (!actions.length) {
 			// no actions, make first
-			let starter = storyStarter;
+			let starter = storyIntro;
 			if (!starter) {
-				const starterAction = await generateStoryStarter(c, p);
+				const starterAction = await generateStoryIntro(c, p);
 				starter = starterAction.str;
 			}
 			a = [
@@ -316,6 +316,7 @@ const StoryGenerator = () => {
 				location: '',
 				timePeriod: '',
 				tone: '',
+				storyIntro: '',
 				storySummary: '',
 				upcomingEvents: [],
 			},
@@ -345,7 +346,7 @@ const StoryGenerator = () => {
 			tempState.plot.tone = newTone;
 			p = { ...p, tone: newTone };
 		}
-		const action = await generateStoryStarter(c, p);
+		const action = await generateStoryIntro(c, p);
 		a = [action];
 		tempState.actions = a;
 		await startOrContinueStory(null, c, p, a);
@@ -490,49 +491,49 @@ const StoryGenerator = () => {
 	);
 
 	const StoryStarter = (
-		<Collapsible title="Story Starter" titleSize="md">
+		<Collapsible title="Introduction" titleSize="md" className="ml-3">
 			<TextInput
-				id="storyStarter"
+				id="storyIntro"
 				className="input"
 				placeholder="How should the story start?"
-				value={[storyStarter, setStoryStarter]}
+				value={[storyIntro, setStoryIntro]}
 				isTextarea
 			/>
-			<button className="basic" onClick={() => generateStoryStarter()}>
+			<button className="basic" onClick={() => generateStoryIntro()}>
 				Generate
 			</button>
 		</Collapsible>
 	);
 
 	const StoryBox = (
-		<div className="story w-2/3 mt-3 mx-auto">
-			<span className="story-header flex">
-				<h2>Story</h2>
-				{canGenerate && (
-					<>
+		<div className="story w-2/3 mt-3 mx-auto pb-20">
+			<h2>Story</h2>
+			<span className="story-header flex flex-col justify-center">
+				<TextInput
+					placeholder="Influence story (optional)"
+					value={[userInfluence, setUserInfluence]}
+					canCopy={false}
+				/>
+				{StoryStarter}
+				<div>
+					{storyIntro && (
 						<button
 							className="basic"
-							onClick={() => startOrContinueStory(userRequest)}
+							onClick={() => startOrContinueStory(userInfluence)}
 						>
 							{actions.length ? 'Continue' : 'Start Story'}
 						</button>
-						<TextInput
-							className="input sm"
-							placeholder="Influence the story"
-							value={[userRequest, setUserRequest]}
-							canCopy={false}
-						/>
-					</>
-				)}
-				{!!actions.length && (
-					<button
-						className="basic delete"
-						onClick={handleClearActions}
-						title="Clear Story"
-					>
-						Reset
-					</button>
-				)}
+					)}
+					{!!actions.length && (
+						<button
+							className="basic delete"
+							onClick={handleClearActions}
+							title="Clear Story"
+						>
+							Reset
+						</button>
+					)}
+				</div>
 			</span>
 			<div className="story-actions">
 				{actions.map((action) => (
@@ -588,8 +589,7 @@ const StoryGenerator = () => {
 			</div>
 			{StoryInfoBox}
 			{CharactersBox}
-			{StoryStarter}
-			{StoryBox}
+			{canGenerate && StoryBox}
 		</>
 	);
 };

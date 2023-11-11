@@ -4,15 +4,17 @@ export interface CollapsibleProps extends HTMLAttributes<HTMLDivElement> {
 	title: string;
 	titleSize?: 'sm' | 'md' | 'lg';
 	children: React.ReactNode;
+	defaultCollapsed?: boolean;
 }
 
 const Collapsible: React.FC<CollapsibleProps> = ({
 	title,
 	titleSize,
 	children,
+	defaultCollapsed,
 	...rest
 }) => {
-	const [isCollapsed, setIsCollapsed] = useState(false);
+	const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed ?? false);
 	let titleClass = 'text-xl';
 	switch (titleSize) {
 		case 'sm':

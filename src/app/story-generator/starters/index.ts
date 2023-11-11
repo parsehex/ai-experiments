@@ -1,4 +1,3 @@
-import { makeCharacter } from '../story';
 import { StarterPreset } from '../types';
 import buttandjohn from './buttandjohn';
 
@@ -12,6 +11,7 @@ export const StarterPresets: StarterPreset[] = [
 			location: '',
 			timePeriod: '',
 			tone: '',
+			storyIntro: '',
 			storySummary: '',
 			upcomingEvents: [],
 		},

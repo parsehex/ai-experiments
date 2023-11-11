@@ -44,6 +44,7 @@ export default function buttandjohn(): StarterPreset {
 			storyDescription,
 			location,
 			timePeriod,
+			storyIntro: '',
 			tone: 'Jovial and light-hearted with a touch of satire.',
 			storySummary: '',
 			upcomingEvents: [],
