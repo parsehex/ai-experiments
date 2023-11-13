@@ -102,10 +102,10 @@ const demos: ItemProps[] = [
 		tags: ['LLM', 'TODO'],
 	},
 	{
-		title: 'Code Summarizer',
-		description: 'Summarize code',
-		// href: '/code-summarizer',
-		tags: ['LLM', 'TODO'],
+		title: 'Summarizer',
+		description: 'Summarize collections of text',
+		href: '/summarizer',
+		tags: ['LLM', 'In Progress'],
 	},
 	{
 		title: 'Document QA',

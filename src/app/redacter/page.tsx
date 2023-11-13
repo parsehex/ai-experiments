@@ -25,6 +25,7 @@ const params: GenerateOptions = {
 	top_k: 20,
 };
 function Redacter() {
+	// https://microsoft.github.io/presidio/tutorial/00_getting_started/
 	const loadInput = () => {
 		const input = localStorage.getItem('redacter-input');
 		if (input) setInputText(input);
