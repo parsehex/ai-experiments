@@ -142,11 +142,11 @@ const demos: ItemProps[] = [
 
 const Item: React.FC<ItemProps> = ({ title, description, href, tags }) => (
 	<li
-		className="flex items-center justify-start flex-col p-2 m-3 grow"
+		className="flex items-center justify-start flex-col px-2 py-3 m-3 grow bg-gray-100 rounded-lg shadow hover:shadow-lg border border-gray-300"
 		style={{ maxWidth: '20%', minWidth: '150px' }}
 	>
 		{href ? (
-			<a className="block w-full underline" href={href}>
+			<a className="text-center block w-full underline" href={href}>
 				{title}
 			</a>
 		) : (
