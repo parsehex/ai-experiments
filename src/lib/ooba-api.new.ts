@@ -46,7 +46,7 @@ export async function generateText(
 	params: GenerateParams
 ): Promise<GenerateResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/v1/completions#/generate`, {
+	const response = await fetch(`${BASE_URL}/v1/completions`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

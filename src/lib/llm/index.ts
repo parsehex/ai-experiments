@@ -1,5 +1,5 @@
-import { generateText } from '../ooba-api';
-import { GenerateParams } from '../types/ooba';
+import { generateText } from '../ooba-api.new';
+import { GenerateParams } from '../types/ooba.new';
 import { PromptPart } from './types';
 
 /**
@@ -85,7 +85,7 @@ export async function generate(
 	}
 	const res = await generateText(params);
 	if (options?.log && options.log.response) {
-		console.log(options.log.response, res.results[0].text);
+		console.log(options.log.response, res.choices[0].text);
 	}
-	return res.results[0].text;
+	return res.choices[0].text;
 }
