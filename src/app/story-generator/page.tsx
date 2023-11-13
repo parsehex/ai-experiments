@@ -263,7 +263,8 @@ const StoryGenerator = () => {
 		}
 		const actionParts = genPickAction(c, p, a, userRequest);
 		const actionStr = await generate(actionParts, {
-			cfg: 1.15,
+			temp: 0.25,
+			cfg: 1.25,
 			grammar: ActionObject(),
 			max: 384,
 			log: { response: 'Thought:', prompt: 'Thought Prompt:' },
@@ -284,17 +285,37 @@ const StoryGenerator = () => {
 			);
 		}
 		const result = await generate(actionParts2, {
-			temp: 0.5,
-			cfg: 1.25,
+			temp: actionThoughts.type === 'Dialogue' ? 0.25 : 0.01,
+			cfg: 1.1,
 			// grammar: Lines({ n: 1, sentences: { min: 1, max: 5 } }),
-			grammar: Sentences(1, false, 1, 3),
+			grammar:
+				actionThoughts.type === 'Dialogue' ? '' : Sentences(1, false, 1, 3),
 			max: 512,
 			log: { response: 'Action:', prompt: 'Action Prompt:' },
+			stop: ['\n'],
 		});
+		let newActionStr = result.trim();
+		if (actionThoughts.type === 'Dialogue') {
+			// detect and try to fix the returned format
+			// check if character name is at the start of the string, remove if so
+			// also remove surrounding quotes
+			const charName = actionThoughts.characterName;
+			if (charName && newActionStr.startsWith(charName)) {
+				newActionStr = newActionStr.slice(charName.length).trim();
+				// is there a colon after the name? remove it
+				if (newActionStr.startsWith(':')) {
+					newActionStr = newActionStr.slice(1).trim();
+				}
+			}
+			// remove surrounding quotes
+			if (newActionStr.startsWith('"') && newActionStr.endsWith('"')) {
+				newActionStr = newActionStr.slice(1, -1);
+			}
+		}
 		const newAction: Action = {
 			id: v4(),
 			type: actionThoughts.type,
-			str: result.trim(),
+			str: newActionStr,
 			characterName: actionThoughts.characterName,
 			aiThoughts: actionThoughts.str,
 		};
@@ -542,7 +563,12 @@ const StoryGenerator = () => {
 						className="action-item hover:bg-gray-100 relative"
 					>
 						{action.aiThoughts && (
-							<Collapsible title="Thoughts" titleSize="sm" className="ml-1">
+							<Collapsible
+								title="Thoughts"
+								titleSize="sm"
+								className="ml-1"
+								defaultCollapsed
+							>
 								<div className="ai-thoughts ml-3">{action.aiThoughts}</div>
 							</Collapsible>
 						)}

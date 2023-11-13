@@ -24,10 +24,19 @@ export interface Plot {
 export interface Action {
 	id: string;
 	type: 'Narrative' | 'Dialogue';
-	str: string;
 	characterName?: string;
+	str: string;
 	aiThoughts?: string;
 }
+
+// The interface that can be used to generate the grammar that the LLM's
+//   response will be constrained to. Generate the grammar at
+//   https://grammar.intrinsiclabs.ai/
+// interface Action {
+// 	type: 'Narrative' | 'Dialogue';
+// 	characterName?: string;
+// 	str: string;
+// }
 
 export interface StarterPreset {
 	name: string;

@@ -1,3 +1,11 @@
+// Helpful tip: You can generate grammar based on TS interfaces at
+//   https://grammar.intrinsiclabs.ai/
+// Note that I have been replacing the range of characters they use for
+//   the "string" variable with `([a-zA-Z' ,.!?&;-]+)`. Theirs is `([^"]*)`,
+// I can't get negate to work.
+// Also note that you need to remember to escape characters correctly.
+//   Look at other functions for examples.
+
 const sentences = `[a-zA-Z'" ,.!?&;-]+`;
 interface SentenceOptions {
 	n?: number;
@@ -169,10 +177,9 @@ numberlist ::= "["   ws   "]" | "["   ws   string   (","   ws   number)*   ws   
 };
 
 export const ActionObject = () => {
-	return `root ::= Thing
-Type ::= "\\\"Narrative\\\"" | "\\\"Dialogue\\\""
-Thing ::= "{"   ws   "\\\"type\\\":"   ws   Type   ","   ws   "\\\"str\\\":"   ws   string   ","   ws   ("\\\"characterName\\\":"   ws   string)?   "}"
-Thinglist ::= "[]" | "["   ws   Thing   (","   ws   Thing)*   "]"
+	return `root ::= Action
+Action ::= "{"   ws   "\\\"type\\\":"   ws   string   ","   ws   "\\\"characterName\\\":"   ws   string   ","   ws   "\\\"str\\\":"   ws   string   "}"
+Actionlist ::= "[]" | "["   ws   Action   (","   ws   Action)*   "]"
 string ::= "\\\""   ([a-zA-Z' ,.!?&;-]+)   "\\\""
 boolean ::= "true" | "false"
 ws ::= [ \\t\\n]*

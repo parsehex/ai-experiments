@@ -67,6 +67,11 @@ export async function generate(
 	if (options) {
 		for (const [key, value] of Object.entries(options)) {
 			const paramKey = KeyMap[key as keyof GenerateOptions];
+			// remove falsy values that are not boolean
+			if (!value && typeof value !== 'boolean') {
+				delete params[paramKey];
+				continue;
+			}
 			if (paramKey) {
 				params[paramKey] = value;
 			} else {

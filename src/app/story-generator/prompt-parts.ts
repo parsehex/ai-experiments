@@ -208,13 +208,16 @@ export function genPickAction(
 	actions: Action[],
 	userRequest: string | null
 ): PromptPart[] {
+	// TODO: may need to break this step up to improve quality of thoughts
+	//   1) pick narrative or dialogue (and character if dialogue)
+	//   2) write thoughts on step 1's choice
 	return [
 		{
-			str: `Pick something to happen in order to continue the following story. You can pick anything that makes sense with the story so far. It can be an action or dialogue. It should be relevant to the story and move it forward.
+			str: `Choose something to happen in order to influence the next few sentences of the following story. You can pick anything that makes sense with the story so far. It can be a narrative or dialogue. It should be relevant to the story and move the plot forward without going too far in one step. You should refer to characters by name.
 Return an object with the following keys:
-"type": Either "Narrative" or "Dialogue". Narrative is a description of things happening in the story. Dialogue is a character speaking. What should the next line of the story be?
-"str": Advice on how to write the next part of the story. This should be a short description of what should happen next, and should be written in the form of an inner-thought, like "Character should do this" or "This should happen", and should provide direction on how to write the next part of the story.
-"characterName": Name of the character who is speaking, if dialogue.\n\n`,
+"type": Either "Narrative" or "Dialogue". Narrative is a description of things happening in the story and Dialogue is a character speaking. What should the next line of the story be?
+"characterName"?: Name of the character that you choose to speak, if Dialogue.
+"str": Instruction on how to write the next part of the story. This should be a short description of what should happen next, and should be written in the form of an inner-thought, like "Character should do this" or "This should happen", and should provide direction on how to write the next part of the story.\n\n`,
 			suf: `STORY INFO:\n`,
 		},
 		{ str: `${PlotString(plot)}\n` },
@@ -238,9 +241,10 @@ export function genNarrativeAction(
 ): PromptPart[] {
 	return [
 		{
-			str: `Write a narrative continuation based on the story's progression. Use descriptive language to depict the scene, actions, and emotions, drawing upon the previous story elements and the thoughts provided.\n\n`,
+			str: `Write a narrative continuation based on the story's progression. Use descriptive language to depict the scene, actions, and emotions, drawing upon the previous story elements and your prior thoughts.
+Your thoughts aren't part of the story, only you can see them.\n\n`,
 		},
-		{ str: `${PlotString(plot, false)}\n` },
+		{ str: `STORY INFO:\n${PlotString(plot, false)}\n` },
 		{
 			if: chars.length > 0,
 			str: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
@@ -248,7 +252,7 @@ export function genNarrativeAction(
 		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
 		{
 			if: !!narrativeThought,
-			str: `NARRATIVE THOUGHTS:\n(These are your thoughts on how the next narrative part of the story should go. Do not reference these thoughts in your answer.)\n${narrativeThought}\n`,
+			str: `YOUR THOUGHTS:\n${narrativeThought}\n`,
 		},
 		{ str: `RESPONSE:\n` },
 	];
@@ -263,9 +267,10 @@ export function genDialogueAction(
 ): PromptPart[] {
 	return [
 		{
-			str: `Compose a piece of dialogue that fits the story's current context. Reflect the speaking character's personality, motivations, and the previous story elements. Use the thoughts provided as a guide for the character's speech.\n\n`,
+			str: `Write some dialogue that fits the following story's current context. Reflect the speaking character's personality, motivations, and the previous story elements. Use your thoughts to guide what the character says. Your thoughts aren't part of the story, only you can see them.
+Your response should be spoken dialogue only with no narrative directions, in no more than 5 sentences.\n\n`,
 		},
-		{ str: `${PlotString(plot, false)}\n` },
+		{ str: `STORY INFO:\n${PlotString(plot, false)}\n` },
 		{
 			if: chars.length > 0,
 			str: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
@@ -273,11 +278,11 @@ export function genDialogueAction(
 		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
 		{
 			if: !!dialogueThought,
-			str: `DIALOGUE THOUGHTS:\n(These are your thoughts on what the character should say next in the dialogue. Do not reference these thoughts in your answer.)\n${dialogueThought}\n`,
+			str: `YOUR THOUGHTS:\n${dialogueThought}\n`,
 		},
 		{
 			if: !!speakingCharacter,
-			str: `SPEAKING CHARACTER:\n${speakingCharacter}\n`,
+			str: `CHARACTER: ${speakingCharacter}\n`,
 		},
 		{ str: `RESPONSE:\n` },
 	];
