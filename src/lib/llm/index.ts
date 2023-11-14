@@ -1,7 +1,9 @@
-import { generateText } from './ooba-api.new';
+import { generateText as oobaGenerateText } from './ooba-api.new';
+import { generateText as openaiGenerateText } from './openai-api';
 import { GenerateParams } from '../types/ooba.new';
-import { PromptPart } from './types';
+import { PromptPart, PromptFormatResponse, Message } from './types';
 
+// TODO we may need to change the prompt parts to be able to split into system and user
 /**
  * Constructs a prompt for AI generation by concatenating various prompt parts.
  * Each part can be conditionally included based on a boolean condition and can
@@ -26,6 +28,9 @@ export function makePrompt(parts: PromptPart[]): string {
 	}, '');
 }
 export interface GenerateOptions extends Partial<GenerateParams> {
+	model?: string;
+	/** Required if using OpenAI */
+	api_key?: string;
 	temp?: number;
 	cfg?: number;
 	max?: number;
@@ -37,15 +42,31 @@ export interface GenerateOptions extends Partial<GenerateParams> {
 		response?: string;
 	};
 }
-const KeyMap: Record<keyof GenerateOptions, keyof GenerateParams> = {
+
+type ParamKeyMap = Record<keyof GenerateOptions, keyof GenerateParams>;
+const KeyMap: ParamKeyMap = {
+	api_key: '',
 	temp: 'temperature',
 	cfg: 'guidance_scale',
 	max: 'max_new_tokens',
-	// openai api:
-	// max: 'max_tokens',
 	stop: 'stopping_strings',
 	grammar: 'grammar_string',
 };
+const OpenAIKeyMap: ParamKeyMap = {
+	api_key: 'api_key',
+	temp: 'temperature',
+	cfg: '',
+	max: 'max_tokens',
+	stop: 'stop',
+	grammar: '',
+};
+
+const ModelKeyMap: Record<string, ParamKeyMap> = {
+	ooba: KeyMap,
+	OpenAI: OpenAIKeyMap,
+};
+
+const OpenAIModels = ['gpt-3.5', 'gpt-4'];
 
 /**
  * Generates text from a prompt using the AI model. Wrapper around `generateText`.
@@ -58,17 +79,73 @@ const KeyMap: Record<keyof GenerateOptions, keyof GenerateParams> = {
  * - grammar: grammar_string
  */
 export async function generate(
-	promptParts: PromptPart[] | string,
+	promptParts: PromptPart[] | Message[] | string,
 	options?: GenerateOptions
 ): Promise<string> {
-	const prompt =
-		typeof promptParts === 'string' ? promptParts : makePrompt(promptParts);
-	const params: GenerateParams = { prompt };
-	if (options) {
+	let openaiOrOoba: 'ooba' | 'OpenAI' | '' = '';
+	let model = '';
+	let promptFormat = 'flexible';
+	let prompt: PromptFormatResponse = '';
+	if (options?.model) {
+		model = options.model;
+		delete options.model;
+		// check if model starts with an openai model name
+		const openaiModel = OpenAIModels.find((m) => model.startsWith(m));
+		if (openaiModel) {
+			promptFormat = 'OpenAI';
+			openaiOrOoba = 'OpenAI';
+			if (!options.api_key) {
+				throw new Error(
+					'OpenAI model requires api_key to be passed in options'
+				);
+			}
+		} else {
+			openaiOrOoba = 'ooba';
+		}
+	} else if (options && !options.model) {
+		model = 'ooba';
+		openaiOrOoba = 'ooba';
+	}
+	if (Array.isArray(promptParts)) {
+		// look at first part to determine type
+		const firstPart = promptParts[0];
+		// part is either a message object or a promptpart object
+		if (promptFormat === 'OpenAI') {
+			if (!('role' in firstPart))
+				throw new Error(
+					'OpenAI model requires prompt parts to be message objects'
+				);
+			prompt = promptParts as Message[];
+		} else {
+			prompt = makePrompt(promptParts as PromptPart[]);
+		}
+	} else if (typeof promptParts === 'string') {
+		prompt = promptParts;
+	}
+	// prompt =
+	// 	typeof promptParts === 'string' ? promptParts : makePrompt(promptParts);
+
+	const params: GenerateParams = { prompt: prompt as any };
+	if (options && openaiOrOoba) {
+		// for (const [key, value] of Object.entries(options)) {
+		// 	const paramKey = KeyMap[key as keyof GenerateOptions];
+		// 	// remove falsy values that are not boolean
+		// 	if (!value && typeof value !== 'boolean') {
+		// 		delete params[paramKey];
+		// 		continue;
+		// 	}
+		// 	if (paramKey) {
+		// 		params[paramKey] = value;
+		// 	} else {
+		// 		params[key as keyof GenerateParams] = value;
+		// 	}
+		// }
+		// use keymap for model
+		const modelKeyMap = ModelKeyMap[openaiOrOoba];
 		for (const [key, value] of Object.entries(options)) {
-			const paramKey = KeyMap[key as keyof GenerateOptions];
-			// remove falsy values that are not boolean
-			if (!value && typeof value !== 'boolean') {
+			const paramKey = modelKeyMap[key as keyof GenerateOptions];
+			// remove falsy values that are not boolean, or remove empty paramKeys
+			if (!paramKey || (!value && typeof value !== 'boolean')) {
 				delete params[paramKey];
 				continue;
 			}
@@ -83,9 +160,27 @@ export async function generate(
 		if (options.log.prompt) console.log(options.log.prompt, prompt);
 		delete params.log;
 	}
-	const res = await generateText(params);
-	if (options?.log && options.log.response) {
-		console.log(options.log.response, res.choices[0].text);
+	let res = '';
+	if (openaiOrOoba === 'ooba') {
+		if (!params?.auto_max_new_tokens && !params?.max_tokens) {
+			params.auto_max_new_tokens = true;
+		}
+		const resp = await oobaGenerateText(params);
+		res = resp.choices[0].text;
+	} else if (openaiOrOoba === 'OpenAI') {
+		params.api_key = options?.api_key;
+		params.model = model;
+		params.messages = prompt as Message[];
+		// @ts-ignore
+		delete params.prompt;
+		// @ts-ignore
+		const resp = await openaiGenerateText(params);
+		res = resp.choices[0].message.content;
+	} else {
+		throw new Error('No model specified');
 	}
-	return res.choices[0].text;
+	if (options?.log && options.log.response) {
+		console.log(options.log.response, res);
+	}
+	return res;
 }
