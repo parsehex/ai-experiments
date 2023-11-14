@@ -1,4 +1,4 @@
-import { generateText } from '../ooba-api.new';
+import { generateText } from './ooba-api.new';
 import { GenerateParams } from '../types/ooba.new';
 import { PromptPart } from './types';
 

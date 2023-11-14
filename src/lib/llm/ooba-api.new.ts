@@ -14,8 +14,8 @@ import {
 	ListModelsResponse,
 	ModelInfoResponse,
 	NewModelInfo,
-} from './types/ooba.new';
-import { cors } from './utils';
+} from '../types/ooba.new';
+import { cors } from '../utils';
 
 let BASE_URL = 'http://localhost:5000';
 let adjusted = false;
@@ -89,23 +89,6 @@ export async function getCurrentModel(): Promise<CurrentModelResponse> {
 	return response.json();
 }
 
-// export async function modelAction(
-// 	options: ModelOptions
-// ): Promise<ModelActionResponse> {
-// 	if (!adjusted) fixUrl();
-// 	const response = await fetch(`${BASE_URL}/api/v1/model`, {
-// 		method: 'POST',
-// 		headers: {
-// 			'Content-Type': 'application/json',
-// 		},
-// 		body: JSON.stringify(options),
-// 	});
-// 	return response.json();
-// }
-// export async function modelInfo(): Promise<ModelInfoResponse> {
-// 	return await modelAction({ action: 'info' });
-// }
-
 /** List models or get info on a specific model */
 export async function listModels(
 	name = ''
@@ -141,6 +124,3 @@ export async function tokenCount(str: string) {
 }
 
 // no unload model endpoint
-// export async function unloadModel(): Promise<ModelInfoResponse> {
-// 	return await modelAction({ action: 'unload' });
-// }
