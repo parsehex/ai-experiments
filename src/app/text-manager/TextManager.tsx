@@ -30,6 +30,7 @@ export default function TextManager({
 		if (!storedChunks || !storedInstructions) return;
 		const parsedChunks = JSON.parse(storedChunks);
 		setChunks(parsedChunks);
+		setCollapsedChunks(parsedChunks.map((chunk: TextChunk) => chunk.id));
 		setInstructions(storedInstructions);
 
 		// any chunks have a content but missing tokenCount?
@@ -161,6 +162,7 @@ export default function TextManager({
 		setCurrentTitle('');
 		setCurrentContent('');
 		fetchTokenCount(newChunk, updatedChunks);
+		setCollapsedChunks([...collapsedChunks, newChunk.id]);
 	};
 	const removeChunk = (id: string) => {
 		const updatedChunks = chunks.filter((chunk) => chunk.id !== id);
