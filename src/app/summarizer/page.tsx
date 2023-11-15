@@ -15,14 +15,16 @@ function Summarizer() {
 	const [apiKey, setApiKey] = useState('');
 	const [selectedModel, setSelectedModel] = useState('ooba');
 	const [availableModels, setAvailableModels] = useState<string[]>(['ooba']);
-	const [testInput, setTestInput] = useState('');
-	const [output, setOutput] = useState('');
+	const [collapsedChunks, setCollapsedChunks] = useState<string[]>([]);
 	const [chunks, setChunks] = useState<TextChunk[]>([]);
 
 	const reloadChunks = () => {
 		const storedChunks = localStorage.getItem(lsKey);
 		if (storedChunks) {
 			setChunks(JSON.parse(storedChunks));
+			setCollapsedChunks(
+				JSON.parse(storedChunks).map((chunk: TextChunk) => chunk.id)
+			);
 		}
 	};
 
@@ -49,14 +51,14 @@ function Summarizer() {
 			});
 	}, []);
 
-	const constructPrompt = (inputText?: string) => {
-		if (!inputText) inputText = testInput;
-		const system = `Summarize the provided text under INPUT.`;
-		const user = 'INPUT:\n```\n' + inputText.trim() + '\n```';
-		const format = selectedModel === 'ooba' ? 'flexible' : 'OpenAI';
-		const prompt = makePrompt(user, system, format);
-		return prompt;
-	};
+	// const constructPrompt = (inputText?: string) => {
+	// 	if (!inputText) inputText = testInput;
+	// 	const system = `Summarize the provided text under INPUT.`;
+	// 	const user = 'INPUT:\n```\n' + inputText.trim() + '\n```';
+	// 	const format = selectedModel === 'ooba' ? 'flexible' : 'OpenAI';
+	// 	const prompt = makePrompt(user, system, format);
+	// 	return prompt;
+	// };
 
 	// const Test = async () => {
 	// 	const prompt = constructPrompt();
@@ -75,8 +77,38 @@ function Summarizer() {
 			(chunk) =>
 				chunk.metadata?.summary && (
 					<div key={chunk.id} className="p-4 border-b border-gray-300">
-						<h3 className="font-bold">{chunk.title} - Summary</h3>
-						<p className="whitespace-pre-line">{chunk.metadata.summary}</p>
+						<h3
+							className="font-bold"
+							onContextMenu={(e) => {
+								e.preventDefault();
+								const thisChunk = chunks.find((c) => c.id === chunk.id);
+								if (!thisChunk) return;
+								const updatedChunks = chunks.map((c) => {
+									if (c.id !== thisChunk.id) return c;
+									return {
+										...c,
+										metadata: {
+											...c.metadata,
+											summary: '',
+										},
+									};
+								});
+								setChunks(updatedChunks);
+								localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
+							}}
+							onClick={() => {
+								const newCollapsedChunks = collapsedChunks.includes(chunk.id)
+									? collapsedChunks.filter((id) => id !== chunk.id)
+									: [...collapsedChunks, chunk.id];
+								setCollapsedChunks(newCollapsedChunks);
+							}}
+						>
+							{chunk.title + ' - Summary'}
+							{collapsedChunks.includes(chunk.id) ? ' +' : ' -'}
+						</h3>
+						{!collapsedChunks.includes(chunk.id) && (
+							<p className="whitespace-pre-line">{chunk.metadata.summary}</p>
+						)}
 					</div>
 				)
 		);
