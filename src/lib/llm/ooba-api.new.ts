@@ -90,9 +90,7 @@ export async function getCurrentModel(): Promise<CurrentModelResponse> {
 }
 
 /** List models or get info on a specific model */
-export async function listModels(
-	name = ''
-): Promise<ListModelsResponse | NewModelInfo> {
+export async function listModels(name = ''): Promise<ListModelsResponse> {
 	if (!adjusted) fixUrl();
 	let url = `${BASE_URL}/v1/models`;
 	if (name) url += `/${name}`;
@@ -125,3 +123,6 @@ export async function tokenCount(str: string): Promise<number> {
 }
 
 // no unload model endpoint
+
+// TODO add api endpoint that can read model settings
+//   if server is running on same machine as ooba

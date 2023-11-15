@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOobaServerStatus } from '@/hooks/useOobaServerStatus';
-import { ServerStatus } from '@/lib/types/ooba';
-import { loadModel, listModels } from '@/lib/ooba-api';
+import { ServerStatus } from '@/lib/types/ooba.new';
+import { loadModel, listModels } from '@/lib/llm/ooba-api.new';
 
 const defaultModels = ['gpt-3.5-turbo', 'text-embedding-ada-002'];
 
@@ -17,14 +17,14 @@ const LLMModelStatus: React.FC = () => {
 			status === ServerStatus.ON_MODEL_LOADED
 		) {
 			listModels().then((models) => {
-				if (!models || !models?.result?.length) return;
-				const modelList = models.result.filter(
-					(model) => !defaultModels.includes(model)
-				);
+				if (!models || !models?.data?.length) return;
+				const modelList = models.data
+					.filter((model) => !defaultModels.includes(model.id))
+					.map((model) => model.id);
 				if (modelList.length === 0) return;
 				setModels(modelList);
 				// is first model "None"?
-				if (models.result[0] === 'None') {
+				if (models.data[0].id === 'None') {
 					// no model loaded
 					setSelectedModel('');
 				}

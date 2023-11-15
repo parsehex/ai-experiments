@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ModelInfo, ServerStatus } from '@/lib/types/ooba';
-import { listModels, getCurrentModel } from '@/lib/ooba-api';
+import { ModelInfo, ServerStatus } from '@/lib/types/ooba.new';
+import { listModels, getCurrentModel } from '@/lib/llm/ooba-api.new';
 
 export function useOobaServerStatus() {
 	const [status, setStatus] = useState<ServerStatus>(ServerStatus.OFF);
@@ -10,11 +10,11 @@ export function useOobaServerStatus() {
 		const checkStatus = async () => {
 			try {
 				const currentModelName = await getCurrentModel();
-				if (currentModelName === 'None' || !currentModelName) {
+				if (currentModelName.model_name === 'None' || !currentModelName) {
 					setStatus(ServerStatus.ON_NO_MODEL);
 				} else {
 					setModelInfo({
-						model_name: currentModelName,
+						model_name: currentModelName.model_name,
 						lora_names: [],
 						'shared.settings': {}, // Default to empty, update as needed
 						'shared.args': {}, // Default to empty, update as needed
