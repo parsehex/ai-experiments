@@ -72,7 +72,7 @@ const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
 				if (words.length > 35) {
 					isSingleLine = false;
 				}
-				console.log('single line', text);
+				// console.log('single line', text);
 			}
 
 			// change the width of the span to find a good width
