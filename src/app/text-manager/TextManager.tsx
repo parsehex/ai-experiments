@@ -7,6 +7,8 @@ import { makePrompt } from '@/lib/llm/prompts';
 import { IoClipboardOutline, IoCloudUploadOutline } from 'react-icons/io5';
 import { RTFContentObject, RTFObject } from '../api/convert-to-text/route';
 
+const SupportedFileTypes = ['.txt', '.rtf', '.doc', '.docx'];
+
 interface TextManagerProps {
 	selectedModel?: string;
 	lsKey: string;
@@ -156,21 +158,31 @@ ${inputText.trim()}
 
 		interface Response {
 			convertedText: string | (RTFObject | RTFContentObject)[];
+			type: string;
 		}
 		const result: Response = await response.json();
-		if (typeof result.convertedText === 'string') {
-			setCurrentContent(result.convertedText);
-		} else {
-			const content = result.convertedText
-				.map((obj) => {
-					if ('content' in obj) {
-						return (obj as RTFObject).content.map((c) => c.value).join('');
-					} else {
-						return (obj as RTFContentObject).value;
-					}
-				})
-				.join('\n');
-			setCurrentContent(content);
+		switch (result.type) {
+			case 'string':
+				setCurrentContent(result.convertedText as string);
+				break;
+			case 'rtf':
+				const content = (result.convertedText as RTFObject[])
+					.map((obj) => {
+						if ('content' in obj) {
+							return obj.content.map((c) => c.value).join('');
+						} else {
+							return (obj as RTFContentObject).value;
+						}
+					})
+					.join('\n');
+				setCurrentContent(content);
+				break;
+			case 'test':
+				console.log('test format', result.convertedText);
+				break;
+			default:
+				console.log('unknown file type', result.type);
+				break;
 		}
 	};
 	const addChunk = () => {
@@ -262,7 +274,11 @@ ${inputText.trim()}
 					onChange={(e) => setCurrentTitle(e.target.value)}
 				/>
 				<div className="mb-4">
-					<input type="file" onChange={handleFileChange} accept=".txt,.rtf" />
+					<input
+						type="file"
+						onChange={handleFileChange}
+						accept={SupportedFileTypes.join(',')}
+					/>
 					<button className="basic ml-2" onClick={uploadFile}>
 						<IoCloudUploadOutline />
 					</button>

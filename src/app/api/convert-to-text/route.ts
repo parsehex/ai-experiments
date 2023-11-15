@@ -1,5 +1,4 @@
 import { createWriteStream, promises as fs } from 'fs';
-import { spawn } from 'child_process';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 import { NextRequest } from 'next/server';
@@ -32,14 +31,21 @@ export async function POST(req: NextRequest) {
 		await promisify(pipeline)(file.stream(), fileStream);
 		const text = await fs.readFile(inputFilePath, 'utf-8');
 
-		let res: any = { convertedText: '' };
+		let res: any = { convertedText: '', type: '' };
 		console.log('ext', ext);
 		switch (ext) {
-			case 'rtf':
-				res.convertedText = await rtfToText(text);
-				break;
 			case 'txt':
 				res.convertedText = text;
+				res.type = 'string';
+				break;
+			case 'doc':
+			case 'docx':
+				res.convertedText = await useWordExtractor(inputFilePath);
+				res.type = 'string';
+				break;
+			case 'rtf':
+				res.convertedText = await rtfToText(text);
+				res.type = 'rtf';
 				break;
 			default:
 				return new Response('Unsupported file type.', { status: 400 });
@@ -87,15 +93,18 @@ export interface RTFObject {
 	style: RTFStyleObject;
 	content: RTFContentObject[];
 }
-async function rtfToText(
-	fileStr: any
-): Promise<(RTFObject | RTFContentObject)[]> {
+function rtfToText(fileStr: any): Promise<(RTFObject | RTFContentObject)[]> {
 	return new Promise((resolve, reject) => {
 		parseRTF.string(fileStr, (err: any, result: any) => {
-			if (err) {
-				reject(err);
-			}
+			if (err) reject(err);
 			resolve(result.content);
 		});
 	});
+}
+
+async function useWordExtractor(inputFilePath: string) {
+	const WordExtractor = (await import('word-extractor')).default;
+	const extractor = new WordExtractor();
+	const doc = await extractor.extract(inputFilePath);
+	return doc.getBody() as string;
 }
