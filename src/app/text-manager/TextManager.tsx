@@ -5,6 +5,7 @@ import { v4 } from 'uuid';
 import { generate, tokenCount } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { IoClipboardOutline, IoCloudUploadOutline } from 'react-icons/io5';
+import { RTFContentObject, RTFObject } from '../api/convert-to-text/route';
 
 interface TextManagerProps {
 	selectedModel?: string;
@@ -44,10 +45,13 @@ export default function TextManager({
 				(chunk: TextChunk) => !chunk.metadata?.tokenCount
 			);
 			if (!chunksWithoutTokenCount.length) return;
-			console.log('chunks without token count', chunksWithoutTokenCount);
+			console.log(
+				'chunks without token count',
+				chunksWithoutTokenCount,
+				parsedChunks
+			);
 			for (const chunk of chunksWithoutTokenCount) {
 				await fetchTokenCount(chunk, parsedChunks);
-				console.log('fetching token count for chunk', chunk);
 			}
 		}, 1000);
 	}, []);
@@ -58,7 +62,11 @@ export default function TextManager({
 
 		const inputText = chunkToSummarize.content;
 		const system = instructions;
-		const user = 'INPUT:\n```\n' + inputText.trim() + '\n```';
+		const user = `INPUT:
+Title: \`${chunkToSummarize.title}\`
+Content: \`\`\`
+${inputText.trim()}
+\`\`\``;
 		const format = selectedModel === 'ooba' ? 'ChatML' : 'OpenAI';
 		const prompt = makePrompt(user, system, format);
 
@@ -66,8 +74,9 @@ export default function TextManager({
 		//   could mod the llm module to cache and add the key to requests
 		const summary = await generate(prompt, {
 			model: selectedModel,
-			temp: 0.5,
-			cfg: 1.1,
+			temp: 0.75,
+			cfg: 1.05,
+			top_p: 1,
 		});
 
 		const updatedChunks = chunks.map((chunk) => {
@@ -97,25 +106,24 @@ export default function TextManager({
 	};
 
 	const fetchTokenCount = async (chunk: TextChunk, cArr = chunks) => {
-		debugger;
 		if (!chunk.content) return;
 		const count = await tokenCount(chunk.content, selectedModel || 'openai');
 		// console.log('token count', count);
 		if (!count && chunk.content) return;
-		console.log(cArr);
 		const updatedChunks = cArr.map((c) => {
-			if (c.id === chunk.id) {
-				return {
-					...c,
-					metadata: {
-						...c.metadata,
-						tokenCount: count,
-					},
-				};
-			}
-			return chunk;
+			if (c.id !== chunk.id) return c;
+			const o = {
+				...c,
+				metadata: {
+					...c.metadata,
+					tokenCount: count,
+				},
+			};
+			console.log(o);
+			return o;
 		});
 		setChunks(updatedChunks);
+		localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
 	};
 	const copyChunk = (chunk: TextChunk, e: React.MouseEvent) => {
 		e.preventDefault();
@@ -254,7 +262,7 @@ export default function TextManager({
 					onChange={(e) => setCurrentTitle(e.target.value)}
 				/>
 				<div className="mb-4">
-					<input type="file" onChange={handleFileChange} accept=".txt" />
+					<input type="file" onChange={handleFileChange} accept=".txt,.rtf" />
 					<button className="basic ml-2" onClick={uploadFile}>
 						<IoCloudUploadOutline />
 					</button>
