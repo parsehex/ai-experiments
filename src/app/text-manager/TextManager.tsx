@@ -17,6 +17,7 @@ export default function TextManager({
 	const [chunks, setChunks] = useState<TextChunk[]>([]);
 	const [currentTitle, setCurrentTitle] = useState('');
 	const [currentContent, setCurrentContent] = useState('');
+	const [collapsedChunks, setCollapsedChunks] = useState<string[]>([]);
 
 	useEffect(() => {
 		const storedChunks = localStorage.getItem(lsKey);
@@ -90,27 +91,45 @@ export default function TextManager({
 		return chunks.map((chunk) => (
 			<div key={chunk.id} className="p-4 border-b border-gray-300">
 				<h3
-					className="font-bold"
+					className="font-bold cursor-pointer select-none"
 					onContextMenu={() => {
 						removeChunk(chunk.id);
 					}}
+					onClick={() => {
+						if (collapsedChunks.includes(chunk.id)) {
+							setCollapsedChunks(
+								collapsedChunks.filter((id) => id !== chunk.id)
+							);
+						} else {
+							setCollapsedChunks([...collapsedChunks, chunk.id]);
+						}
+					}}
 				>
 					{chunk.title}
+					<span className="ml-1">
+						{collapsedChunks.includes(chunk.id) ? '►' : '▼'}
+					</span>
 					<button
 						className="basic ml-2"
-						onClick={() => summarizeChunk(chunk.id)}
+						onClick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							summarizeChunk(chunk.id);
+						}}
 					>
 						Summarize
 					</button>
 				</h3>
-				<p className="whitespace-pre-line">{chunk.content}</p>
+				{!collapsedChunks.includes(chunk.id) && (
+					<p className="whitespace-pre-line">{chunk.content}</p>
+				)}
 			</div>
 		));
 	};
 
 	return (
 		<Collapsible title="Text Chunks" titleSize="md">
-			<div className="mb-4">
+			<div className="mb-4 flex flex-col">
 				<input
 					type="text"
 					className="input mr-2"
@@ -119,13 +138,13 @@ export default function TextManager({
 					onChange={(e) => setCurrentTitle(e.target.value)}
 				/>
 				<textarea
-					className="textarea"
+					className="textarea resize-y"
 					placeholder="Content"
 					value={currentContent}
 					onChange={(e) => setCurrentContent(e.target.value)}
 				/>
 			</div>
-			<button className="btn" onClick={addChunk}>
+			<button className="basic" onClick={addChunk}>
 				Add Chunk
 			</button>
 			<div className="mt-4">{renderChunks()}</div>
