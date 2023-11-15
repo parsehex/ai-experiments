@@ -29,6 +29,12 @@ const demos: ItemProps[] = [
 		tags: ['LLM', 'In Progress'],
 	},
 	{
+		title: 'Summarizer',
+		description: 'Summarize collections of text',
+		href: '/summarizer',
+		tags: ['LLM', 'In Progress'],
+	},
+	{
 		title: 'Conversational Summary Memory',
 		description: 'Conversational memory without LangChain',
 		href: '/conversational-summary',
@@ -101,12 +107,7 @@ const demos: ItemProps[] = [
 		// href: '/embeddings-search',
 		tags: ['LLM', 'TODO'],
 	},
-	{
-		title: 'Summarizer',
-		description: 'Summarize collections of text',
-		href: '/summarizer',
-		tags: ['LLM', 'In Progress'],
-	},
+
 	{
 		title: 'Document QA',
 		description:
