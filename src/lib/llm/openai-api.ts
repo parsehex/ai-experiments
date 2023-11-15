@@ -80,3 +80,12 @@ export async function listModels(apiKey: string) {
 	const json: OpenAIListModelsResponse = await response.json();
 	return json.data;
 }
+
+export async function tokenCount(str: string): Promise<number> {
+	const res = await fetch('/api/token-count', {
+		method: 'POST',
+		body: str,
+	});
+	const json = await res.json();
+	return json.length;
+}

@@ -111,7 +111,7 @@ export async function loadModel(modelName: string): Promise<ModelInfoResponse> {
 	return response.json();
 }
 
-export async function tokenCount(str: string) {
+export async function tokenCount(str: string): Promise<number> {
 	if (!adjusted) fixUrl();
 	const response = await fetch(`${BASE_URL}/v1/internal/token-count`, {
 		method: 'POST',
@@ -120,7 +120,8 @@ export async function tokenCount(str: string) {
 		},
 		body: JSON.stringify({ text: str }),
 	});
-	return response.json();
+	const res = await response.json();
+	return res.length;
 }
 
 // no unload model endpoint

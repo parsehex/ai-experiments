@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { TextChunk } from './types';
 import Collapsible from '@/components/Collapsible';
 import { v4 } from 'uuid';
-import { generate } from '@/lib/llm';
+import { generate, tokenCount } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
+import { IoClipboardOutline } from 'react-icons/io5';
 
 interface TextManagerProps {
 	selectedModel?: string;
@@ -21,9 +22,27 @@ export default function TextManager({
 
 	useEffect(() => {
 		const storedChunks = localStorage.getItem(lsKey);
-		if (storedChunks) {
-			setChunks(JSON.parse(storedChunks));
-		}
+		if (!storedChunks) return;
+		const parsedChunks = JSON.parse(storedChunks);
+		setChunks(parsedChunks);
+
+		// any chunks have a content but missing tokenCount?
+		//  fetch token count for those chunks and update
+		setTimeout(async () => {
+			// console.log('fetching token counts', storedChunks);
+			const chunksWithContent = JSON.parse(storedChunks).filter(
+				(chunk: TextChunk) => chunk.content
+			);
+			const chunksWithoutTokenCount = chunksWithContent.filter(
+				(chunk: TextChunk) => !chunk.metadata?.tokenCount
+			);
+			if (!chunksWithoutTokenCount.length) return;
+			console.log('chunks without token count', chunksWithoutTokenCount);
+			for (const chunk of chunksWithoutTokenCount) {
+				await fetchTokenCount(chunk, parsedChunks);
+				console.log('fetching token count for chunk', chunk);
+			}
+		}, 1000);
 	}, []);
 
 	const summarizeChunk = async (chunkId: string) => {
@@ -66,6 +85,35 @@ export default function TextManager({
 		}
 	};
 
+	const fetchTokenCount = async (chunk: TextChunk, cArr = chunks) => {
+		debugger;
+		if (!chunk.content) return;
+		const count = await tokenCount(chunk.content, selectedModel || 'openai');
+		// console.log('token count', count);
+		if (!count && chunk.content) return;
+		console.log(cArr);
+		const updatedChunks = cArr.map((c) => {
+			if (c.id === chunk.id) {
+				return {
+					...c,
+					metadata: {
+						...c.metadata,
+						tokenCount: count,
+					},
+				};
+			}
+			return chunk;
+		});
+		setChunks(updatedChunks);
+	};
+	const copyChunk = (chunk: TextChunk, e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		if (!chunk) return;
+		const { title, content } = chunk;
+		const text = `${title}\n\n${content}`;
+		navigator.clipboard.writeText(text);
+	};
 	const addChunk = () => {
 		if (!currentTitle || !currentContent) return;
 
@@ -73,6 +121,7 @@ export default function TextManager({
 			id: v4(),
 			title: currentTitle,
 			content: currentContent,
+			metadata: {},
 		};
 
 		const updatedChunks = [...chunks, newChunk];
@@ -80,6 +129,7 @@ export default function TextManager({
 		localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
 		setCurrentTitle('');
 		setCurrentContent('');
+		fetchTokenCount(newChunk, updatedChunks);
 	};
 	const removeChunk = (id: string) => {
 		const updatedChunks = chunks.filter((chunk) => chunk.id !== id);
@@ -91,8 +141,9 @@ export default function TextManager({
 		return chunks.map((chunk) => (
 			<div key={chunk.id} className="p-4 border-b border-gray-300">
 				<h3
-					className="font-bold cursor-pointer select-none"
-					onContextMenu={() => {
+					className="font-bold cursor-pointer select-none flex items-center"
+					onContextMenu={(e) => {
+						e.preventDefault();
 						removeChunk(chunk.id);
 					}}
 					onClick={() => {
@@ -119,7 +170,19 @@ export default function TextManager({
 					>
 						Summarize
 					</button>
+					<button
+						className="basic p-1 green"
+						onClick={(e) => copyChunk(chunk, e)}
+					>
+						<IoClipboardOutline />
+					</button>
+					{chunk.metadata?.tokenCount && (
+						<span title={`${chunk.metadata.tokenCount} tokens`}>
+							{chunk.metadata.tokenCount}
+						</span>
+					)}
 				</h3>
+				{/* <p className="whitespace-pre-line">{chunk.content}</p> */}
 				{!collapsedChunks.includes(chunk.id) && (
 					<p className="whitespace-pre-line">{chunk.content}</p>
 				)}

@@ -1,5 +1,11 @@
-import { generateText as oobaGenerateText } from './ooba-api.new';
-import { generateText as openaiGenerateText } from './openai-api';
+import {
+	generateText as oobaGenerateText,
+	tokenCount as oobaTokenCount,
+} from './ooba-api.new';
+import {
+	generateText as openaiGenerateText,
+	tokenCount as openaiTokenCount,
+} from './openai-api';
 import { GenerateParams } from '../types/ooba.new';
 import { PromptPart, PromptFormatResponse, Message } from './types';
 
@@ -183,4 +189,17 @@ export async function generate(
 		console.log(options.log.response, res);
 	}
 	return res;
+}
+
+export async function tokenCount(str: string, model: string): Promise<number> {
+	if (model === 'ooba') {
+		return await oobaTokenCount(str);
+	} else if (
+		model.startsWith('gpt-') ||
+		model.toLowerCase().includes('openai')
+	) {
+		return await openaiTokenCount(str);
+	} else {
+		throw new Error('No model specified');
+	}
 }

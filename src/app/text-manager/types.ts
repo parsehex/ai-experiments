@@ -4,5 +4,6 @@ export interface TextChunk {
 	content: string;
 	metadata?: {
 		summary?: string;
+		tokenCount?: number;
 	};
 }
