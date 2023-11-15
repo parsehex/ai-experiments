@@ -26,20 +26,26 @@ export async function POST(req: NextRequest) {
 		}
 
 		const inputFilePath = '/home/user/ai-experiments-data/' + file.name;
-		const outputFilePath = inputFilePath + '.txt';
-
+		const ext = file.name.split('.').pop();
+		const outputFilePath = inputFilePath;
 		const fileStream = createWriteStream(inputFilePath);
 		await promisify(pipeline)(file.stream(), fileStream);
-
-		// get file as text
 		const text = await fs.readFile(inputFilePath, 'utf-8');
 
-		// Example using a hypothetical 'unrtf' Node.js package
-		// You need to replace this with actual RTF to text conversion logic
-		const convertedText = await convertRtfToText(text);
-		const res = JSON.stringify({ convertedText });
+		let res: any = { convertedText: '' };
+		console.log('ext', ext);
+		switch (ext) {
+			case 'rtf':
+				res.convertedText = await rtfToText(text);
+				break;
+			case 'txt':
+				res.convertedText = text;
+				break;
+			default:
+				return new Response('Unsupported file type.', { status: 400 });
+		}
 
-		return new Response(res, {
+		return new Response(JSON.stringify(res), {
 			status: 200,
 			headers: {
 				'Content-Type': 'text/plain',
@@ -56,10 +62,36 @@ export async function POST(req: NextRequest) {
 	}
 }
 
-// Placeholder function - Implement based on the RTF parsing library/tool you choose
-async function convertRtfToText(fileStream: any) {
+interface RTFForegroundObject {
+	red: number;
+	green: number;
+	blue: number;
+}
+interface RTFFontObject {
+	family: string;
+	charset: number;
+	name: string;
+	pitch: number;
+}
+interface RTFStyleObject {
+	font: RTFFontObject;
+	foreground: RTFForegroundObject;
+	align: 'left' | 'right' | 'center';
+	fontSize: number;
+}
+export interface RTFContentObject {
+	value: string;
+	style: RTFStyleObject;
+}
+export interface RTFObject {
+	style: RTFStyleObject;
+	content: RTFContentObject[];
+}
+async function rtfToText(
+	fileStr: any
+): Promise<(RTFObject | RTFContentObject)[]> {
 	return new Promise((resolve, reject) => {
-		parseRTF.string(fileStream, (err: any, result: any) => {
+		parseRTF.string(fileStr, (err: any, result: any) => {
 			if (err) {
 				reject(err);
 			}

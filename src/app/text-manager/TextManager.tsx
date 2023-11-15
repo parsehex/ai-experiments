@@ -135,15 +135,34 @@ export default function TextManager({
 
 		const formData = new FormData();
 		formData.append('file', file);
+		// does chunk have a title? if not, use the file name
+		if (!currentTitle) {
+			const fileName = file.name.split('.')[0];
+			setCurrentTitle(fileName);
+		}
 
 		const response = await fetch('/api/convert-to-text', {
 			method: 'POST',
 			body: formData,
 		});
 
-		const result = await response.json();
-		if (result.text) {
-			setCurrentContent(result.text);
+		interface Response {
+			convertedText: string | (RTFObject | RTFContentObject)[];
+		}
+		const result: Response = await response.json();
+		if (typeof result.convertedText === 'string') {
+			setCurrentContent(result.convertedText);
+		} else {
+			const content = result.convertedText
+				.map((obj) => {
+					if ('content' in obj) {
+						return (obj as RTFObject).content.map((c) => c.value).join('');
+					} else {
+						return (obj as RTFContentObject).value;
+					}
+				})
+				.join('\n');
+			setCurrentContent(content);
 		}
 	};
 	const addChunk = () => {
@@ -161,6 +180,7 @@ export default function TextManager({
 		localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
 		setCurrentTitle('');
 		setCurrentContent('');
+		setFile(null);
 		fetchTokenCount(newChunk, updatedChunks);
 		setCollapsedChunks([...collapsedChunks, newChunk.id]);
 	};
