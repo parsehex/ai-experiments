@@ -58,17 +58,17 @@ function Summarizer() {
 		return prompt;
 	};
 
-	const Test = async () => {
-		const prompt = constructPrompt();
-		console.log(prompt);
-		const options: GenerateOptions = {
-			model: selectedModel,
-			api_key: apiKey,
-		};
-		const result = await generate(prompt, options);
-		console.log(result);
-		setOutput(result);
-	};
+	// const Test = async () => {
+	// 	const prompt = constructPrompt();
+	// 	console.log(prompt);
+	// 	const options: GenerateOptions = {
+	// 		model: selectedModel,
+	// 		api_key: apiKey,
+	// 	};
+	// 	const result = await generate(prompt, options);
+	// 	console.log(result);
+	// 	setOutput(result);
+	// };
 
 	const renderSummaries = () => {
 		return chunks.map(

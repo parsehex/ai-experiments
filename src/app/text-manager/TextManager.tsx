@@ -4,7 +4,7 @@ import Collapsible from '@/components/Collapsible';
 import { v4 } from 'uuid';
 import { generate, tokenCount } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
-import { IoClipboardOutline } from 'react-icons/io5';
+import { IoClipboardOutline, IoCloudUploadOutline } from 'react-icons/io5';
 
 interface TextManagerProps {
 	selectedModel?: string;
@@ -19,12 +19,18 @@ export default function TextManager({
 	const [currentTitle, setCurrentTitle] = useState('');
 	const [currentContent, setCurrentContent] = useState('');
 	const [collapsedChunks, setCollapsedChunks] = useState<string[]>([]);
+	const [file, setFile] = useState<File | null>(null);
+	const [instructions, setInstructions] = useState<string>(
+		'Summarize the provided text under INPUT.'
+	);
 
 	useEffect(() => {
 		const storedChunks = localStorage.getItem(lsKey);
-		if (!storedChunks) return;
+		const storedInstructions = localStorage.getItem(`${lsKey}-instructions`);
+		if (!storedChunks || !storedInstructions) return;
 		const parsedChunks = JSON.parse(storedChunks);
 		setChunks(parsedChunks);
+		setInstructions(storedInstructions);
 
 		// any chunks have a content but missing tokenCount?
 		//  fetch token count for those chunks and update
@@ -50,14 +56,18 @@ export default function TextManager({
 		if (!chunkToSummarize || !selectedModel) return;
 
 		const inputText = chunkToSummarize.content;
-		const system = `Summarize the provided text under INPUT.`;
+		const system = instructions;
 		const user = 'INPUT:\n```\n' + inputText.trim() + '\n```';
-		const format = selectedModel === 'ooba' ? 'flexible' : 'OpenAI';
+		const format = selectedModel === 'ooba' ? 'ChatML' : 'OpenAI';
 		const prompt = makePrompt(user, system, format);
 
 		// TODO how do we get the api key here for non-ooba models?
 		//   could mod the llm module to cache and add the key to requests
-		const summary = await generate(prompt, { model: selectedModel });
+		const summary = await generate(prompt, {
+			model: selectedModel,
+			temp: 0.5,
+			cfg: 1.1,
+		});
 
 		const updatedChunks = chunks.map((chunk) => {
 			if (chunk.id === chunkId) {
@@ -113,6 +123,27 @@ export default function TextManager({
 		const { title, content } = chunk;
 		const text = `${title}\n\n${content}`;
 		navigator.clipboard.writeText(text);
+	};
+	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files ? event.target.files[0] : null;
+		setFile(file);
+	};
+
+	const uploadFile = async () => {
+		if (!file) return;
+
+		const formData = new FormData();
+		formData.append('file', file);
+
+		const response = await fetch('/api/convert-to-text', {
+			method: 'POST',
+			body: formData,
+		});
+
+		const result = await response.json();
+		if (result.text) {
+			setCurrentContent(result.text);
+		}
 	};
 	const addChunk = () => {
 		if (!currentTitle || !currentContent) return;
@@ -200,6 +231,12 @@ export default function TextManager({
 					value={currentTitle}
 					onChange={(e) => setCurrentTitle(e.target.value)}
 				/>
+				<div className="mb-4">
+					<input type="file" onChange={handleFileChange} accept=".txt" />
+					<button className="basic ml-2" onClick={uploadFile}>
+						<IoCloudUploadOutline />
+					</button>
+				</div>
 				<textarea
 					className="textarea resize-y"
 					placeholder="Content"
@@ -210,6 +247,18 @@ export default function TextManager({
 			<button className="basic" onClick={addChunk}>
 				Add Chunk
 			</button>
+			<div className="mb-4">
+				<textarea
+					className="textarea resize-y"
+					placeholder="Instructions"
+					value={instructions}
+					onChange={(e) => setInstructions(e.target.value)}
+					onBlur={() => {
+						localStorage.setItem(`${lsKey}-instructions`, instructions);
+					}}
+				/>
+			</div>
+
 			<div className="mt-4">{renderChunks()}</div>
 		</Collapsible>
 	);
