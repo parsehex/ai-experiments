@@ -30,6 +30,7 @@ export default function TextManager({
 	const [instructions, setInstructions] = useState<string>(
 		'Summarize the provided text under INPUT.'
 	);
+	const [isConfirmClear, setIsConfirmClear] = useState(false);
 
 	useEffect(() => {
 		const storedChunks = localStorage.getItem(lsKey);
@@ -61,6 +62,17 @@ export default function TextManager({
 			}
 		}, 1000);
 	}, []);
+
+	const clearAllChunks = () => {
+		if (isConfirmClear) {
+			setChunks([]);
+			localStorage.removeItem(lsKey);
+			setIsConfirmClear(false);
+		} else {
+			setIsConfirmClear(true);
+			setTimeout(() => setIsConfirmClear(false), 5000);
+		}
+	};
 
 	const getSummary = async (chunk: TextChunk) => {
 		let inputText =
@@ -385,7 +397,14 @@ export default function TextManager({
 				/>
 			</div>
 
-			<div className="mt-4">{renderChunks()}</div>
+			<div className="mt-4">
+				{chunks.length > 0 && (
+					<button className="delete" onClick={clearAllChunks}>
+						{isConfirmClear ? 'Confirm?' : 'Clear All'}
+					</button>
+				)}
+				{renderChunks()}
+			</div>
 		</Collapsible>
 	);
 }
