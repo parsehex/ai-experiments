@@ -73,46 +73,60 @@ function Summarizer() {
 	// 	setOutput(result);
 	// };
 
-	const renderSummaries = () => {
-		return chunks.map(
-			(chunk) =>
-				chunk.metadata?.summary && (
-					<div key={chunk.id} className="p-4 border-b border-gray-300">
-						<h3
-							className="font-bold"
-							onContextMenu={(e) => {
-								e.preventDefault();
-								const thisChunk = chunks.find((c) => c.id === chunk.id);
-								if (!thisChunk) return;
-								const updatedChunks = chunks.map((c) => {
-									if (c.id !== thisChunk.id) return c;
-									return {
-										...c,
-										metadata: {
-											...c.metadata,
-											summary: '',
-										},
-									};
-								});
-								setChunks(updatedChunks);
-								localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
-							}}
-							onClick={() => {
-								const newCollapsedChunks = collapsedChunks.includes(chunk.id)
-									? collapsedChunks.filter((id) => id !== chunk.id)
-									: [...collapsedChunks, chunk.id];
-								setCollapsedChunks(newCollapsedChunks);
-							}}
-						>
-							{chunk.title + ' - Summary'}
-							{collapsedChunks.includes(chunk.id) ? ' +' : ' -'}
-						</h3>
-						{!collapsedChunks.includes(chunk.id) && (
-							<p className="whitespace-pre-line">{chunk.metadata.summary}</p>
-						)}
-					</div>
-				)
+	const renderSummary = (chunk: TextChunk, chunkTitle: string) => {
+		return (
+			<div key={chunk.id} className="p-4 border-b border-gray-300">
+				<h3
+					className="font-bold"
+					onContextMenu={(e) => {
+						e.preventDefault();
+						const thisChunk = chunks.find((c) => c.id === chunk.id);
+						if (!thisChunk) return;
+						const updatedChunks = chunks.map((c) => {
+							if (c.id !== thisChunk.id) return c;
+							return {
+								...c,
+								metadata: {
+									...c.metadata,
+									summary: '',
+								},
+							};
+						});
+						setChunks(updatedChunks);
+						localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
+					}}
+					onClick={() => {
+						const newCollapsedChunks = collapsedChunks.includes(chunk.id)
+							? collapsedChunks.filter((id) => id !== chunk.id)
+							: [...collapsedChunks, chunk.id];
+						setCollapsedChunks(newCollapsedChunks);
+					}}
+				>
+					{chunkTitle}
+					{collapsedChunks.includes(chunk.id) ? ' +' : ' -'}
+				</h3>
+				{!collapsedChunks.includes(chunk.id) && chunk.metadata?.summary && (
+					<p className="whitespace-pre-line">{chunk.metadata.summary}</p>
+				)}
+			</div>
 		);
+	};
+
+	const renderSummaries = () => {
+		return chunks.flatMap((chunk) => {
+			if (Array.isArray(chunk.content)) {
+				return chunk.content.map(
+					(subChunk, index) =>
+						subChunk.metadata?.summary &&
+						renderSummary(subChunk, `${chunk.title} (part ${index})`)
+				);
+			} else {
+				return (
+					chunk.metadata?.summary &&
+					renderSummary(chunk, chunk.title + ' - Summary')
+				);
+			}
+		});
 	};
 
 	return (

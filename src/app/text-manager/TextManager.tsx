@@ -6,6 +6,10 @@ import { generate, countTokens } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { IoClipboardOutline, IoCloudUploadOutline } from 'react-icons/io5';
 import { RTFContentObject, RTFObject } from '../api/convert-to-text/route';
+import { chunkText } from '@/lib/utils';
+
+const MAX_TOKENS = 768;
+const OVERLAP = 128;
 
 const SupportedFileTypes = ['.txt', '.rtf', '.doc', '.docx'];
 
@@ -58,75 +62,131 @@ export default function TextManager({
 		}, 1000);
 	}, []);
 
-	const summarizeChunk = async (chunkId: string) => {
-		const chunkToSummarize = chunks.find((chunk) => chunk.id === chunkId);
-		if (!chunkToSummarize || !selectedModel) return;
+	const getSummary = async (chunk: TextChunk) => {
+		let inputText =
+			typeof chunk.content === 'string'
+				? chunk.content
+				: chunk.content.map((subChunk) => subChunk.content).join('\n');
 
-		const inputText = chunkToSummarize.content;
 		const system = instructions;
-		const user = `INPUT:
-Title: \`${chunkToSummarize.title}\`
-Content: \`\`\`
-${inputText.trim()}
-\`\`\``;
+		const user = `INPUT:\nTitle: \`${
+			chunk.title
+		}\`\nContent: \`\`\`\n${inputText.trim()}\n\`\`\``;
 		const format = selectedModel === 'ooba' ? 'ChatML' : 'OpenAI';
 		const prompt = makePrompt(user, system, format);
 
-		// TODO how do we get the api key here for non-ooba models?
-		//   could mod the llm module to cache and add the key to requests
-		const summary = await generate(prompt, {
+		return await generate(prompt, {
 			model: selectedModel,
 			temp: 0.75,
 			cfg: 1.05,
 			top_p: 1,
 		});
+	};
+	const summarizeChunk = async (chunkId: string) => {
+		// Find the chunk and its parent (if any)
+		let parentChunk = null as TextChunk | null;
+		let chunkToSummarize = chunks.find((chunk) => chunk.id === chunkId);
 
-		const updatedChunks = chunks.map((chunk) => {
-			if (chunk.id === chunkId) {
-				return {
-					...chunk,
-					metadata: {
-						...chunk.metadata,
-						summary,
-					},
-				};
+		if (!chunkToSummarize) {
+			// Find in subchunks
+			for (const chunk of chunks) {
+				if (Array.isArray(chunk.content)) {
+					const subChunk = chunk.content.find((sub) => sub.id === chunkId);
+					if (subChunk) {
+						parentChunk = chunk;
+						chunkToSummarize = subChunk;
+						console.log('found subchunk', subChunk);
+						break;
+					}
+				}
 			}
-			return chunk;
-		});
-
-		setChunks(updatedChunks);
-		localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
-
-		// if window has a "reloadChunks" function, call it after a timeout
-		// @ts-ignore
-		if (window.reloadChunks) {
-			setTimeout(() => {
-				// @ts-ignore
-				window.reloadChunks();
-			}, 500);
 		}
+
+		if (!chunkToSummarize || !selectedModel) return;
+
+		const summary = await getSummary(chunkToSummarize);
+
+		// Update state for both top-level chunks and subchunks
+		setChunks(
+			chunks.map((chunk) => {
+				if (chunk.id === chunkId) {
+					return { ...chunk, metadata: { ...chunk.metadata, summary } };
+				} else if (parentChunk && chunk.id === parentChunk.id) {
+					return {
+						...chunk,
+						content: (chunk.content as TextChunk[]).map((subChunk) => {
+							return subChunk.id === chunkId
+								? { ...subChunk, metadata: { ...subChunk.metadata, summary } }
+								: subChunk;
+						}),
+					};
+				}
+				return chunk;
+			})
+		);
+
+		// Update localStorage and reload chunks if necessary
+		localStorage.setItem(lsKey, JSON.stringify(chunks));
+		// @ts-ignore
+		window.reloadChunks && setTimeout(() => window.reloadChunks(), 500);
 	};
 
 	const fetchTokenCount = async (chunk: TextChunk, cArr = chunks) => {
-		if (!chunk.content) return;
-		const count = await countTokens(chunk.content, selectedModel || 'openai');
-		// console.log('token count', count);
-		if (!count && chunk.content) return;
-		const updatedChunks = cArr.map((c) => {
-			if (c.id !== chunk.id) return c;
-			const o = {
-				...c,
-				metadata: {
-					...c.metadata,
-					tokenCount: count,
-				},
-			};
-			console.log(o);
-			return o;
-		});
-		setChunks(updatedChunks);
-		localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
+		// Check if the chunk has subchunks
+		if (Array.isArray(chunk.content)) {
+			console.log('fetching token count for subchunks', chunk);
+			let totalTokenCount = 0;
+
+			// Iterate over each subchunk to fetch token count
+			for (const subChunk of chunk.content) {
+				const content = subChunk.content as string;
+				if (!content) continue;
+				let count = 0;
+				if (subChunk.metadata?.tokenCount) {
+					count = subChunk.metadata.tokenCount;
+				} else {
+					count = await countTokens(content, selectedModel || 'openai');
+				}
+				totalTokenCount += count;
+
+				// Update token count in subchunk metadata
+				subChunk.metadata = { ...subChunk.metadata, tokenCount: count };
+			}
+
+			// Update the parent chunk with total token count
+			const updatedChunks = cArr.map((c) => {
+				if (c.id === chunk.id) {
+					return {
+						...c,
+						metadata: { ...c.metadata, tokenCount: totalTokenCount },
+					};
+				}
+				return c;
+			});
+
+			setChunks(updatedChunks);
+			localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
+		} else {
+			// Existing logic for single chunks
+			let content = chunk.content as string;
+			if (!content) return;
+			const count = await countTokens(content, selectedModel || 'openai');
+
+			const updatedChunks = cArr.map((c) => {
+				if (c.id === chunk.id) {
+					return {
+						...c,
+						metadata: { ...c.metadata, tokenCount: count },
+					};
+				}
+				return c;
+			});
+
+			setChunks(updatedChunks);
+			localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
+		}
 	};
+
 	const copyChunk = (chunk: TextChunk, e: React.MouseEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
@@ -185,24 +245,34 @@ ${inputText.trim()}
 				break;
 		}
 	};
+	const processAndAddChunk = async (title: string, content: string) => {
+		const tokenCount = await countTokens(content, selectedModel || 'openai');
+		if (tokenCount > MAX_TOKENS) {
+			console.log('chunking text', content);
+			const splittedChunks = await chunkText(
+				{ id: v4(), title, content, metadata: {} },
+				selectedModel || 'openai',
+				MAX_TOKENS,
+				OVERLAP
+			);
+			setChunks([...chunks, ...splittedChunks]);
+		} else {
+			const newChunk = {
+				id: v4(),
+				title,
+				content,
+				metadata: { tokenCount },
+			};
+			setChunks([...chunks, newChunk]);
+		}
+	};
+
 	const addChunk = () => {
 		if (!currentTitle || !currentContent) return;
-
-		const newChunk = {
-			id: v4(),
-			title: currentTitle,
-			content: currentContent,
-			metadata: {},
-		};
-
-		const updatedChunks = [...chunks, newChunk];
-		setChunks(updatedChunks);
-		localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
+		processAndAddChunk(currentTitle, currentContent);
 		setCurrentTitle('');
 		setCurrentContent('');
 		setFile(null);
-		fetchTokenCount(newChunk, updatedChunks);
-		setCollapsedChunks([...collapsedChunks, newChunk.id]);
 	};
 	const removeChunk = (id: string) => {
 		const updatedChunks = chunks.filter((chunk) => chunk.id !== id);
@@ -257,7 +327,17 @@ ${inputText.trim()}
 				</h3>
 				{/* <p className="whitespace-pre-line">{chunk.content}</p> */}
 				{!collapsedChunks.includes(chunk.id) && (
-					<p className="whitespace-pre-line">{chunk.content}</p>
+					<div className="whitespace-pre-line">
+						{typeof chunk.content === 'string' ? (
+							<p>{chunk.content}</p>
+						) : (
+							chunk.content.map((subChunk) => (
+								<p key={subChunk.id} title={subChunk.title}>
+									{subChunk.content as string}
+								</p>
+							))
+						)}
+					</div>
 				)}
 			</div>
 		));
