@@ -32,6 +32,42 @@ export default function TextManager({
 	);
 	const [isConfirmClear, setIsConfirmClear] = useState(false);
 
+	type ChunkOperation = 'add' | 'update' | 'remove';
+
+	const updateChunks = (operation: ChunkOperation, data?: any, save = true) => {
+		let chunksToUse = chunks;
+		if (data?.chunks) chunksToUse = data.chunks;
+		let updatedChunks = [...chunksToUse];
+
+		switch (operation) {
+			case 'add':
+				if (data?.chunk) {
+					updatedChunks.push(data.chunk);
+				}
+				break;
+			case 'update':
+				if (!data?.id || !data?.updates) {
+					console.log('missing id or updates', data);
+					return;
+				}
+				updatedChunks = updatedChunks.map((chunk) =>
+					chunk.id === data?.id ? { ...chunk, ...data.updates } : chunk
+				);
+				break;
+			case 'remove':
+				updatedChunks = updatedChunks.filter(
+					(chunk) => data?.id && chunk.id !== data.id
+				);
+				break;
+			default:
+				break;
+		}
+
+		setChunks(updatedChunks);
+		if (!save) return;
+		localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
+	};
+
 	useEffect(() => {
 		const storedChunks = localStorage.getItem(lsKey);
 		const storedInstructions = localStorage.getItem(`${lsKey}-instructions`);
@@ -58,15 +94,19 @@ export default function TextManager({
 				parsedChunks
 			);
 			for (const chunk of chunksWithoutTokenCount) {
-				await fetchTokenCount(chunk, parsedChunks);
+				const count = await fetchTokenCount(chunk, parsedChunks);
+				parsedChunks.map((c: TextChunk) => {
+					if (c.id === chunk.id) {
+						c.metadata = { ...c.metadata, tokenCount: count };
+					}
+				});
 			}
 		}, 1000);
 	}, []);
 
 	const clearAllChunks = () => {
 		if (isConfirmClear) {
-			setChunks([]);
-			localStorage.removeItem(lsKey);
+			updateChunks('remove');
 			setIsConfirmClear(false);
 		} else {
 			setIsConfirmClear(true);
@@ -118,24 +158,10 @@ export default function TextManager({
 
 		const summary = await getSummary(chunkToSummarize);
 
-		// Update state for both top-level chunks and subchunks
-		setChunks(
-			chunks.map((chunk) => {
-				if (chunk.id === chunkId) {
-					return { ...chunk, metadata: { ...chunk.metadata, summary } };
-				} else if (parentChunk && chunk.id === parentChunk.id) {
-					return {
-						...chunk,
-						content: (chunk.content as TextChunk[]).map((subChunk) => {
-							return subChunk.id === chunkId
-								? { ...subChunk, metadata: { ...subChunk.metadata, summary } }
-								: subChunk;
-						}),
-					};
-				}
-				return chunk;
-			})
-		);
+		updateChunks('update', {
+			id: chunkId,
+			updates: { metadata: { ...chunkToSummarize.metadata, summary } },
+		});
 
 		// Update localStorage and reload chunks if necessary
 		localStorage.setItem(lsKey, JSON.stringify(chunks));
@@ -145,9 +171,9 @@ export default function TextManager({
 
 	const fetchTokenCount = async (chunk: TextChunk, cArr = chunks) => {
 		// Check if the chunk has subchunks
+		let totalTokenCount = 0;
 		if (Array.isArray(chunk.content)) {
 			console.log('fetching token count for subchunks', chunk);
-			let totalTokenCount = 0;
 
 			// Iterate over each subchunk to fetch token count
 			for (const subChunk of chunk.content) {
@@ -164,39 +190,18 @@ export default function TextManager({
 				// Update token count in subchunk metadata
 				subChunk.metadata = { ...subChunk.metadata, tokenCount: count };
 			}
-
-			// Update the parent chunk with total token count
-			const updatedChunks = cArr.map((c) => {
-				if (c.id === chunk.id) {
-					return {
-						...c,
-						metadata: { ...c.metadata, tokenCount: totalTokenCount },
-					};
-				}
-				return c;
-			});
-
-			setChunks(updatedChunks);
-			localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
 		} else {
 			// Existing logic for single chunks
 			let content = chunk.content as string;
 			if (!content) return;
-			const count = await countTokens(content, selectedModel || 'openai');
-
-			const updatedChunks = cArr.map((c) => {
-				if (c.id === chunk.id) {
-					return {
-						...c,
-						metadata: { ...c.metadata, tokenCount: count },
-					};
-				}
-				return c;
-			});
-
-			setChunks(updatedChunks);
-			localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
+			totalTokenCount = await countTokens(content, selectedModel || 'openai');
 		}
+		updateChunks('update', {
+			id: chunk.id,
+			updates: { metadata: { ...chunk.metadata, tokenCount: totalTokenCount } },
+			chunks: cArr,
+		});
+		return totalTokenCount;
 	};
 
 	const copyChunk = (chunk: TextChunk, e: React.MouseEvent) => {
@@ -260,14 +265,17 @@ export default function TextManager({
 	const processAndAddChunk = async (title: string, content: string) => {
 		const tokenCount = await countTokens(content, selectedModel || 'openai');
 		if (tokenCount > MAX_TOKENS) {
-			console.log('chunking text', content);
+			let updatedChunks = [...chunks];
 			const splittedChunks = await chunkText(
 				{ id: v4(), title, content, metadata: {} },
 				selectedModel || 'openai',
 				MAX_TOKENS,
 				OVERLAP
 			);
-			setChunks([...chunks, ...splittedChunks]);
+			splittedChunks.forEach((chunk) => {
+				updateChunks('add', { chunk, chunks: updatedChunks });
+				updatedChunks.push(chunk);
+			});
 		} else {
 			const newChunk = {
 				id: v4(),
@@ -275,21 +283,27 @@ export default function TextManager({
 				content,
 				metadata: { tokenCount },
 			};
-			setChunks([...chunks, newChunk]);
+			updateChunks('add', { chunk: newChunk });
 		}
 	};
 
 	const addChunk = () => {
-		if (!currentTitle || !currentContent) return;
+		if (!currentTitle || !currentContent) {
+			if (file) {
+				uploadFile();
+				setTimeout(() => {
+					addChunk();
+				}, 150);
+				return;
+			}
+		}
 		processAndAddChunk(currentTitle, currentContent);
 		setCurrentTitle('');
 		setCurrentContent('');
 		setFile(null);
 	};
 	const removeChunk = (id: string) => {
-		const updatedChunks = chunks.filter((chunk) => chunk.id !== id);
-		setChunks(updatedChunks);
-		localStorage.setItem(lsKey, JSON.stringify(updatedChunks));
+		updateChunks('remove', { id });
 	};
 
 	const renderChunks = () => {
