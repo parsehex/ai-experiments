@@ -109,7 +109,7 @@ export async function loadModel(modelName: string): Promise<ModelInfoResponse> {
 	return response.json();
 }
 
-export async function tokenCount(str: string): Promise<number> {
+export async function countTokens(str: string): Promise<number> {
 	if (!adjusted) fixUrl();
 	const response = await fetch(`${BASE_URL}/v1/internal/token-count`, {
 		method: 'POST',
@@ -120,6 +120,31 @@ export async function tokenCount(str: string): Promise<number> {
 	});
 	const res = await response.json();
 	return res.length;
+}
+export async function encodeTokens(str: string): Promise<number[]> {
+	if (!adjusted) fixUrl();
+	const response = await fetch(`${BASE_URL}/v1/internal/encode`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ text: str }),
+	});
+	const res = (await response.json()) as { tokens: number[]; length: number };
+	return res.tokens;
+	// what is 1? seems blank
+}
+export async function decodeTokens(tokens: number[]): Promise<string> {
+	if (!adjusted) fixUrl();
+	const response = await fetch(`${BASE_URL}/v1/internal/decode`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ tokens }),
+	});
+	const res = await response.json();
+	return res.text;
 }
 
 // no unload model endpoint

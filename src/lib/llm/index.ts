@@ -1,11 +1,5 @@
-import {
-	generateText as oobaGenerateText,
-	tokenCount as oobaTokenCount,
-} from './ooba-api.new';
-import {
-	generateText as openaiGenerateText,
-	tokenCount as openaiTokenCount,
-} from './openai-api';
+import * as ooba from './ooba-api.new';
+import * as openai from './openai-api';
 import { GenerateParams } from '../types/ooba.new';
 import { PromptPart, PromptFormatResponse, Message } from './types';
 
@@ -42,6 +36,7 @@ export interface GenerateOptions extends Partial<GenerateParams> {
 	max?: number;
 	stop?: string[];
 	grammar?: string;
+	// prefixResponse: a string to prefix the response with, or to put at the end of the prompt
 	// log is an object with at most 2 strings, which are either 'prompt' or 'response'
 	log?: {
 		prompt?: string;
@@ -128,25 +123,9 @@ export async function generate(
 	} else if (typeof promptParts === 'string') {
 		prompt = promptParts;
 	}
-	// prompt =
-	// 	typeof promptParts === 'string' ? promptParts : makePrompt(promptParts);
 
 	const params: GenerateParams = { prompt: prompt as any };
 	if (options && openaiOrOoba) {
-		// for (const [key, value] of Object.entries(options)) {
-		// 	const paramKey = KeyMap[key as keyof GenerateOptions];
-		// 	// remove falsy values that are not boolean
-		// 	if (!value && typeof value !== 'boolean') {
-		// 		delete params[paramKey];
-		// 		continue;
-		// 	}
-		// 	if (paramKey) {
-		// 		params[paramKey] = value;
-		// 	} else {
-		// 		params[key as keyof GenerateParams] = value;
-		// 	}
-		// }
-		// use keymap for model
 		const modelKeyMap = ModelKeyMap[openaiOrOoba];
 		for (const [key, value] of Object.entries(options)) {
 			const paramKey = modelKeyMap[key as keyof GenerateOptions];
@@ -171,7 +150,7 @@ export async function generate(
 		if (!params?.auto_max_new_tokens && !params?.max_tokens) {
 			params.auto_max_new_tokens = true;
 		}
-		const resp = await oobaGenerateText(params);
+		const resp = await ooba.generateText(params);
 		res = resp.choices[0].text;
 	} else if (openaiOrOoba === 'OpenAI') {
 		params.api_key = options?.api_key;
@@ -179,8 +158,7 @@ export async function generate(
 		params.messages = prompt as Message[];
 		// @ts-ignore
 		delete params.prompt;
-		// @ts-ignore
-		const resp = await openaiGenerateText(params);
+		const resp = await openai.generateText(params as any);
 		res = resp.choices[0].message.content;
 	} else {
 		throw new Error('No model specified');
@@ -191,14 +169,35 @@ export async function generate(
 	return res;
 }
 
-export async function tokenCount(str: string, model: string): Promise<number> {
-	if (model === 'ooba') {
-		return await oobaTokenCount(str);
-	} else if (
-		model.startsWith('gpt-') ||
-		model.toLowerCase().includes('openai')
-	) {
-		return await openaiTokenCount(str);
+export async function countTokens(str: string, model: string): Promise<number> {
+	if (model.startsWith('gpt-') || model.toLowerCase().includes('openai')) {
+		return await openai.countTokens(str);
+	} else if (model) {
+		return await ooba.countTokens(str);
+	} else {
+		throw new Error('No model specified');
+	}
+}
+export async function encodeTokens(
+	str: string,
+	model: string
+): Promise<number[]> {
+	if (model.startsWith('gpt-') || model.toLowerCase().includes('openai')) {
+		return await openai.encodeTokens(str);
+	} else if (model) {
+		return await ooba.encodeTokens(str);
+	} else {
+		throw new Error('No model specified');
+	}
+}
+export async function decodeTokens(
+	tokens: number[],
+	model: string
+): Promise<string> {
+	if (model.startsWith('gpt-') || model.toLowerCase().includes('openai')) {
+		return await openai.decodeTokens(tokens);
+	} else if (model) {
+		return await ooba.decodeTokens(tokens);
 	} else {
 		throw new Error('No model specified');
 	}

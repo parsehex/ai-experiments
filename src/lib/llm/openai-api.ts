@@ -81,11 +81,30 @@ export async function listModels(apiKey: string) {
 	return json.data;
 }
 
-export async function tokenCount(str: string): Promise<number> {
-	const res = await fetch('/api/token-count', {
+export async function countTokens(str: string): Promise<number> {
+	const body = JSON.stringify({ text: str });
+	const res = await fetch('/api/tokens/count', {
 		method: 'POST',
-		body: str,
+		body,
 	});
 	const json = await res.json();
 	return json.length;
+}
+export async function encodeTokens(str: string): Promise<number[]> {
+	const body = JSON.stringify({ text: str });
+	const res = await fetch('/api/tokens/encode', {
+		method: 'POST',
+		body,
+	});
+	const json = await res.json();
+	return json.tokens;
+}
+export async function decodeTokens(tokens: number[]): Promise<string> {
+	const body = JSON.stringify({ tokens });
+	const res = await fetch('/api/tokens/decode', {
+		method: 'POST',
+		body,
+	});
+	const json = await res.json();
+	return json.text;
 }

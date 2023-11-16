@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TextChunk } from './types';
 import Collapsible from '@/components/Collapsible';
 import { v4 } from 'uuid';
-import { generate, tokenCount } from '@/lib/llm';
+import { generate, countTokens } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { IoClipboardOutline, IoCloudUploadOutline } from 'react-icons/io5';
 import { RTFContentObject, RTFObject } from '../api/convert-to-text/route';
@@ -109,7 +109,7 @@ ${inputText.trim()}
 
 	const fetchTokenCount = async (chunk: TextChunk, cArr = chunks) => {
 		if (!chunk.content) return;
-		const count = await tokenCount(chunk.content, selectedModel || 'openai');
+		const count = await countTokens(chunk.content, selectedModel || 'openai');
 		// console.log('token count', count);
 		if (!count && chunk.content) return;
 		const updatedChunks = cArr.map((c) => {
