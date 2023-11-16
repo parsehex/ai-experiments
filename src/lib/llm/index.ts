@@ -36,7 +36,7 @@ export interface GenerateOptions extends Partial<GenerateParams> {
 	max?: number;
 	stop?: string[];
 	grammar?: string;
-	// prefixResponse: a string to prefix the response with, or to put at the end of the prompt
+	prefixResponse?: string;
 	// log is an object with at most 2 strings, which are either 'prompt' or 'response'
 	log?: {
 		prompt?: string;
@@ -130,7 +130,7 @@ export async function generate(
 		for (const [key, value] of Object.entries(options)) {
 			const paramKey = modelKeyMap[key as keyof GenerateOptions];
 			// remove falsy values that are not boolean, or remove empty paramKeys
-			if (!paramKey || (!value && typeof value !== 'boolean')) {
+			if (!value && typeof value !== 'boolean') {
 				delete params[paramKey];
 				continue;
 			}
@@ -145,6 +145,9 @@ export async function generate(
 		if (options.log.prompt) console.log(options.log.prompt, prompt);
 		delete params.log;
 	}
+	if (options?.prefixResponse) {
+		params.prompt = `${params.prompt}\n${options.prefixResponse}`;
+	}
 	let res = '';
 	if (openaiOrOoba === 'ooba') {
 		if (!params?.auto_max_new_tokens && !params?.max_tokens) {
@@ -156,7 +159,8 @@ export async function generate(
 		params.api_key = options?.api_key;
 		params.model = model;
 		params.messages = prompt as Message[];
-		// @ts-ignore
+		// @ts-ignore: prompt is not used for OpenAI
+		//   we have messages instead
 		delete params.prompt;
 		const resp = await openai.generateText(params as any);
 		res = resp.choices[0].message.content;
@@ -167,6 +171,17 @@ export async function generate(
 		console.log(options.log.response, res);
 	}
 	return res;
+}
+
+export async function getModel(model: string): Promise<string> {
+	if (model.startsWith('gpt-') || model.toLowerCase().includes('openai')) {
+		return 'OpenAI';
+	} else if (model) {
+		const res = await ooba.getModel();
+		return res.model_name || 'None';
+	} else {
+		throw new Error('No model specified');
+	}
 }
 
 export async function countTokens(str: string, model: string): Promise<number> {
