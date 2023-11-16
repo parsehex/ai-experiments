@@ -6,7 +6,8 @@ import TextManager from '../text-manager/TextManager';
 import { listModels } from '@/lib/llm/openai-api';
 import { makePrompt } from '@/lib/llm/prompts';
 import { TextChunk } from '../text-manager/types';
-import { IoReloadOutline } from 'react-icons/io5';
+import { IoReloadOutline, IoStopSharp } from 'react-icons/io5';
+import { stopStream } from '@/lib/llm/ooba-api.new';
 
 const title = 'Summarizer';
 const lsKey = 'textSummarizationChunks';
@@ -130,6 +131,14 @@ function Summarizer() {
 						</option>
 					))}
 				</select>
+				{selectedModel === 'ooba' && (
+					<button
+						className="ml-2 bg-red-500 hover:bg-red-700 text-white font-bold p-1 rounded"
+						onClick={() => stopStream()}
+					>
+						<IoStopSharp />
+					</button>
+				)}
 				<h2 className="font-bold text-lg">
 					Summaries
 					<button
