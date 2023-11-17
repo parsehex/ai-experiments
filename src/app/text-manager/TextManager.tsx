@@ -28,7 +28,7 @@ export default function TextManager({
 	const [collapsedChunks, setCollapsedChunks] = useState<string[]>([]);
 	const [file, setFile] = useState<File | null>(null);
 	const [instructions, setInstructions] = useState<string>(
-		'Summarize the provided text under INPUT.'
+		'Summarize the provided [TYPE] under INPUT.'
 	);
 	const [isConfirmClear, setIsConfirmClear] = useState(false);
 
@@ -154,13 +154,43 @@ export default function TextManager({
 		return 'flexible';
 	};
 
+	const getTextType = async (chunk: TextChunk) => {
+		let inputText =
+			typeof chunk.content === 'string'
+				? chunk.content
+				: chunk.originalContent ||
+				  chunk.content.map((subChunk) => subChunk.content).join('\n');
+
+		const system = `Provide a general classification for the following text under INPUT. Answer in a few words or less. Examples include: brochure, meeting transcript, etc. Answer should describe the INPUT as generally as possible.`;
+		const user = `INPUT:\n${inputText.trim()}\n`;
+		const modelName = await getModel(selectedModel || 'openai');
+		const format = getModelFormat(modelName);
+		console.log(`Using "${modelName}" with format ${format}`);
+		const prompt = makePrompt(user, system, format);
+
+		return await generate(prompt, {
+			model: selectedModel,
+			prefixResponse: `RESPONSE:\nText Category:`,
+			stop: ['\n'],
+			max: 10,
+			temp: 0.2,
+			// cfg: 1.05,
+			top_p: 0.9,
+			top_k: 20,
+			min_p: 0.01,
+			repetition_penalty: 1.15,
+			mirostat_mode: 1,
+			// tf
+		});
+	};
 	const getSummary = async (chunk: TextChunk) => {
 		let inputText =
 			typeof chunk.content === 'string'
 				? chunk.content
 				: chunk.content.map((subChunk) => subChunk.content).join('\n');
 
-		const system = instructions;
+		const type = chunk.detectedType || 'text';
+		const system = instructions.replace('[TYPE]', type);
 		const user = `INPUT:\nTitle: \`${
 			chunk.title
 		}\`\nContent: \`\`\`\n${inputText.trim()}\n\`\`\``;
@@ -324,25 +354,35 @@ export default function TextManager({
 				updatedChunks.push(chunk);
 			});
 		} else {
-			const newChunk = {
+			// try to get text type
+			const textType = await getTextType({
+				id: '',
+				title,
+				content,
+				metadata: {},
+			});
+			const newChunk: TextChunk = {
 				id: v4(),
 				title,
 				content,
+				detectedType: textType?.trim() || '',
 				metadata: { tokenCount },
 			};
 			updateChunks('add', { chunk: newChunk });
+			console.log('added chunk', newChunk);
 		}
 	};
 
 	const addChunk = () => {
 		if (!currentTitle || !currentContent) {
+			// convenience: upload file if no title or content but file is present
 			if (file) {
 				uploadFile();
 				setTimeout(() => {
 					addChunk();
 				}, 150);
-				return;
 			}
+			return;
 		}
 		processAndAddChunk(currentTitle, currentContent);
 		setCurrentTitle('');
@@ -373,6 +413,11 @@ export default function TextManager({
 					}}
 				>
 					{chunk.title}
+					{chunk.detectedType && (
+						<span className="ml-1 text-sm text-gray-500">
+							({chunk.detectedType})
+						</span>
+					)}
 					<span className="ml-1">
 						{collapsedChunks.includes(chunk.id) ? '►' : '▼'}
 					</span>
