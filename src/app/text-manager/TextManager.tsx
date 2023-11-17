@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TextChunk } from './types';
 import Collapsible from '@/components/Collapsible';
 import { v4 } from 'uuid';
-import { generate, countTokens } from '@/lib/llm';
+import { generate, countTokens, getModel } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { IoClipboardOutline, IoCloudUploadOutline } from 'react-icons/io5';
 import { RTFContentObject, RTFObject } from '../api/convert-to-text/route';
@@ -114,6 +114,46 @@ export default function TextManager({
 		}
 	};
 
+	const modelFormats = {
+		'yarn-mistral-*': 'flexible',
+		'*Luna-AI*': 'flexible',
+		'dolphin-*-mistral': 'ChatML',
+		'TheBloke_dolphin-*-mistral': 'ChatML',
+		openai: 'OpenAI',
+		'gpt-*': 'OpenAI',
+	};
+
+	const matchesPattern = (modelName: string, pattern: string): boolean => {
+		const patternParts = pattern.split('*');
+		let lastIndex = 0;
+
+		for (const part of patternParts) {
+			if (part === '') continue;
+			const index = modelName.indexOf(part, lastIndex);
+
+			if (index === -1) {
+				return false;
+			}
+
+			lastIndex = index + part.length;
+		}
+
+		const isMatch =
+			patternParts[patternParts.length - 1] === '' ||
+			lastIndex <= modelName.length;
+		return isMatch;
+	};
+
+	const getModelFormat = (modelName: string): string => {
+		for (const pattern in modelFormats) {
+			if (matchesPattern(modelName, pattern)) {
+				// @ts-ignore
+				return modelFormats[pattern];
+			}
+		}
+		return 'flexible';
+	};
+
 	const getSummary = async (chunk: TextChunk) => {
 		let inputText =
 			typeof chunk.content === 'string'
@@ -124,14 +164,22 @@ export default function TextManager({
 		const user = `INPUT:\nTitle: \`${
 			chunk.title
 		}\`\nContent: \`\`\`\n${inputText.trim()}\n\`\`\``;
-		const format = selectedModel === 'ooba' ? 'ChatML' : 'OpenAI';
+		const modelName = await getModel(selectedModel || 'openai');
+		const format = getModelFormat(modelName);
+		console.log(`Using "${modelName}" with format ${format}`);
 		const prompt = makePrompt(user, system, format);
 
 		return await generate(prompt, {
 			model: selectedModel,
-			temp: 0.75,
-			cfg: 1.05,
-			top_p: 1,
+			max: 919,
+			temp: 0.2,
+			// cfg: 1.05,
+			top_p: 0.9,
+			top_k: 20,
+			min_p: 0.01,
+			repetition_penalty: 1.15,
+			mirostat_mode: 1,
+			// tf
 		});
 	};
 	const summarizeChunk = async (chunkId: string) => {
@@ -161,10 +209,9 @@ export default function TextManager({
 		updateChunks('update', {
 			id: chunkId,
 			updates: { metadata: { ...chunkToSummarize.metadata, summary } },
+			chunks: [...chunks],
 		});
 
-		// Update localStorage and reload chunks if necessary
-		localStorage.setItem(lsKey, JSON.stringify(chunks));
 		// @ts-ignore
 		window.reloadChunks && setTimeout(() => window.reloadChunks(), 500);
 	};
