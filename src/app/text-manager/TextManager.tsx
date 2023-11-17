@@ -190,10 +190,8 @@ export default function TextManager({
 				: chunk.content.map((subChunk) => subChunk.content).join('\n');
 
 		const type = chunk.detectedType || 'text';
-		const system = instructions.replace('[TYPE]', type);
-		const user = `INPUT:\nTitle: \`${
-			chunk.title
-		}\`\nContent: \`\`\`\n${inputText.trim()}\n\`\`\``;
+		const system = instructions.replace(/\[TYPE\]/g, type.toLowerCase());
+		const user = `INPUT:\n${inputText.trim()}\nEND INPUT`;
 		const modelName = await getModel(selectedModel || 'openai');
 		const format = getModelFormat(modelName);
 		console.log(`Using "${modelName}" with format ${format}`);
@@ -201,6 +199,7 @@ export default function TextManager({
 
 		return await generate(prompt, {
 			model: selectedModel,
+			prefixResponse: `RESPONSE:\n`,
 			max: 919,
 			temp: 0.2,
 			// cfg: 1.05,
