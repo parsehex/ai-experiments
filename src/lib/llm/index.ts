@@ -49,8 +49,8 @@ const KeyMap: ParamKeyMap = {
 	api_key: '',
 	temp: 'temperature',
 	cfg: 'guidance_scale',
-	max: 'max_new_tokens',
-	stop: 'stopping_strings',
+	max: 'max_tokens',
+	stop: 'stop',
 	grammar: 'grammar_string',
 };
 const OpenAIKeyMap: ParamKeyMap = {
@@ -147,6 +147,7 @@ export async function generate(
 	}
 	if (options?.prefixResponse) {
 		params.prompt = `${params.prompt}\n${options.prefixResponse}`;
+		delete params.prefixResponse;
 	}
 	let res = '';
 	if (openaiOrOoba === 'ooba') {
