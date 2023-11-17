@@ -103,7 +103,7 @@ function Summarizer() {
 					}}
 				>
 					{chunkTitle}
-					{collapsedChunks.includes(chunk.id) ? ' +' : ' -'}
+					{collapsedChunks.includes(chunk.id) ? ' ▶' : ' ▼'}
 				</h3>
 				{!collapsedChunks.includes(chunk.id) && chunk.metadata?.summary && (
 					<p className="whitespace-pre-line">{chunk.metadata.summary}</p>
@@ -131,11 +131,13 @@ function Summarizer() {
 
 	return (
 		<div className="mt-2 flex">
-			<div className="w-2/3">
+			<div className="border-r border-gray-300 pr-4 max-w-1/3">
 				<TextManager selectedModel={selectedModel} lsKey={lsKey} />
 			</div>
-			<div className="ml-4">
+			<div className="ml-4 grow">
+				<label className="font-bold text-xs">Model</label>
 				<select
+					id="model"
 					value={selectedModel}
 					onChange={(e) => setSelectedModel(e.target.value)}
 				>
