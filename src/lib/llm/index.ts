@@ -146,7 +146,7 @@ export async function generate(
 		delete params.log;
 	}
 	if (options?.prefixResponse) {
-		params.prompt = `${params.prompt}\n${options.prefixResponse}`;
+		params.prompt = `${params.prompt}${options.prefixResponse}`;
 		delete params.prefixResponse;
 	}
 	let res = '';
