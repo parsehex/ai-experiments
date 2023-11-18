@@ -8,7 +8,7 @@ import { IoClipboardOutline, IoCloudUploadOutline } from 'react-icons/io5';
 import { RTFContentObject, RTFObject } from '../api/convert-to-text/route';
 import { chunkText } from '@/lib/utils';
 
-const MAX_TOKENS = 768;
+const MAX_TOKENS = Infinity;
 const OVERLAP = 128;
 
 const SupportedFileTypes = ['.txt', '.rtf', '.doc', '.docx'];
@@ -201,10 +201,10 @@ export default function TextManager({
 
 		return await generate(prompt, {
 			model: selectedModel,
-			prefixResponse: `RESPONSE:\n`,
-			max: 919,
-			temp: 0.2,
-			// cfg: 1.05,
+			// prefixResponse: `ANSWER:\n`,
+			max: 512,
+			temp: 0.01,
+			cfg: 1.05,
 			top_p: 0.9,
 			top_k: 20,
 			min_p: 0.01,
