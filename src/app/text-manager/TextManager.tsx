@@ -483,9 +483,10 @@ export default function TextManager({
 					</button>
 				</div>
 				<textarea
-					className="textarea resize-y"
+					className="textarea"
 					placeholder="Content"
 					value={currentContent}
+					style={{ maxWidth: '20vw' }}
 					onChange={(e) => setCurrentContent(e.target.value)}
 				/>
 			</div>
@@ -494,9 +495,10 @@ export default function TextManager({
 			</button>
 			<div className="mb-4">
 				<textarea
-					className="textarea resize-y"
+					className="textarea"
 					placeholder="Instructions"
 					value={instructions}
+					style={{ maxWidth: '20vw' }}
 					onChange={(e) => setInstructions(e.target.value)}
 					onBlur={() => {
 						localStorage.setItem(`${lsKey}-instructions`, instructions);
