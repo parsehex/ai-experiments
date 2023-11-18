@@ -119,6 +119,8 @@ export default function TextManager({
 		'*Luna-AI*': 'flexible',
 		'dolphin-*-mistral': 'ChatML',
 		'TheBloke_dolphin-*-mistral': 'ChatML',
+		'neural-chat-*': 'ChatML',
+		'emerhyst-*': 'Alpaca',
 		openai: 'OpenAI',
 		'gpt-*': 'OpenAI',
 	};

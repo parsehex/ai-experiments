@@ -13,6 +13,13 @@ const PromptFormats: PromptFormatsObj = {
 		str += 'RESPONSE:\n';
 		return str;
 	},
+	Alpaca: (user: string, system?: string) => {
+		let str = '';
+		if (system) str += `${system}\n\n`;
+		str += `### Instruction:\n${user}\n`;
+		str += '### Response:\n';
+		return str;
+	},
 	// several models use this: mistral
 	ChatML: (user: string, system?: string) => {
 		let str = '';
