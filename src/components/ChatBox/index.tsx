@@ -1,3 +1,4 @@
+import '@/styles/chatbox.scss';
 import { Message } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
 import MessageItem from './MessageItem';

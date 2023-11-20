@@ -5,6 +5,7 @@ export interface Message {
 	role: string;
 	content: string;
 	type?: 'message' | 'thought';
+	images?: string[];
 }
 
 export type PhaseType = {

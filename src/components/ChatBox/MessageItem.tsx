@@ -1,5 +1,6 @@
 import { Message } from '@/lib/types';
 import React from 'react';
+import ImgCarousel from '../ImgCarousel';
 
 interface MessageItemProps {
 	message: Message;
@@ -32,8 +33,16 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	readOnly,
 	extraClass = '',
 }) => {
+	const contentRef = React.useRef(null as HTMLSpanElement | null);
+	const [contentHeight, setContentHeight] = React.useState(0);
 	const [editingMsg, setEditingMsg] = React.useState<string | null>(null);
 	const [tempMsgContent, setTempMsgContent] = React.useState<string>('');
+
+	React.useEffect(() => {
+		if (contentRef.current) {
+			setContentHeight(contentRef.current.offsetHeight);
+		}
+	}, [message.content]);
 
 	const handleMessageEdit = (id: string, content: string) => {
 		onEdit(id, content);
@@ -96,41 +105,45 @@ const MessageItem: React.FC<MessageItemProps> = ({
 						</button>
 					)}
 				</span>
-				{editingMsg === message.id ? (
-					<textarea
-						className="input w-96"
-						value={tempMsgContent}
-						onChange={(e) => setTempMsgContent(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' && e.shiftKey) {
-								handleMessageEdit(message.id, tempMsgContent);
+				<div className="flex items-center">
+					{!!message.images?.length && <ImgCarousel images={message.images} />}
+					{editingMsg === message.id ? (
+						<textarea
+							className="input w-96"
+							value={tempMsgContent}
+							onChange={(e) => setTempMsgContent(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' && e.shiftKey) {
+									handleMessageEdit(message.id, tempMsgContent);
+								}
+							}}
+						/>
+					) : message.type === 'thought' && !isThoughtCollapsed ? (
+						<div
+							className="thought-message"
+							onClick={() => toggleCollapse(message.id)}
+						>
+							Thought...
+						</div>
+					) : (
+						<span
+							ref={contentRef}
+							className={
+								message.type === 'thought' ? 'thought-message' : 'message'
 							}
-						}}
-					/>
-				) : message.type === 'thought' && !isThoughtCollapsed ? (
-					<div
-						className="thought-message"
-						onClick={() => toggleCollapse(message.id)}
-					>
-						Thought...
-					</div>
-				) : (
-					<span
-						className={
-							message.type === 'thought' ? 'thought-message' : 'message'
-						}
-						onClick={() => {
-							if (message.type === 'thought') {
-								toggleCollapse(message.id);
-							} else if (!readOnly) {
-								setEditingMsg(message.id);
-								setTempMsgContent(message.content);
-							}
-						}}
-					>
-						{message.content}
-					</span>
-				)}
+							onClick={() => {
+								if (message.type === 'thought') {
+									toggleCollapse(message.id);
+								} else if (!readOnly) {
+									setEditingMsg(message.id);
+									setTempMsgContent(message.content);
+								}
+							}}
+						>
+							{message.content}
+						</span>
+					)}
+				</div>
 			</div>
 		</div>
 	);
