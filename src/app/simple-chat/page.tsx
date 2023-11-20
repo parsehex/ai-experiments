@@ -3,10 +3,7 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
-import { withPage } from '@/components/Page';
 import { generate } from '@/lib/llm';
-
-const title = 'Simple Chat';
 
 function SimpleChat() {
 	const [messages, setMessages] = useState<Message[]>([
@@ -64,4 +61,4 @@ ${messagesStr}<|im_end|>
 	);
 }
 
-export default withPage({ title })(SimpleChat);
+export default SimpleChat;

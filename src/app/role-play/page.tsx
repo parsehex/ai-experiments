@@ -6,9 +6,6 @@ import { ChatOptions } from './ChatOptions';
 import { useChatState } from './chatState';
 import { useMessageHandler } from './chat-actions';
 import { DescriptionTextArea } from './DescriptionTextArea';
-import { withPage } from '@/components/Page';
-
-const title = 'Role Play';
 
 function RolePlay() {
 	useEffect(() => {
@@ -233,4 +230,4 @@ function RolePlay() {
 	);
 }
 
-export default withPage({ title })(RolePlay);
+export default RolePlay;

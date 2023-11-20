@@ -3,10 +3,8 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
-import { withPage } from '@/components/Page';
 import { generate } from '@/lib/llm';
 
-const title = 'Inner Monologue Chat';
 
 const innerMonologue = async (messages: Message[]) => {
 	let prompt =
@@ -124,4 +122,4 @@ function InnerMonologueChat() {
 	);
 }
 
-export default withPage({ title })(InnerMonologueChat);
+export default InnerMonologueChat;

@@ -1,22 +1,7 @@
 'use client';
+import '@/styles/fade.css';
 import React, { useState, useEffect } from 'react';
-import { withPage } from '@/components/Page';
 import { GenerateOptions, generate } from '@/lib/llm';
-
-const title = 'Redacter';
-
-const extraStyles = `
-@keyframes fadeInOut {
-    0% {opacity: 1;}
-    50% {opacity: 0.5;}
-    100% {opacity: 0;}
-}
-.fade {
-    animation-name: fadeInOut;
-    animation-timing-function: ease-in-out;
-    animation-duration: 1s; // Adjust duration as needed
-}
-`;
 
 const params: GenerateOptions = {
 	temp: 0.01,
@@ -97,4 +82,4 @@ ${inputText}<|im_end|>
 	);
 }
 
-export default withPage({ title, extraStyles })(Redacter);
+export default Redacter;

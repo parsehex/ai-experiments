@@ -11,9 +11,6 @@ import { getLLM } from '@/lib/llms';
 import { getTool } from '@/lib/tools';
 import { Message } from '@/lib/types';
 import { testPrompts } from './prompts';
-import { withPage } from '@/components/Page';
-
-const title = 'Langchain Chat';
 
 // TODO add other chat routes to prototype other agents
 // chat page that uses entity memory and displays entities, able to edit them
@@ -170,4 +167,4 @@ function LangchainChat() {
 	);
 }
 
-export default withPage({ title })(LangchainChat);
+export default LangchainChat;

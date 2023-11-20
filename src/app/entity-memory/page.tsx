@@ -11,9 +11,6 @@ import { ChatBox } from '@/components/ChatBox';
 import { getLLM } from '@/lib/llms';
 import { Message } from '@/lib/types';
 import { testPrompts } from './prompts';
-import { withPage } from '@/components/Page';
-
-const title = 'Entity Memory Chat';
 
 // TODO add other chat routes to prototype other agents
 // chat page that uses entity memory and displays entities, able to edit them
@@ -161,4 +158,4 @@ function EntityMemoryChat() {
 	);
 }
 
-export default withPage({ title })(EntityMemoryChat);
+export default EntityMemoryChat;

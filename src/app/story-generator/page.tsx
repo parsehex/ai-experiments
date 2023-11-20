@@ -6,7 +6,6 @@ import Collapsible from '@/components/Collapsible';
 import TextInput from '@/components/TextInput';
 import HoverMenuButton from '@/components/HoverMenuButton';
 import LLMModelStatus from '@/components/LLMModelStatus';
-import { withPage } from '@/components/Page';
 import {
 	Lines,
 	CharacterObject,
@@ -31,8 +30,6 @@ import {
 import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
 import StarterPresets from './starters';
-
-const title = 'Story Generator';
 
 const StoryGenerator = () => {
 	const starter = StarterPresets[1];
@@ -620,4 +617,4 @@ const StoryGenerator = () => {
 	);
 };
 
-export default withPage({ title })(StoryGenerator);
+export default StoryGenerator;

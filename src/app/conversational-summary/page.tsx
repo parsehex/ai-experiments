@@ -5,9 +5,6 @@ import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
 import { generate } from '@/lib/llm';
 import { PromptPart } from '@/lib/llm/types';
-import { withPage } from '@/components/Page';
-
-const title = 'Conversational Summary Chat';
 
 const summarize = async (messages: Message[], summary?: string) => {
 	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}\n`).join('');
@@ -136,4 +133,4 @@ function ConversationalSummaryChat() {
 	);
 }
 
-export default withPage({ title })(ConversationalSummaryChat);
+export default ConversationalSummaryChat;
