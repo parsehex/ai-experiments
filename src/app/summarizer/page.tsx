@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { withPage } from '@/components/Page';
 import { GenerateOptions, generate } from '@/lib/llm';
 import TextManager from '../text-manager/TextManager';
 import { listModels } from '@/lib/llm/openai-api';
@@ -9,7 +8,6 @@ import { TextChunk } from '../text-manager/types';
 import { IoReloadOutline, IoStopSharp } from 'react-icons/io5';
 import { stopStream } from '@/lib/llm/ooba-api.new';
 
-const title = 'Summarizer';
 const lsKey = 'textSummarizationChunks';
 
 function Summarizer() {
@@ -170,4 +168,4 @@ function Summarizer() {
 	);
 }
 
-export default withPage({ title })(Summarizer);
+export default Summarizer;

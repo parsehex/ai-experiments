@@ -3,10 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { PhaseType } from '@/lib/types';
 import * as prompts from './prompts';
-import { withPage } from '@/components/Page';
 import { GenerateOptions, generate } from '@/lib/llm';
-
-const title = 'Thought Chain';
 
 const phases: PhaseType[] = [
 	{
@@ -241,4 +238,4 @@ function ThoughtChain() {
 	);
 }
 
-export default withPage({ title })(ThoughtChain);
+export default ThoughtChain;
