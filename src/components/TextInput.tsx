@@ -17,7 +17,7 @@ interface CopyableTextInputProps extends CommonInputProps {
 	labelOrientation?: 'horizontal' | 'vertical';
 }
 
-const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
+const TextInput: React.FC<CopyableTextInputProps> = ({
 	value: v,
 	isTextarea = false,
 	canCopy = true,
@@ -29,7 +29,7 @@ const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
 	const [value, updateValue] = v;
 	const [copySuccess, setCopySuccess] = useState('');
 	const inputRef = React.createRef<HTMLInputElement | HTMLTextAreaElement>();
-	const uniqueId = v4();
+	const id = rest.id || v4();
 
 	useEffect(() => {
 		if (inputRef.current) {
@@ -139,32 +139,37 @@ const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
 			? 'inline-block text-sm font-medium text-gray-700 mr-2'
 			: 'block text-sm font-medium text-gray-700';
 
+	const style: React.CSSProperties = { minWidth };
+	if (label) {
+		style.paddingRight = '25px';
+	}
+
 	return (
 		<div className="relative inline-block">
 			{label && (
-				<label className={labelClass + ' align-top'} htmlFor={uniqueId}>
+				<label className={labelClass + ' align-top'} htmlFor={id}>
 					{label}
 				</label>
 			)}
 			{isTextarea ? (
 				<textarea
-					id={uniqueId}
+					id={id}
 					ref={inputRef as React.RefObject<HTMLTextAreaElement>}
 					className="input resize"
 					value={value}
 					onChange={handleChange}
-					style={{ minWidth, paddingRight: label ? '' : '25px' }}
+					style={style}
 					{...rest}
 				/>
 			) : (
 				<input
-					id={uniqueId}
+					id={id}
 					ref={inputRef as React.RefObject<HTMLInputElement>}
 					type="text"
 					className="input resize"
 					value={value}
 					onChange={handleChange}
-					style={{ minWidth, paddingRight: label ? '' : '25px' }}
+					style={style}
 					{...rest}
 				/>
 			)}
@@ -185,4 +190,4 @@ const CopyableTextInput: React.FC<CopyableTextInputProps> = ({
 	);
 };
 
-export default CopyableTextInput;
+export default TextInput;
