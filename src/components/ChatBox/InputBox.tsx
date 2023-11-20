@@ -28,7 +28,7 @@ const InputBox: React.FC<InputBoxProps> = ({
 	};
 
 	return (
-		<div className="input-container px-2 mt-1">
+		<div className="input-container px-2 mt-2">
 			{multiline ? (
 				<textarea
 					className="input mr-2 grow"
@@ -50,6 +50,7 @@ const InputBox: React.FC<InputBoxProps> = ({
 				/>
 			)}
 			<button
+				className="basic py-2 rounded-full"
 				onClick={() => {
 					onMessageSubmit(input);
 					setInput('');
