@@ -2,6 +2,7 @@ const pageTitleMap: Record<string, string> = {
 	'/': 'Home',
 	'/conversational-summary': 'Conversational Summary Chat',
 	'/entity-memory': 'Entity Memory Chat',
+	'/image-generator': 'Image Generator',
 	'/inner-monologue': 'Inner Monologue Chat',
 	'/langchain-chat': 'Langchain Chat',
 	'/redacter': 'Redacter',

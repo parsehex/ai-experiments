@@ -91,9 +91,9 @@ const demos: ItemProps[] = [
 	},
 	{
 		title: 'Image Generator',
-		description: 'Interface to DALL-E 3 (for now)',
-		// href: '/image-generator',
-		tags: ['TODO'],
+		description: 'Interface to Stable Diffusion for image generation',
+		href: '/image-generator',
+		tags: ['In Progress', 'SD'],
 	},
 	{
 		title: 'Entity Memory',
