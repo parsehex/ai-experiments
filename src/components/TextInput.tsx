@@ -115,7 +115,8 @@ const TextInput: React.FC<CopyableTextInputProps> = ({
 			span.style.whiteSpace = 'pre';
 			span.textContent = input.value.replace(/ /g, '\u00a0');
 
-			input.style.width = `${span.offsetWidth}px`;
+			const maxWidth = Math.round(window.innerWidth / 3);
+			input.style.width = `${Math.min(maxWidth, span.offsetWidth)}px`;
 			document.body.removeChild(span);
 		}
 	};
@@ -173,7 +174,7 @@ const TextInput: React.FC<CopyableTextInputProps> = ({
 					{...rest}
 				/>
 			)}
-			{canCopy && (
+			{canCopy && value && (
 				<>
 					<button
 						onClick={handleCopyClick}
