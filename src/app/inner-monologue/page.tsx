@@ -7,7 +7,6 @@ import { generate } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { txt2img } from '@/lib/imagen';
 
-
 const innerMonologue = async (messages: Message[]) => {
 	let prompt =
 		'Consider the entire chat history and prepare thoughts on how to respond:\n';
@@ -59,7 +58,7 @@ const isImgReq = async (message: Message, lastMsg?: Message, summary = '') => {
 		max: 5,
 		stop: ['RESPONSE:', 'INPUT:', '\n'],
 	});
-	return result;
+	return result.toUpperCase();
 };
 const summarizeChat = async (messages: Message[]) => {
 	let instructions =
@@ -124,6 +123,7 @@ const sendInput = async (
 	{ thoughts, madeImage, summary: s }: ExtraObj = {}
 ) => {
 	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}`);
+	msgs.pop();
 	// limit history to last 5 messages + summary
 	const chatHistory = msgs.slice(-5).join('\n');
 	const thoughtStr = thoughts
@@ -140,11 +140,17 @@ const sendInput = async (
 	}:\n${chatHistory}\n`;
 	if (s) instructions += `CHAT SUMMARY: ${s}\n`;
 	instructions += `${thoughtStr}\n`;
-	instructions += imgStr;
 	const user = `INPUT: ${input}\n`;
 	const prompt = makePrompt(user, instructions, 'ChatML');
+	let prefixResponse = 'RESPONSE:';
+	if (madeImage) {
+		prefixResponse =
+			'(Assistant created an image that was shown to the user.)\n';
+		prefixResponse += 'RESPONSE:';
+		prefixResponse += 'Sure, here is your image. ';
+	}
 	const result = await generate(prompt, {
-		prefixResponse: 'RESPONSE:',
+		prefixResponse,
 		max: 768,
 		temp: 0.25,
 		cfg: 1.5,
