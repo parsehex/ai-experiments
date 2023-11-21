@@ -4,9 +4,12 @@
 
 import { PromptFormatsObj, PromptFormatResponse } from './types';
 
+// (user = user.trim()), (system = system?.trim());
+// this is just trimming both strings
 const PromptFormats: PromptFormatsObj = {
 	// a handful of models seem to work fine without much of a prompt format
 	flexible: (user: string, system?: string) => {
+		(user = user.trim()), (system = system?.trim());
 		let str = '';
 		if (system) str += `${system}\n`;
 		str += `${user}\n`;
@@ -14,6 +17,7 @@ const PromptFormats: PromptFormatsObj = {
 		return str;
 	},
 	Alpaca: (user: string, system?: string) => {
+		(user = user.trim()), (system = system?.trim());
 		let str = '';
 		if (system) str += `${system}\n\n`;
 		str += `### Instruction:\n${user}\n`;
@@ -22,6 +26,7 @@ const PromptFormats: PromptFormatsObj = {
 	},
 	// several models use this: mistral
 	ChatML: (user: string, system?: string) => {
+		(user = user.trim()), (system = system?.trim());
 		let str = '';
 		if (system) str += `<|im_start|>system\n${system}<|im_end|>\n`;
 		str += `<|im_start|>user\n${user}<|im_end|>\n`;
@@ -30,6 +35,7 @@ const PromptFormats: PromptFormatsObj = {
 	},
 	// luna-ai
 	UserAssistant: (user: string, system?: string) => {
+		(user = user.trim()), (system = system?.trim());
 		let str = '';
 		if (system) str += `${system}\n`;
 		str += `USER: ${user}\n`;
@@ -38,6 +44,7 @@ const PromptFormats: PromptFormatsObj = {
 	},
 	// this one's different, it needs to return an array of message objects
 	OpenAI: (user: string, system?: string) => {
+		(user = user.trim()), (system = system?.trim());
 		let arr = [];
 		if (system) arr.push({ role: 'system', content: system });
 		arr.push({ role: 'user', content: user });
