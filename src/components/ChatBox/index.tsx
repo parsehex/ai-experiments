@@ -130,8 +130,8 @@ export const ChatBox = ({
 					isThoughtCollapsed={collapsedThoughts.has(msg.id)}
 					isSelected={selectedMessages.has(msg.id)}
 					onToggleRole={() => !readOnly && toggleRole(msg.id)}
-					onDelete={() => deleteMessage && deleteMessage(msg.id)}
-					onRegenerate={() => regenerateMessage && regenerateMessage(msg.id)}
+					onDelete={deleteMessage}
+					onRegenerate={regenerateMessage}
 					onEdit={() => setEditingMsg(msg.id)}
 					onToggleThoughtCollapse={() => toggleCollapse(msg.id)}
 					onCopy={() => navigator.clipboard.writeText(msg.content)}

@@ -8,8 +8,8 @@ interface MessageItemProps {
 	isThoughtCollapsed: boolean;
 	isSelected: boolean;
 	onToggleRole: (id: string) => void;
-	onDelete: (id: string) => void;
-	onRegenerate: (id: string) => void;
+	onDelete?: (id: string) => void;
+	onRegenerate?: (id: string) => void;
 	onEdit: (id: string, content: string) => void;
 	onToggleThoughtCollapse: (id: string) => void;
 	onCopy: (id: string) => void;
@@ -86,7 +86,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 					>
 						{message.role}
 					</span>
-					{!readOnly && (
+					{!readOnly && onDelete && (
 						<button
 							className="delete mr-2"
 							onClick={() => onDelete(message.id)}
@@ -98,7 +98,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 						Copy
 					</button>
 
-					{!readOnly && (
+					{!readOnly && onRegenerate && (
 						<button
 							className="regenerate mr-2"
 							onClick={() => onRegenerate(message.id)}
