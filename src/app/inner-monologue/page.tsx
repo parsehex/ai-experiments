@@ -26,7 +26,7 @@ const innerMonologue = async (messages: Message[]) => {
 	return result;
 };
 
-const isImgReq = async (message: Message) => {
+const isImgReq = async (message: Message, lastMsg?: Message, summary = '') => {
 	// TODO probably need to include chat summary
 	// in case user asks for an image in a way that only makes sense
 	// in the context of the chat (they already made images)
@@ -40,6 +40,16 @@ const isImgReq = async (message: Message) => {
 	let instructions = 'The following INPUT is a message from the user.\n';
 	instructions +=
 		'Your task is to decide whether or not the user requested to generate an image. They might have asked explicitly or implicitly (e.g. asking to see something).\n';
+	instructions += 'Be lenient in answering in the affirmative.\n';
+	if (lastMsg) {
+		instructions += `Previous Message${
+			!!lastMsg.images?.length ? ' (image was generated)' : ''
+		}:\n ${lastMsg.content}\n`;
+	}
+	// if (summary) {
+	// 	// TODO
+	// 	instructions += `The following is a summary of the chat so far, which might help you decide: ${summary}\n`;
+	// }
 	instructions += 'Respond with YES or NO.\n';
 	const inputStr = `INPUT: ${message.content}\n`;
 	const prompt = makePrompt(inputStr, instructions, 'ChatML');
@@ -51,13 +61,14 @@ const isImgReq = async (message: Message) => {
 	});
 	return result;
 };
-const extractImgDesc = async (message: Message) => {
+const summarizeChat = async (messages: Message[]) => {
 	let instructions =
-		'The following INPUT is a message that describes an image in some way.\n';
-	instructions +=
-		"Your task is to extract the description. Retain as many of the same words as possible, don't add words unless necessary.\n";
-	instructions += 'Respond with a string containing the description only.\n';
-	const inputStr = `INPUT: ${message.content}\n`;
+		'The following INPUT is a chat between a user and an assistant.\n';
+	instructions += 'Your task is to summarize the chat.\n';
+	instructions += 'Respond with a string containing the summary only.\n';
+	const inputStr = `INPUT:\n${messages
+		.map((msg) => `${msg.role}: ${msg.content}`)
+		.join('\n')}\n`;
 	const prompt = makePrompt(inputStr, instructions, 'ChatML');
 	const result = await generate(prompt, {
 		max: 256,
@@ -65,15 +76,36 @@ const extractImgDesc = async (message: Message) => {
 	});
 	return result;
 };
-const imgPrompt = async (desc: string) => {
+const extractImgDesc = async (message: Message, summary = '') => {
 	let instructions =
-		'The following INPUT is a description of a requested image.\n';
+		'The following INPUT is a message that describes an image in some way.\n';
+	instructions +=
+		"Your task is to extract the description. Retain as many of the same words as possible, don't add words unless necessary.\n";
+	instructions += 'Respond with a string containing the description only.\n';
+	if (summary) {
+		instructions += `The following is a summary of the chat so far, which might help your answer: ${summary}\n`;
+	}
+	const inputStr = `INPUT: ${message.content}\n`;
+	const prompt = makePrompt(inputStr, instructions, 'ChatML');
+	const result = await generate(prompt, {
+		prefixResponse: 'RESPONSE:',
+		max: 256,
+		stop: ['RESPONSE:', 'INPUT:', '\n'],
+	});
+	return result;
+};
+const imgPrompt = async (desc: string, prevPrompt = '') => {
+	let instructions = 'The following INPUT is a message requesting an image.\n';
 	instructions +=
 		'Your task is to write the prompt that will be used to generate the image. The prompt should start with a long phrase describing what the overall image depicts, and then lists visual descriptors separated by commas to further refine the image.\n';
+	if (prevPrompt) {
+		instructions += `The following prompt was used to generate the previous image: ${prevPrompt}\n`;
+	}
 	instructions += 'Respond with a string containing the prompt only.\n';
 	const inputStr = `INPUT: ${desc}\n`;
 	const prompt = makePrompt(inputStr, instructions, 'ChatML');
 	const result = await generate(prompt, {
+		prefixResponse: 'RESPONSE:',
 		max: 256,
 		stop: ['RESPONSE:', 'INPUT:', '\n'],
 	});
@@ -83,31 +115,37 @@ const imgPrompt = async (desc: string) => {
 interface ExtraObj {
 	thoughts?: string;
 	madeImage?: boolean;
+	summary?: string;
 }
 
 const sendInput = async (
 	input: string,
 	messages: Message[],
-	{ thoughts, madeImage }: ExtraObj = {}
+	{ thoughts, madeImage, summary: s }: ExtraObj = {}
 ) => {
-	const chatHistory = messages
-		.map((msg) => `${msg.role}: ${msg.content}`)
-		.join('\n');
+	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}`);
+	// limit history to last 5 messages + summary
+	const chatHistory = msgs.slice(-5).join('\n');
 	const thoughtStr = thoughts
 		? `\nThese are your thoughts on how to respond: ${thoughts}`
 		: '';
 	const imgStr = madeImage
-		? '\n(You generated an image. It will automatically be included, there is no action necessary on your part.)'
+		? '\n(You created an image which the user received. There is no action necessary on your part, do not include placeholder text.)'
 		: '';
-	let prompt =
+	let instructions =
 		'Continue the following chat between USER and ASSISTANT by responding to the INPUT.\n';
-	prompt += 'Respond with a string containing your response only.\n';
-	prompt += `${chatHistory}${thoughtStr}\n`;
-	prompt += `INPUT: ${input}\n`;
-	prompt += imgStr;
-	prompt += 'RESPONSE: ';
+	instructions += 'Respond with a string containing your response only.\n';
+	instructions += `HISTORY ${
+		msgs.length > 5 ? '(last 5)' : `(last ${msgs.length})`
+	}:\n${chatHistory}\n`;
+	if (s) instructions += `CHAT SUMMARY: ${s}\n`;
+	instructions += `${thoughtStr}\n`;
+	instructions += imgStr;
+	const user = `INPUT: ${input}\n`;
+	const prompt = makePrompt(user, instructions, 'ChatML');
 	const result = await generate(prompt, {
-		max: 1500,
+		prefixResponse: 'RESPONSE:',
+		max: 768,
 		temp: 0.25,
 		cfg: 1.5,
 		stop: ['INPUT:', 'RESPONSE:', 'USER:'],
@@ -134,14 +172,23 @@ function InnerMonologueChat() {
 			id: uuidv4(),
 		},
 	]);
+	const [chatSummary, setChatSummary] = useState('');
 	const [input, setInput] = useState('');
 	const [options, setOptions] = useState(DefaultOptions);
+	const [lastPrompt, setLastPrompt] = useState('');
+
+	const updateSummary = async (msgs = messages) => {
+		// call this after every message, only actually summarize after
+		//   maybe 4 messages, at least eventually
+		const summary = await summarizeChat(msgs);
+		console.log('summary', summary);
+	};
 
 	const handleSend = async (userInput: string) => {
 		if (!userInput) return;
 		setInput('');
 
-		const newMessages = [
+		let newMessages = [
 			...messages,
 			{ role: 'USER', content: userInput, id: uuidv4() },
 		];
@@ -159,10 +206,13 @@ function InnerMonologueChat() {
 
 		let image: string | undefined;
 
-		const imgReq = await isImgReq(userMsg);
+		const lastMsg = newMessages[newMessages.length - 2];
+
+		const imgReq = await isImgReq(userMsg, lastMsg || null, chatSummary);
 		if (imgReq.includes('YES')) {
-			const userDesc = await extractImgDesc(userMsg);
-			const prompt = await imgPrompt(userDesc);
+			// const userDesc = await extractImgDesc(userMsg, chatSummary);
+			const prompt = await imgPrompt(userMsg.content, lastPrompt);
+			setLastPrompt(prompt);
 			const res = await txt2img({
 				prompt,
 				negative_prompt: '',
@@ -175,7 +225,7 @@ function InnerMonologueChat() {
 				height: 768,
 			});
 			image = res.images[0];
-			console.log('userDesc', userDesc, '- prompt', prompt);
+			console.log('prompt', prompt);
 		}
 
 		// const response = await sendInput(userInput, newMessages, thoughts);
@@ -191,7 +241,9 @@ function InnerMonologueChat() {
 			aiMessage.images = [image];
 			console.log('image', image);
 		}
-		setMessages([...newMessages, aiMessage]);
+		newMessages = [...newMessages, aiMessage];
+		setMessages(newMessages);
+		updateSummary(newMessages);
 	};
 
 	const handleClear = () => {
@@ -228,8 +280,10 @@ function InnerMonologueChat() {
 			<ChatBox
 				messages={messages}
 				setMessages={setMessages}
-				readOnly={true}
 				handleSend={handleSend}
+				deleteMessage={(id) => {
+					setMessages(messages.filter((msg) => msg.id !== id));
+				}}
 				defExpandImages={options.expandImages}
 			/>
 			{/* <div className="input-container px-2">
