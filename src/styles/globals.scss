@@ -31,6 +31,10 @@ body {
 	@apply bg-gray-100 dark:bg-gray-900;
 }
 
+main {
+	@apply py-1 px-3;
+}
+
 nav {
 	@apply my-2 ml-3;
 	a {
