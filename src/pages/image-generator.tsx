@@ -7,6 +7,7 @@ import ImgCarousel from '@/components/ImgCarousel';
 
 // TODO
 //   show something when getting samplers fails, meaning the server is not online
+//   support setting params via url (can link to customize in chatbox)
 
 const DefaultParams = {
 	width: 512,
@@ -15,7 +16,7 @@ const DefaultParams = {
 
 const ImageGenerator = () => {
 	const [prompt, setPrompt] = useState('beautiful');
-	const [negativePrompt, setNegativePrompt] = useState('');
+	const [negativePrompt, setNegativePrompt] = useState('easynegative');
 	const [seed, setSeed] = useState(-1);
 	const [samplers, setSamplers] = useState([] as string[]);
 	const [selectedSampler, setSelectedSampler] = useState('');
