@@ -13,6 +13,7 @@ export const ChatBox = ({
 	readOnly = false,
 	handleSend,
 	multiline = false,
+	defExpandImages = false,
 }: {
 	roles?: string[];
 	messages: Message[];
@@ -22,6 +23,7 @@ export const ChatBox = ({
 	readOnly?: boolean;
 	handleSend?: (content: string) => void;
 	multiline?: boolean;
+	defExpandImages?: boolean;
 }) => {
 	const [tempMsgContent, setTempMsgContent] = useState('');
 	const [editingMsg, setEditingMsg] = useState<string | null>(null);
@@ -135,6 +137,7 @@ export const ChatBox = ({
 					onCopy={() => navigator.clipboard.writeText(msg.content)}
 					onSelect={(e) => handleSelect(e, msg, idx)}
 					readOnly={readOnly}
+					defExpandImages={defExpandImages}
 				/>
 			))}
 			{deleteMessage && selectedMessages.size > 0 && (

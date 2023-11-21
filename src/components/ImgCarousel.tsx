@@ -9,11 +9,16 @@ const HEIGHT_MULTIPLIER = 3;
 interface ImgCarouselProps {
 	images: string[];
 	maxContentHeight?: number;
+	defaultExpanded?: boolean;
 }
 
-const ImgCarousel = ({ images, maxContentHeight = 0 }: ImgCarouselProps) => {
+const ImgCarousel = ({
+	images,
+	maxContentHeight = 0,
+	defaultExpanded = false,
+}: ImgCarouselProps) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
-	const [isExpanded, setIsExpanded] = useState(false);
+	const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
 	const handleNext = () => {
 		setCurrentIndex((prevIndex) =>

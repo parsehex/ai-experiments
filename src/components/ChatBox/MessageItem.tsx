@@ -16,6 +16,7 @@ interface MessageItemProps {
 	onSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
 	readOnly: boolean;
 	extraClass?: string;
+	defExpandImages?: boolean;
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({
@@ -32,6 +33,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	onSelect,
 	readOnly,
 	extraClass = '',
+	defExpandImages,
 }) => {
 	const contentRef = React.useRef(null as HTMLSpanElement | null);
 	const [contentHeight, setContentHeight] = React.useState(0);
@@ -106,7 +108,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
 					)}
 				</span>
 				<div className="flex items-center">
-					{!!message.images?.length && <ImgCarousel images={message.images} />}
+					{!!message.images?.length && (
+						<ImgCarousel
+							images={message.images}
+							defaultExpanded={defExpandImages}
+						/>
+					)}
 					{editingMsg === message.id ? (
 						<textarea
 							className="input w-96"
