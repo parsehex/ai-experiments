@@ -14,6 +14,7 @@ export const ChatBox = ({
 	handleSend,
 	multiline = false,
 	defExpandImages = false,
+	handleEdit,
 }: {
 	roles?: string[];
 	messages: Message[];
@@ -24,6 +25,7 @@ export const ChatBox = ({
 	handleSend?: (content: string) => void;
 	multiline?: boolean;
 	defExpandImages?: boolean;
+	handleEdit?: (id: string, content: string) => void;
 }) => {
 	const [tempMsgContent, setTempMsgContent] = useState('');
 	const [editingMsg, setEditingMsg] = useState<string | null>(null);
@@ -132,7 +134,10 @@ export const ChatBox = ({
 					onToggleRole={() => !readOnly && toggleRole(msg.id)}
 					onDelete={deleteMessage}
 					onRegenerate={regenerateMessage}
-					onEdit={() => setEditingMsg(msg.id)}
+					onEdit={(id, content) => {
+						setEditingMsg(null);
+						handleEdit && handleEdit(id, content);
+					}}
 					onToggleThoughtCollapse={() => toggleCollapse(msg.id)}
 					onCopy={() => navigator.clipboard.writeText(msg.content)}
 					onSelect={(e) => handleSelect(e, msg, idx)}

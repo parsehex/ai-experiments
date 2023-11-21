@@ -284,6 +284,16 @@ function InnerMonologueChat() {
 				deleteMessage={(id) => {
 					setMessages(messages.filter((msg) => msg.id !== id));
 				}}
+				handleEdit={(id, content) => {
+					setMessages(
+						messages.map((msg) => {
+							if (msg.id === id) {
+								msg.content = content;
+							}
+							return msg;
+						})
+					);
+				}}
 				defExpandImages={options.expandImages}
 			/>
 			{/* <div className="input-container px-2">

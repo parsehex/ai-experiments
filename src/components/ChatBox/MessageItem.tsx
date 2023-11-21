@@ -119,8 +119,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
 							className="input w-96"
 							value={tempMsgContent}
 							onChange={(e) => setTempMsgContent(e.target.value)}
-							onKeyDown={(e) => {
-								if (e.key === 'Enter' && e.shiftKey) {
+							onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+								if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
 									handleMessageEdit(message.id, tempMsgContent);
 								}
 							}}
