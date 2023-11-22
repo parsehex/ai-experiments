@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
-import { generate } from '@/lib/llm';
+import { GenerateOptions, generate } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { txt2img, txt2imgResponseInfo } from '@/lib/imagen';
 import { toast } from 'react-toastify';
+import * as parts from './prompt-parts';
 
 const RANCFG_MIN = 1;
 const RANCFG_MAX = 6;
@@ -19,6 +20,8 @@ const DefaultLLMParams = {
 	repetition_penalty: 1.15,
 	stop: ['RESPONSE:', 'INPUT:'],
 };
+const Params = (p: GenerateOptions): GenerateOptions =>
+	Object.assign({}, DefaultLLMParams, p);
 
 const GET_RANDOM_CFG = () =>
 	Math.random() * (RANCFG_MAX - RANCFG_MIN) + RANCFG_MIN;
@@ -30,44 +33,26 @@ const pickSampler = (ran = true) => {
 };
 
 const innerMonologue = async (messages: Message[]) => {
-	let prompt =
-		'Consider the entire chat history and prepare thoughts on how to respond:\n';
-	messages.forEach((message) => {
-		prompt += `${message.role}: ${message.content}\n`;
-	});
-	prompt += 'THOUGHTS: ';
-
+	const promptParts = parts.innerMonologue({ messages });
+	const { prefixResponse, user, system } = promptParts;
 	const result = await generate(
-		prompt,
-		Object.assign({}, DefaultLLMParams, {
-			temp: 0.5,
+		makePrompt(user, system, 'ChatML'),
+		Params({
+			prefixResponse,
 			cfg: 2,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 			ban_eos_token: true,
 		})
 	);
-	console.log('thought', prompt, result);
 	return result;
 };
 const summarizeChat = async (messages: Message[], lastSummary = '') => {
-	let instructions =
-		'The following INPUT is a chat between a user and an assistant.\n';
-	if (lastSummary) {
-		instructions += `Your task is to revise the previous summary based on the new chat. Retain the most important information from the previous summary.\n`;
-		instructions += `Previous Summary: ${lastSummary}\n`;
-	} else {
-		instructions += 'Your task is to summarize the chat.\n';
-	}
-	instructions += 'Respond with a string containing the summary only.\n';
-	const inputStr = `INPUT:\n${messages
-		.map((msg) => `${msg.role}: ${msg.content}`)
-		.join('\n')}\n`;
-	const prompt = makePrompt(inputStr, instructions, 'ChatML');
+	const promptParts = parts.summarizeChat({ messages, lastSummary });
+	const { prefixResponse, user, system } = promptParts;
 	const result = await generate(
-		prompt,
-		Object.assign({}, DefaultLLMParams, {
-			prefixResponse: 'SUMMARY:',
-			max: 256,
+		makePrompt(user, system, 'ChatML'),
+		Params({
+			prefixResponse,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})
 	);
@@ -80,31 +65,16 @@ const isImageRequestThoughts = async (
 	lastMsg?: Message,
 	summary = ''
 ) => {
-	let instructions = 'The following INPUT is a message from the user.\n';
-	instructions +=
-		'Your task is to decide whether or not the user requested to create an image, which is something you have the ability to do. Be slightly overzealous in choosing to make an image.\n';
-	instructions +=
-		'Note that if the user is asking to collaborate on image ideas then you should not make an image.\n';
-	instructions += 'Think out loud before answering.\n';
-	if (lastMsg) {
-		// instructions += `Previous Message${
-		// 	!!lastMsg.images?.length ? ' (image was generated)' : ''
-		// }:\n${lastMsg.role}: ${lastMsg.content}\n`;
-		instructions += 'Previous Message:\n';
-		instructions += `<|im_start|>assistant\n${lastMsg.content}\n`;
-		instructions += !!lastMsg.images?.length ? '(you generated an image)' : '';
-	}
-	if (summary) {
-		instructions += `Chat Summary: ${summary}\n`;
-	}
-	const inputStr = `INPUT: ${message.content}\n`;
-	const prompt = makePrompt(inputStr, instructions, 'ChatML');
+	const promptParts = parts.isImageRequestThoughts({
+		message,
+		lastMsg,
+		summary,
+	});
+	const { prefixResponse, user, system } = promptParts;
 	const result = await generate(
-		prompt,
-		Object.assign({}, DefaultLLMParams, {
-			prefixResponse: 'THOUGHTS:',
-			// cfg: 1.25,
-			// temp: 0.25,
+		makePrompt(user, system, 'ChatML'),
+		Params({
+			prefixResponse,
 			max: 96,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})
@@ -117,31 +87,17 @@ const isImageRequest = async (
 	summary = ''
 ) => {
 	const thoughts = await isImageRequestThoughts(message, lastMsg, summary);
-	console.log('thoughts', thoughts);
-	let instructions = 'The following INPUT is a message from the user.\n';
-	instructions +=
-		'Your task is to decide whether or not the user requested to generate an image. They might have asked explicitly or implicitly (e.g. asking to see something).\n';
-	// instructions += 'Be lenient in answering in the affirmative.\n';
-	if (lastMsg) {
-		// TODO <|im_start|>assistant is a hack
-		instructions += `Previous Message:\n<|im_start|>assistant\n${
-			!!lastMsg.images?.length ? ' (image was generated)' : ''
-		}\n${lastMsg.content}\n`;
-	}
-	// if (summary) {
-	// 	// TODO
-	// 	instructions += `The following is a summary of the chat so far, which might help you decide: ${summary}\n`;
-	// }
-	instructions += 'Respond with YES or NO.\n';
-	const inputStr = `INPUT: ${message.content}\n`;
-	const prompt = makePrompt(inputStr, instructions, 'ChatML');
+	const promptParts = parts.isImageRequestAnswer({
+		message,
+		thoughts,
+		lastMsg,
+	});
+	const { prefixResponse, user, system } = promptParts;
 	let result = await generate(
-		prompt,
-		Object.assign({}, DefaultLLMParams, {
-			prefixResponse: 'RESPONSE:\n' + thoughts + '\nANSWER:\n',
-			// cfg: 1.25,
+		makePrompt(user, system, 'ChatML'),
+		Params({
+			prefixResponse,
 			max: 5,
-			stop: ['RESPONSE:', 'INPUT:'],
 		})
 	);
 	result = result.trim().toUpperCase();
@@ -152,22 +108,12 @@ const makeImagePrompt = async (
 	prevPrompt = '',
 	thoughts = ''
 ) => {
-	let instructions = 'The following INPUT is a message requesting an image.\n';
-	instructions +=
-		"Your task is to write the prompt that will be used to generate the image. The prompt should start with a long phrase describing what the overall image depicts, and then list visual descriptors separated by commas to further refine the image. Optionally list keywords like 'masterpiece' or 'amateur' to influence the quality of the image.\n";
-	instructions +=
-		'To emphasize a keyword or phrase, include its synonyms or wrap it in (parentheses).\n';
-	if (prevPrompt) {
-		instructions += `Past Prompt: ${prevPrompt}\n`;
-	}
-	instructions += 'Respond with a string containing the prompt only.\n';
-	const inputStr = `INPUT: ${desc}\n`;
-	const prompt = makePrompt(inputStr, instructions, 'ChatML');
+	const promptParts = parts.makeImgPrompt({ desc, prevPrompt, thoughts });
+	const { prefixResponse, user, system } = promptParts;
 	let result = await generate(
-		prompt,
-		Object.assign({}, DefaultLLMParams, {
-			prefixResponse: 'RESPONSE:' + (thoughts ? `\n${thoughts}\nANSWER: ` : ''),
-			max: 256,
+		makePrompt(user, system, 'ChatML'),
+		Params({
+			prefixResponse,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})
 	);
@@ -186,45 +132,24 @@ interface ExtraObj {
 const sendInput = async (
 	input: string,
 	messages: Message[],
-	{ thoughts, madeImage, summary: s }: ExtraObj = {}
+	{ thoughts, madeImage, summary }: ExtraObj = {}
 ) => {
-	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}`);
-	// remove the last message, which is the user's input
-	msgs.pop();
-	// limit history to last 5 messages + summary
-	const chatHistory = msgs.slice(-5).join('\n');
-	const thoughtStr = thoughts
-		? `\nThese are your thoughts on how to respond: ${thoughts}`
-		: '';
-	const imgStr = madeImage
-		? '\n(You created an image which the user received. There is no action necessary on your part, do not include placeholder text.)'
-		: '';
-	let instructions =
-		'Continue the following chat between USER and ASSISTANT by responding to the INPUT.\n';
-	instructions += 'Respond with a string containing your response only.\n';
-	instructions += `HISTORY ${
-		msgs.length > 5 ? '(last 5)' : `(last ${msgs.length})`
-	}:\n${chatHistory}\n`;
-	if (s) instructions += `CHAT SUMMARY: ${s}\n`;
-	instructions += `${thoughtStr}\n`;
-	// instructions += imgStr;
-	const user = `INPUT: ${input}\n`;
-	const prompt = makePrompt(user, instructions, 'ChatML');
-	let prefixResponse = 'RESPONSE:';
-	if (madeImage) {
-		prefixResponse =
-			'(Assistant created an image that was shown to the user.)\n';
-		prefixResponse += 'RESPONSE:';
-		prefixResponse += 'Sure, here is your image. ';
-	}
+	const promptParts = parts.continueChat({
+		input,
+		messages,
+		thoughts,
+		madeImage,
+		summary,
+	});
+	const { prefixResponse, user, system } = promptParts;
 	const result = await generate(
-		prompt,
-		Object.assign({}, DefaultLLMParams, {
+		makePrompt(user, system, 'ChatML'),
+		Params({
 			prefixResponse,
 			max: 768,
-			temp: 0.25,
+			// temp: 0.25,
 			cfg: 1.5,
-			stop: ['INPUT:', 'RESPONSE:', 'USER:'],
+			// stop: ['INPUT:', 'RESPONSE:', 'USER:'],
 			// mirostat_mode: 2,
 		})
 	);

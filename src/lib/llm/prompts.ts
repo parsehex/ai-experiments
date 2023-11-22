@@ -2,7 +2,8 @@
 // some formats have a system section
 // in formats that dont, i guess just start the user message with the system?
 
-import { PromptFormatsObj, PromptFormatResponse } from './types';
+import { stringFromPromptParts } from '.';
+import { PromptFormatsObj, PromptFormatResponse, PromptPart } from './types';
 
 // (user = user.trim()), (system = system?.trim());
 // this is just trimming both strings
@@ -54,12 +55,14 @@ const PromptFormats: PromptFormatsObj = {
 const ModelPromptFormats = {};
 
 export function makePrompt(
-	user: string,
-	system?: string,
+	user: string | PromptPart[],
+	system?: string | PromptPart[],
 	/** One of: `flexible`, `ChatML`, `UserAssistant`, 'OpenAI' */
 	format = 'flexible'
 ): PromptFormatResponse {
 	const promptFormat = PromptFormats[format];
+	if (Array.isArray(user)) user = stringFromPromptParts(user);
+	if (Array.isArray(system)) system = stringFromPromptParts(system);
 	if (!promptFormat) {
 		console.error('Prompt format not found:', format);
 		return '';
