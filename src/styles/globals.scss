@@ -82,9 +82,7 @@ button {
 		border-radius: 5px;
 	}
 	&.green {
-		@apply px-2 py-1 rounded-md text-white;
-		background-color: #10b981;
-		color: black;
+		@apply px-2 py-1 rounded-md text-white bg-green-500 hover:bg-green-600 hover:opacity-100;
 	}
 }
 label {

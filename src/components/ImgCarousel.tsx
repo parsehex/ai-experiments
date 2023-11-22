@@ -3,6 +3,7 @@ import { useState } from 'react';
 import LeftArrow from './svg/LeftArrow';
 import RightArrow from './svg/RightArrow';
 import { ImgType } from '@/lib/types';
+import { IoDownloadOutline } from 'react-icons/io5';
 
 const MIN_HEIGHT = 128;
 const HEIGHT_MULTIPLIER = 3;
@@ -66,9 +67,21 @@ const ImgCarousel = ({
 	const handleImageClick = () => {
 		setIsExpanded(!isExpanded);
 	};
+	const imgAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+		e.preventDefault();
+		e.stopPropagation();
+	};
 	const calculatedMaxHeight = isExpanded
 		? Math.max(maxContentHeight, MIN_HEIGHT) * HEIGHT_MULTIPLIER
 		: Math.max(maxContentHeight, MIN_HEIGHT);
+	const createAnchor = (href: string, download: string) => {
+		const anchor = document.createElement('a');
+		anchor.href = href;
+		anchor.download = download;
+		anchor.target = '_blank';
+		anchor.rel = 'noreferrer';
+		return anchor;
+	};
 
 	return (
 		<div
@@ -81,10 +94,7 @@ const ImgCarousel = ({
 				target="_blank"
 				rel="noreferrer"
 				download={Date.now().toString() + '.png'}
-				onClick={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-				}}
+				onClick={imgAnchorClick}
 			>
 				<img
 					key={currentIndex}
@@ -95,6 +105,25 @@ const ImgCarousel = ({
 					onClick={handleImageClick}
 				/>
 			</a>
+			<div className="absolute h-full">
+				<button
+					className="green opacity-70 small relative top-6 z-10 p-1"
+					style={{ left: '325%' }}
+					aria-label="Download Image"
+					title="Download Image"
+					onClick={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						const parent = e.currentTarget.parentElement?.parentElement;
+						const anchor = parent?.querySelector('a');
+						if (anchor) {
+							createAnchor(anchor.href, anchor.download).click();
+						}
+					}}
+				>
+					<IoDownloadOutline />
+				</button>
+			</div>
 			{images.length > 1 && (
 				<div className="slide_direction">
 					<div
