@@ -2,12 +2,17 @@ import '@/styles/carousel.scss';
 import { useState } from 'react';
 import LeftArrow from './svg/LeftArrow';
 import RightArrow from './svg/RightArrow';
+import { ImgType } from '@/lib/types';
 
 const MIN_HEIGHT = 128;
 const HEIGHT_MULTIPLIER = 3;
 
+// TODO add download button which uses the anchor
+// otherwise user must right click and save link as (rather than save image as)
+//   if not then no filename is provided in the save dialog
+
 interface ImgCarouselProps {
-	images: string[];
+	images: ImgType[];
 	maxContentHeight?: number;
 	defaultExpanded?: boolean;
 }
@@ -34,12 +39,28 @@ const ImgCarousel = ({
 		setCurrentIndex(index);
 	};
 
-	const getImageSrc = (image: string) => {
+	const getImageSrc = (i: number) => {
+		const img = images[i];
+		let image = '';
+		if (typeof img === 'string') {
+			image = img;
+		} else {
+			image = img.url;
+		}
 		if (image.startsWith('http') || image.startsWith('data:image'))
 			return image;
 		return image.startsWith('/')
 			? `${window.location.origin}${image}`
 			: `data:image/png;base64,${image}`;
+	};
+	const getImagePrompt = (i: number) => {
+		const img = images[i];
+		console.log(img);
+		if (typeof img === 'string') {
+			return '';
+		} else {
+			return img.prompt;
+		}
 	};
 
 	const handleImageClick = () => {
@@ -54,13 +75,26 @@ const ImgCarousel = ({
 			className="carousel-images"
 			style={{ maxHeight: `${calculatedMaxHeight}px` }}
 		>
-			<img
-				key={currentIndex}
-				src={getImageSrc(images[currentIndex])}
-				alt={`Carousel Image ${currentIndex + 1}`}
-				style={{ maxHeight: `${calculatedMaxHeight}px` }}
-				onClick={handleImageClick}
-			/>
+			<a
+				href={getImageSrc(currentIndex)}
+				className="cursor-default"
+				target="_blank"
+				rel="noreferrer"
+				download={Date.now().toString() + '.png'}
+				onClick={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+				}}
+			>
+				<img
+					key={currentIndex}
+					title={getImagePrompt(currentIndex)}
+					src={getImageSrc(currentIndex)}
+					alt={`Carousel Image ${currentIndex + 1}`}
+					style={{ maxHeight: `${calculatedMaxHeight}px` }}
+					onClick={handleImageClick}
+				/>
+			</a>
 			{images.length > 1 && (
 				<div className="slide_direction">
 					<div

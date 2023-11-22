@@ -1,5 +1,5 @@
 import '@/styles/chatbox.scss';
-import { Message } from '@/lib/types';
+import { CustomBtns, Message } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
 import MessageItem from './MessageItem';
 import InputBox from './InputBox';
@@ -15,17 +15,20 @@ export const ChatBox = ({
 	multiline = false,
 	defExpandImages = false,
 	handleEdit,
+	customBtns,
 }: {
 	roles?: string[];
 	messages: Message[];
 	setMessages: (value: any) => void;
 	deleteMessage?: (id: string) => void;
-	regenerateMessage?: (id: string) => void;
+	regenerateMessage?: (id: string) => void | Promise<void>;
 	readOnly?: boolean;
 	handleSend?: (content: string) => void;
 	multiline?: boolean;
 	defExpandImages?: boolean;
 	handleEdit?: (id: string, content: string) => void;
+	// TODO custom buttons
+	customBtns?: CustomBtns;
 }) => {
 	const [tempMsgContent, setTempMsgContent] = useState('');
 	const [editingMsg, setEditingMsg] = useState<string | null>(null);
@@ -143,6 +146,7 @@ export const ChatBox = ({
 					onSelect={(e) => handleSelect(e, msg, idx)}
 					readOnly={readOnly}
 					defExpandImages={defExpandImages}
+					customBtns={customBtns}
 				/>
 			))}
 			{deleteMessage && selectedMessages.size > 0 && (

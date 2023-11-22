@@ -1,4 +1,4 @@
-import { Message } from '@/lib/types';
+import { CustomBtns, Message } from '@/lib/types';
 import React from 'react';
 import ImgCarousel from '../ImgCarousel';
 
@@ -17,6 +17,7 @@ interface MessageItemProps {
 	readOnly: boolean;
 	extraClass?: string;
 	defExpandImages?: boolean;
+	customBtns?: CustomBtns;
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({
@@ -34,6 +35,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	readOnly,
 	extraClass = '',
 	defExpandImages,
+	customBtns,
 }) => {
 	const contentRef = React.useRef(null as HTMLSpanElement | null);
 	const [contentHeight, setContentHeight] = React.useState(0);
@@ -59,6 +61,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
 		onToggleThoughtCollapse(id);
 	};
 
+	const hasBtns = !!customBtns;
+	// make array to iterate over
+	const btns = hasBtns ? Object.entries(customBtns!) : [];
 	return (
 		<div
 			className={`message relative mb-1 flex items-center ${extraClass}`}
@@ -105,6 +110,20 @@ const MessageItem: React.FC<MessageItemProps> = ({
 						>
 							Regenerate
 						</button>
+					)}
+
+					{hasBtns && (
+						<div className="flex">
+							{btns.map(([name, btn]) => (
+								<button
+									key={name}
+									className="custom-btn mr-2"
+									onClick={() => btn(message.id)}
+								>
+									{name}
+								</button>
+							))}
+						</div>
 					)}
 				</span>
 				<div className="flex items-center">

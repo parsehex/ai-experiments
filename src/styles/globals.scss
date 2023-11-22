@@ -44,7 +44,7 @@ nav {
 }
 
 .container {
-	@apply flex flex-col items-center p-4 max-w-6xl min-h-screen mx-auto;
+	@apply flex flex-col items-center max-w-6xl min-h-screen mx-auto;
 	max-height: 100vh;
 }
 
@@ -60,6 +60,9 @@ input.input {
 	&.sm {
 		@apply h-8;
 	}
+}
+input.disabled {
+	@apply bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-white focus:border-blue-500 focus:outline-none;
 }
 textarea.input {
 	@apply bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-md p-2 border focus:border-blue-500 focus:outline-none;
@@ -79,6 +82,7 @@ button {
 		border-radius: 5px;
 	}
 	&.green {
+		@apply px-2 py-1 rounded-md text-white;
 		background-color: #10b981;
 		color: black;
 	}

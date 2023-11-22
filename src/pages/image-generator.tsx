@@ -20,7 +20,7 @@ const ImageGenerator = () => {
 	const [seed, setSeed] = useState(-1);
 	const [samplers, setSamplers] = useState([] as string[]);
 	const [selectedSampler, setSelectedSampler] = useState('');
-	const [cfgScale, setCfgScale] = useState(6);
+	const [cfgScale, setCfgScale] = useState(4.5);
 	const [batchSize, setBatchSize] = useState(1);
 	const [nIter, setNIter] = useState(1);
 	const [steps, setSteps] = useState(10);

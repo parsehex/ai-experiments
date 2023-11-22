@@ -18,7 +18,7 @@ import { PromptPart, PromptFormatResponse, Message } from './types';
  * @param {PromptPart[]} parts - An array of `PromptPart` objects that define the segments of the prompt.
  * @returns {string} The constructed prompt string ready for AI processing.
  */
-export function makePrompt(parts: PromptPart[]): string {
+export function makePromptFromParts(parts: PromptPart[]): string {
 	return parts.reduce((prompt, part) => {
 		if (part.str && (part.if === undefined || part.if)) {
 			const partStr = `${part.pre || ''}${part.str}${part.suf || ''}`;
@@ -118,7 +118,7 @@ export async function generate(
 				);
 			prompt = promptParts as Message[];
 		} else {
-			prompt = makePrompt(promptParts as PromptPart[]);
+			prompt = makePromptFromParts(promptParts as PromptPart[]);
 		}
 	} else if (typeof promptParts === 'string') {
 		prompt = promptParts;
