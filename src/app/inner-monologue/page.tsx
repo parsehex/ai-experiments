@@ -11,6 +11,15 @@ import { toast } from 'react-toastify';
 const RANCFG_MIN = 1;
 const RANCFG_MAX = 6;
 
+const DefaultLLMParams = {
+	temp: 0.7,
+	top_p: 0.9,
+	max: 256,
+	top_k: 20,
+	repetition_penalty: 1.15,
+	stop: ['RESPONSE:', 'INPUT:'],
+};
+
 const GET_RANDOM_CFG = () =>
 	Math.random() * (RANCFG_MAX - RANCFG_MIN) + RANCFG_MIN;
 
@@ -28,12 +37,15 @@ const innerMonologue = async (messages: Message[]) => {
 	});
 	prompt += 'THOUGHTS: ';
 
-	const result = await generate(prompt, {
-		temp: 0.5,
-		cfg: 2,
-		stop: ['RESPONSE:', 'INPUT:', '\n'],
-		ban_eos_token: true,
-	});
+	const result = await generate(
+		prompt,
+		Object.assign({}, DefaultLLMParams, {
+			temp: 0.5,
+			cfg: 2,
+			stop: ['RESPONSE:', 'INPUT:', '\n'],
+			ban_eos_token: true,
+		})
+	);
 	console.log('thought', prompt, result);
 	return result;
 };
@@ -51,11 +63,14 @@ const summarizeChat = async (messages: Message[], lastSummary = '') => {
 		.map((msg) => `${msg.role}: ${msg.content}`)
 		.join('\n')}\n`;
 	const prompt = makePrompt(inputStr, instructions, 'ChatML');
-	const result = await generate(prompt, {
-		prefixResponse: 'SUMMARY:',
-		max: 256,
-		stop: ['RESPONSE:', 'INPUT:', '\n'],
-	});
+	const result = await generate(
+		prompt,
+		Object.assign({}, DefaultLLMParams, {
+			prefixResponse: 'SUMMARY:',
+			max: 256,
+			stop: ['RESPONSE:', 'INPUT:', '\n'],
+		})
+	);
 	toast.success('Summary generated');
 	return result;
 };
@@ -82,13 +97,16 @@ const isImageRequestThoughts = async (
 	}
 	const inputStr = `INPUT: ${message.content}\n`;
 	const prompt = makePrompt(inputStr, instructions, 'ChatML');
-	const result = await generate(prompt, {
-		prefixResponse: 'THOUGHTS:',
-		// cfg: 1.25,
-		// temp: 0.25,
-		max: 96,
-		stop: ['RESPONSE:', 'INPUT:', '\n'],
-	});
+	const result = await generate(
+		prompt,
+		Object.assign({}, DefaultLLMParams, {
+			prefixResponse: 'THOUGHTS:',
+			// cfg: 1.25,
+			// temp: 0.25,
+			max: 96,
+			stop: ['RESPONSE:', 'INPUT:', '\n'],
+		})
+	);
 	return result.trim();
 };
 const isImageRequest = async (
@@ -115,12 +133,15 @@ const isImageRequest = async (
 	instructions += 'Respond with YES or NO.\n';
 	const inputStr = `INPUT: ${message.content}\n`;
 	const prompt = makePrompt(inputStr, instructions, 'ChatML');
-	let result = await generate(prompt, {
-		prefixResponse: 'RESPONSE:\n' + thoughts + '\nANSWER:\n',
-		// cfg: 1.25,
-		max: 5,
-		stop: ['RESPONSE:', 'INPUT:'],
-	});
+	let result = await generate(
+		prompt,
+		Object.assign({}, DefaultLLMParams, {
+			prefixResponse: 'RESPONSE:\n' + thoughts + '\nANSWER:\n',
+			// cfg: 1.25,
+			max: 5,
+			stop: ['RESPONSE:', 'INPUT:'],
+		})
+	);
 	result = result.trim().toUpperCase();
 	return { result, thoughts };
 };
@@ -140,11 +161,14 @@ const makeImagePrompt = async (
 	instructions += 'Respond with a string containing the prompt only.\n';
 	const inputStr = `INPUT: ${desc}\n`;
 	const prompt = makePrompt(inputStr, instructions, 'ChatML');
-	let result = await generate(prompt, {
-		prefixResponse: 'RESPONSE:' + (thoughts ? `\n${thoughts}\nANSWER: ` : ''),
-		max: 256,
-		stop: ['RESPONSE:', 'INPUT:', '\n'],
-	});
+	let result = await generate(
+		prompt,
+		Object.assign({}, DefaultLLMParams, {
+			prefixResponse: 'RESPONSE:' + (thoughts ? `\n${thoughts}\nANSWER: ` : ''),
+			max: 256,
+			stop: ['RESPONSE:', 'INPUT:', '\n'],
+		})
+	);
 	result = result.trim().replace(/"/g, '');
 	// llm likes to use emojies, remove
 	result = result.replace(/[\uD800-\uDFFF]./g, '');
@@ -191,14 +215,17 @@ const sendInput = async (
 		prefixResponse += 'RESPONSE:';
 		prefixResponse += 'Sure, here is your image. ';
 	}
-	const result = await generate(prompt, {
-		prefixResponse,
-		max: 768,
-		temp: 0.25,
-		cfg: 1.5,
-		stop: ['INPUT:', 'RESPONSE:', 'USER:'],
-		// mirostat_mode: 2,
-	});
+	const result = await generate(
+		prompt,
+		Object.assign({}, DefaultLLMParams, {
+			prefixResponse,
+			max: 768,
+			temp: 0.25,
+			cfg: 1.5,
+			stop: ['INPUT:', 'RESPONSE:', 'USER:'],
+			// mirostat_mode: 2,
+		})
+	);
 	return result;
 };
 
@@ -274,7 +301,6 @@ function InnerMonologueChat() {
 		let infoparams: txt2imgResponseInfo;
 		toast.info('Is image request: ' + imgReq.result);
 		if (isImgReq) {
-			// const userDesc = await extractImgDesc(userMsg, chatSummary);
 			const prompt = await makeImagePrompt(userMsg.content, lastPrompt);
 			setLastPrompt(prompt);
 			const res = await txt2img({
@@ -291,10 +317,8 @@ function InnerMonologueChat() {
 			infoparams = JSON.parse(res.info);
 			setLastInfo(infoparams);
 			image = res.images[0];
-			// console.log('prompt', prompt);
 		}
 
-		// const response = await sendInput(userInput, newMessages, thoughts);
 		const response = await sendInput(userInput, newMessages, {
 			madeImage: !!image,
 		});
@@ -306,7 +330,6 @@ function InnerMonologueChat() {
 		};
 		if (image) {
 			aiMessage.images = [{ url: image, prompt: lastInfo.prompt, seed }];
-			// console.log('image', image);
 		}
 		newMessages = [...newMessages, aiMessage];
 		setMessages(newMessages);
@@ -348,12 +371,10 @@ function InnerMonologueChat() {
 	const regenerateMessage = async (
 		id: string,
 		keepPrompt = false,
-		steps?: number
+		onlyImage = true
 	) => {
 		const msg = messages.find((msg) => msg.id === id);
 		if (!msg) return;
-		// check whether the message is an image request
-		// if so, regenerate the image
 		const lastMsg = messages[messages.indexOf(msg) - 2];
 		const inputMsg = messages[messages.indexOf(msg) - 1];
 		if (!inputMsg) {
@@ -364,7 +385,7 @@ function InnerMonologueChat() {
 		toast.info('Is image request: ' + imgReq.result);
 		const isImgReq = imgReq.result.includes('YES');
 		const imgThoughts = imgReq.thoughts;
-		if (!isImgReq) return;
+		if (!isImgReq && onlyImage) return;
 		let prompt = '';
 		let seed = -1;
 		if (keepPrompt && typeof msg.images !== 'string') {
@@ -561,7 +582,9 @@ function InnerMonologueChat() {
 				messages={messages}
 				setMessages={setMessages}
 				handleSend={handleSend}
-				regenerateMessage={regenerateMessage}
+				regenerateMessage={(id) => {
+					regenerateMessage(id, false, false);
+				}}
 				deleteMessage={(id) => {
 					setMessages(messages.filter((msg) => msg.id !== id));
 				}}
