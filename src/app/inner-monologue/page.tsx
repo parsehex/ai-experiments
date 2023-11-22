@@ -164,7 +164,7 @@ interface Options {
 	randomSampler: boolean;
 }
 const DefaultOptions: Options = {
-	wide: true,
+	wide: false,
 	expandImages: true,
 	cfg: 4.5,
 	randomCfg: false,
