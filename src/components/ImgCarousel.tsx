@@ -56,7 +56,6 @@ const ImgCarousel = ({
 	};
 	const getImagePrompt = (i: number) => {
 		const img = images[i];
-		console.log(img);
 		if (typeof img === 'string') {
 			return '';
 		} else {
@@ -105,9 +104,9 @@ const ImgCarousel = ({
 					onClick={handleImageClick}
 				/>
 			</a>
-			<div className="absolute h-full">
+			<div className="absolute h-5/6">
 				<button
-					className="green opacity-70 small relative top-6 z-10 p-1"
+					className="green opacity-70 small relative z-10 p-1"
 					style={{ left: '325%' }}
 					aria-label="Download Image"
 					title="Download Image"

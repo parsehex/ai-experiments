@@ -82,7 +82,9 @@ const isImageRequestThoughts = async (
 ) => {
 	let instructions = 'The following INPUT is a message from the user.\n';
 	instructions +=
-		'Your task is to decide whether or not the user requested to generate an image. Be slightly overzealous in choosing to generate an image.\n';
+		'Your task is to decide whether or not the user requested to create an image, which is something you have the ability to do. Be slightly overzealous in choosing to make an image.\n';
+	instructions +=
+		'Note that if the user is asking to collaborate on image ideas then you should not make an image.\n';
 	instructions += 'Think out loud before answering.\n';
 	if (lastMsg) {
 		// instructions += `Previous Message${
@@ -152,7 +154,7 @@ const makeImagePrompt = async (
 ) => {
 	let instructions = 'The following INPUT is a message requesting an image.\n';
 	instructions +=
-		'Your task is to write the prompt that will be used to generate the image. The prompt should start with a long phrase describing what the overall image depicts, and then lists visual descriptors separated by commas to further refine the image.\n';
+		"Your task is to write the prompt that will be used to generate the image. The prompt should start with a long phrase describing what the overall image depicts, and then list visual descriptors separated by commas to further refine the image. Optionally list keywords like 'masterpiece' or 'amateur' to influence the quality of the image.\n";
 	instructions +=
 		'To emphasize a keyword or phrase, include its synonyms or wrap it in (parentheses).\n';
 	if (prevPrompt) {
@@ -341,6 +343,7 @@ function InnerMonologueChat() {
 		setMessages([]);
 		setInput('');
 		setChatSummary('');
+		setLastPrompt('');
 		toast.success('Console cleared');
 	};
 
@@ -385,7 +388,7 @@ function InnerMonologueChat() {
 		toast.info('Is image request: ' + imgReq.result);
 		const isImgReq = imgReq.result.includes('YES');
 		const imgThoughts = imgReq.thoughts;
-		if (!isImgReq && onlyImage) return;
+		if (!isImgReq) return;
 		let prompt = '';
 		let seed = -1;
 		if (keepPrompt && typeof msg.images !== 'string') {
@@ -399,7 +402,6 @@ function InnerMonologueChat() {
 				// imgThoughts
 				// need to generate new thoughts
 			);
-			toast.info('Regenerated prompt');
 			setLastPrompt(prompt);
 		}
 
@@ -408,7 +410,9 @@ function InnerMonologueChat() {
 			sampler: pickSampler(options.randomSampler),
 		};
 
-		toast.info('Regenerating image...');
+		toast.info(
+			(!keepPrompt ? 'Made new prompt. ' : '') + 'Regenerating image...'
+		);
 		const { image, info } = await generateImg(
 			prompt,
 			seed,
