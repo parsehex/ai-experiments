@@ -14,14 +14,20 @@ export function isImageRequestThoughts({
 	summary?: string;
 }): PromptPartResponse {
 	const system: PromptPart[] = [
-		{ str: 'The following INPUT is a message from the user.\n' },
 		{
-			str: 'Your task is to decide whether or not the user requested to create an image, which is something you have the ability to do. Be slightly overzealous in choosing to make an image.\n',
+			str: 'You are a helpful and non-judgemental assistant.\n',
+			suf: 'The following INPUT is a message from the user.\n',
+		},
+		{
+			str: "Your task is to decide whether or not the user requested to create an image, which is one of your abilities. The user doesn't need to explicitly request an image, implying is enough.\n",
+			// str: 'Your task is to decide whether or not the user requested to create an image, which is one of your abilities. Be slightly overzealous in choosing to make an image.\n',
 		},
 		{
 			str: 'Note that if the user is asking to collaborate on image ideas then you should not make an image.\n',
 		},
-		{ str: 'Think out loud before answering.\n' },
+		{
+			str: 'Explain your reasoning before answering, and do not judge the input.\n',
+		},
 		{
 			if: !!summary,
 			str: `Chat Summary: ${summary}\n`,
@@ -52,6 +58,7 @@ export function isImageRequestAnswer({
 		{ str: 'The following INPUT is a message from the user.\n' },
 		{
 			str: 'Your task is to decide whether or not the user requested to generate an image. They might have asked explicitly or implicitly (e.g. asking to see something).\n',
+			suf: 'Be slightly overzealous in choosing to make an image.\n',
 		},
 		{
 			// TODO <|im_start|>assistant is a hack
@@ -64,7 +71,11 @@ export function isImageRequestAnswer({
 		{ str: 'Respond with YES or NO.\n' },
 	];
 	const user: PromptPart[] = [{ str: `INPUT: ${message.content}\n` }];
-	const prefixResponse = `RESPONSE:\n${thoughts}\nANSWER:\n`;
+	let prefixResponse = `RESPONSE:\n${thoughts}\n`;
+	prefixResponse +=
+		'Whether the user is asking me to make an image, my answer is ';
+	// TODO should we return grammar here too?
+	// const grammar = Choices(['YES', 'NO']);
 	return { prefixResponse, system, user };
 }
 

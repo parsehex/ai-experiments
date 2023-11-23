@@ -67,19 +67,20 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	};
 
 	const hasBtns = !!customBtns;
+	const isThought = message.type === 'thought';
 	// make array to iterate over
 	const btns = hasBtns ? Object.entries(customBtns!) : [];
 	return (
 		<div
 			className={`message relative mb-1 flex items-center ${extraClass} ${
-				isSelected ? 'selected' : ''
+				(isSelected ? 'selected' : '') + (isThought ? ' thought' : '')
 			}`}
 			key={index}
 		>
 			{hasSelect && (
 				<input
 					type="checkbox"
-					className="absolute top-1 left-2"
+					className="absolute top-2 left-2"
 					checked={isSelected}
 					onChange={(e) => onSelect(e)}
 				/>

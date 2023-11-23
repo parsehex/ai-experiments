@@ -97,7 +97,7 @@ export function continueChat({
 			str: `Your Thoughts: ${thoughts}\n`,
 		},
 	];
-	const user: PromptPart[] = [];
+	const user: PromptPart[] = [{ str: `INPUT: ${input}\n` }];
 	let prefixResponse = 'RESPONSE:';
 	if (madeImage) {
 		prefixResponse = '(Assistant sent an image to the user.)\n';
