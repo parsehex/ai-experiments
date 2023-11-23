@@ -71,7 +71,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	const btns = hasBtns ? Object.entries(customBtns!) : [];
 	return (
 		<div
-			className={`message relative mb-1 flex items-center ${extraClass}`}
+			className={`message relative mb-1 flex items-center ${extraClass} ${
+				isSelected ? 'selected' : ''
+			}`}
 			key={index}
 		>
 			{hasSelect && (

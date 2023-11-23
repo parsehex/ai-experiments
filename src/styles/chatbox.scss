@@ -29,6 +29,11 @@
 }
 .chatBox .message {
 	@apply flex flex-col items-start rounded-lg p-1 whitespace-pre-wrap;
+
+	&.selected {
+		background-color: #a9a9a9 !important;
+		font-weight: bold;
+	}
 }
 .chatBox .message-header {
 	@apply flex flex-row items-center w-full ml-2;
@@ -52,10 +57,10 @@
 	@apply text-xs text-gray-500 ml-4 mr-2 py-1 rounded-sm bg-gray-100 px-1 font-bold;
 }
 .thought-header {
-	@apply font-bold text-sm items-center;
+	@apply font-bold text-xs items-center;
 	.label {
-		@apply text-gray-500 mr-2 py-1 rounded-sm bg-gray-100 px-1 font-bold;
-		font-size: 0.6em;
+		@apply text-gray-500 mr-2 rounded-sm bg-gray-100 px-1 font-bold;
+		font-size: 0.75em;
 	}
 }
 .chatBox button.bulk-delete {
