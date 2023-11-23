@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
@@ -12,6 +12,12 @@ import { Choices } from '@/lib/llm/grammar';
 
 const RANCFG_MIN = 1;
 const RANCFG_MAX = 6;
+
+const StepsPresets = {
+	Low: 16,
+	Medium: 32,
+	High: 64,
+};
 
 const DefaultLLMParams = {
 	temp: 0.7,
@@ -161,7 +167,7 @@ const generateImg = async (
 	seed: number,
 	cfg: number,
 	sampler: string,
-	steps = 20
+	steps = DefaultOptions.steps
 ) => {
 	const res = await txt2img({
 		prompt,
@@ -200,6 +206,7 @@ interface Options {
 	wide: boolean;
 	expandImages: boolean;
 	cfg: number;
+	steps: number;
 	randomCfg: boolean;
 	randomSampler: boolean;
 }
@@ -207,10 +214,11 @@ const DefaultOptions: Options = {
 	wide: false,
 	expandImages: true,
 	cfg: 4.5,
+	steps: 20,
 	randomCfg: false,
 	randomSampler: true,
 };
-
+type StepsPreset = 'Low' | 'Medium' | 'High' | 'Custom';
 function InnerMonologueChat() {
 	const [messages, setMessages] = useState<Message[]>([
 		{
@@ -224,6 +232,13 @@ function InnerMonologueChat() {
 	const [options, setOptions] = useState(DefaultOptions);
 	const [lastPrompt, setLastPrompt] = useState('');
 	const [lastInfo, setLastInfo] = useState({} as txt2imgResponseInfo);
+	const [stepsPreset, setStepsPreset] = useState('Medium' as StepsPreset);
+
+	useEffect(() => {
+		if (stepsPreset === 'Low') setOptions({ ...options, steps: 16 });
+		else if (stepsPreset === 'Medium') setOptions({ ...options, steps: 32 });
+		else if (stepsPreset === 'High') setOptions({ ...options, steps: 64 });
+	}, [stepsPreset]);
 
 	const updateSummary = async (msgs = messages) => {
 		// call this after every message, only actually summarize after
@@ -281,7 +296,7 @@ function InnerMonologueChat() {
 				cfg_scale: options.randomCfg ? GET_RANDOM_CFG() : options.cfg,
 				batch_size: 1,
 				n_iter: 1,
-				steps: 20,
+				steps: options.steps,
 				width: 512,
 				height: 768,
 			});
@@ -402,7 +417,6 @@ function InnerMonologueChat() {
 
 	const regenerateImage = async (
 		msgId: string,
-		steps = 20,
 		verbatim = false,
 		keepPrompt = true,
 		cfg?: number,
@@ -446,8 +460,7 @@ function InnerMonologueChat() {
 			prompt,
 			seed,
 			opt.cfg,
-			opt.sampler,
-			steps
+			opt.sampler
 		);
 		setLastInfo(info);
 		toast.success('Generated image');
@@ -520,11 +533,12 @@ function InnerMonologueChat() {
 					CFG
 					<input
 						type="number"
-						className={`ml-2 ${options.randomCfg ? 'disabled' : ''}`}
+						className={`input ml-2 ${options.randomCfg ? 'disabled' : ''}`}
 						step={0.25}
 						min={1}
 						value={options.cfg}
 						onChange={(e) => setOptions({ ...options, cfg: +e.target.value })}
+						style={{ width: '4rem' }}
 						disabled={options.randomCfg}
 					/>
 				</label>
@@ -536,6 +550,38 @@ function InnerMonologueChat() {
 						setOptions({ ...options, randomCfg: e.target.checked })
 					}
 				/>
+				<label>
+					Steps
+					<select
+						value={stepsPreset}
+						title={
+							stepsPreset === 'Custom'
+								? 'Custom Steps'
+								: StepsPresets[stepsPreset] + ' steps'
+						}
+						onChange={(e) => {
+							setStepsPreset(e.target.value as StepsPreset);
+						}}
+					>
+						<option value="Low">Low</option>
+						<option value="Medium">Medium</option>
+						<option value="High">High</option>
+						<option value="Custom">Custom</option>
+					</select>
+					{stepsPreset === 'Custom' && (
+						<input
+							type="number"
+							className="input ml-2"
+							step={1}
+							min={1}
+							value={options.steps}
+							onChange={(e) =>
+								setOptions({ ...options, steps: +e.target.value })
+							}
+							style={{ width: '4rem' }}
+						/>
+					)}
+				</label>
 				<label>
 					Random Sampler
 					<input
@@ -573,12 +619,11 @@ function InnerMonologueChat() {
 				defExpandImages={options.expandImages}
 				defExpandThoughts={false}
 				customBtns={{
-					'Regen Image': (id) => regenerateImage(id, 20, false, true),
+					'Regen Image': (id) => regenerateImage(id, false, true),
 					// Variation: should be near the same image
-					Variation: (id) =>
-						regenerateImage(id, 20, false, true, GET_RANDOM_CFG()),
+					Variation: (id) => regenerateImage(id, false, true, GET_RANDOM_CFG()),
 					// Better: same image but more steps
-					Better: (id) => regenerateImage(id, 30, true),
+					Better: (id) => regenerateImage(id, true),
 				}}
 			/>
 			{chatSummary && (
