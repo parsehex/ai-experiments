@@ -32,7 +32,7 @@ const pickSampler = (ran = true) => {
 	return choices[Math.floor(Math.random() * choices.length)];
 };
 
-const innerMonologue = async (messages: Message[]) => {
+const genInnerMonologue = async (messages: Message[]) => {
 	const promptParts = parts.innerMonologue({ messages });
 	const { prefixResponse, user, system } = promptParts;
 	const result = await generate(
@@ -46,7 +46,7 @@ const innerMonologue = async (messages: Message[]) => {
 	);
 	return result;
 };
-const summarizeChat = async (messages: Message[], lastSummary = '') => {
+const genSummarizeChat = async (messages: Message[], lastSummary = '') => {
 	const promptParts = parts.summarizeChat({ messages, lastSummary });
 	const { prefixResponse, user, system } = promptParts;
 	const result = await generate(
@@ -60,7 +60,7 @@ const summarizeChat = async (messages: Message[], lastSummary = '') => {
 	return result;
 };
 
-const isImageRequestThoughts = async (
+const genIsImgReqThoughts = async (
 	message: Message,
 	lastMsg?: Message,
 	summary = ''
@@ -81,12 +81,12 @@ const isImageRequestThoughts = async (
 	);
 	return result.trim();
 };
-const isImageRequest = async (
+const genIsImgReq = async (
 	message: Message,
 	lastMsg?: Message,
 	summary = ''
 ) => {
-	const thoughts = await isImageRequestThoughts(message, lastMsg, summary);
+	const thoughts = await genIsImgReqThoughts(message, lastMsg, summary);
 	const promptParts = parts.isImageRequestAnswer({
 		message,
 		thoughts,
@@ -103,11 +103,7 @@ const isImageRequest = async (
 	result = result.trim().toUpperCase();
 	return { result, thoughts };
 };
-const makeImagePrompt = async (
-	desc: string,
-	prevPrompt = '',
-	thoughts = ''
-) => {
+const genImgPrompt = async (desc: string, prevPrompt = '', thoughts = '') => {
 	const promptParts = parts.makeImgPrompt({ desc, prevPrompt, thoughts });
 	const { prefixResponse, user, system } = promptParts;
 	let result = await generate(
@@ -129,7 +125,7 @@ interface ExtraObj {
 	summary?: string;
 }
 
-const sendInput = async (
+const genContinueChat = async (
 	input: string,
 	messages: Message[],
 	{ thoughts, madeImage, summary }: ExtraObj = {}
@@ -150,10 +146,33 @@ const sendInput = async (
 			// temp: 0.25,
 			cfg: 1.5,
 			// stop: ['INPUT:', 'RESPONSE:', 'USER:'],
-			// mirostat_mode: 2,
 		})
 	);
 	return result;
+};
+
+const generateImg = async (
+	prompt: string,
+	seed: number,
+	cfg: number,
+	sampler: string,
+	steps = 20
+) => {
+	const res = await txt2img({
+		prompt,
+		negative_prompt: 'easynegative',
+		sampler_name: sampler,
+		cfg_scale: cfg,
+		seed,
+		batch_size: 1,
+		n_iter: 1,
+		steps,
+		width: 512,
+		height: 768,
+	});
+	const info: txt2imgResponseInfo = JSON.parse(res.info);
+	const image = res.images[0];
+	return { image, info };
 };
 
 interface Options {
@@ -188,7 +207,7 @@ function InnerMonologueChat() {
 	const updateSummary = async (msgs = messages) => {
 		// call this after every message, only actually summarize after
 		//   maybe 4 messages, at least eventually
-		const summary = await summarizeChat(msgs, chatSummary);
+		const summary = await genSummarizeChat(msgs, chatSummary);
 		setChatSummary(summary);
 		// console.log('summary', summary);
 	};
@@ -222,13 +241,13 @@ function InnerMonologueChat() {
 
 		const lastMsg = newMessages[newMessages.length - 2];
 
-		const imgReq = await isImageRequest(userMsg, lastMsg || null, chatSummary);
-		const isImgReq = imgReq.result.includes('YES');
+		const imgReq = await genIsImgReq(userMsg, lastMsg || null, chatSummary);
 		const imgThoughts = imgReq.thoughts;
+		const isImgReq = imgReq.result.includes('YES');
 		let infoparams: txt2imgResponseInfo;
 		toast.info('Is image request: ' + imgReq.result);
 		if (isImgReq) {
-			const prompt = await makeImagePrompt(userMsg.content, lastPrompt);
+			const prompt = await genImgPrompt(userMsg.content, lastPrompt);
 			setLastPrompt(prompt);
 			const res = await txt2img({
 				prompt,
@@ -246,7 +265,7 @@ function InnerMonologueChat() {
 			image = res.images[0];
 		}
 
-		const response = await sendInput(userInput, newMessages, {
+		const response = await genContinueChat(userInput, newMessages, {
 			madeImage: !!image,
 		});
 		toast.success('Response generated');
@@ -272,30 +291,6 @@ function InnerMonologueChat() {
 		toast.success('Console cleared');
 	};
 
-	const generateImg = async (
-		prompt: string,
-		seed: number,
-		cfg: number,
-		sampler: string,
-		steps = 20
-	) => {
-		const res = await txt2img({
-			prompt,
-			negative_prompt: 'easynegative',
-			sampler_name: sampler,
-			cfg_scale: cfg,
-			seed,
-			batch_size: 1,
-			n_iter: 1,
-			steps,
-			width: 512,
-			height: 768,
-		});
-		const info: txt2imgResponseInfo = JSON.parse(res.info);
-		const image = res.images[0];
-		return { image, info };
-	};
-
 	const regenerateMessage = async (
 		id: string,
 		keepPrompt = false,
@@ -309,7 +304,7 @@ function InnerMonologueChat() {
 			toast.error('No input message found');
 			return;
 		}
-		const imgReq = await isImageRequest(inputMsg, lastMsg || null, chatSummary);
+		const imgReq = await genIsImgReq(inputMsg, lastMsg || null, chatSummary);
 		toast.info('Is image request: ' + imgReq.result);
 		const isImgReq = imgReq.result.includes('YES');
 		const imgThoughts = imgReq.thoughts;
@@ -321,7 +316,7 @@ function InnerMonologueChat() {
 			// @ts-ignore
 			seed = msg.images[0].seed || lastInfo.seed;
 		} else {
-			prompt = await makeImagePrompt(
+			prompt = await genImgPrompt(
 				inputMsg.content,
 				lastMsg?.content
 				// imgThoughts
@@ -377,16 +372,12 @@ function InnerMonologueChat() {
 			// @ts-ignore
 			seed = msg.images[0].seed || lastInfo.seed;
 		} else {
-			const thoughts = await isImageRequestThoughts(
+			const thoughts = await genIsImgReqThoughts(
 				inputMsg,
 				lastMsg || null,
 				chatSummary
 			);
-			prompt = await makeImagePrompt(
-				inputMsg.content,
-				lastMsg?.content,
-				thoughts
-			);
+			prompt = await genImgPrompt(inputMsg.content, lastMsg?.content, thoughts);
 			setLastPrompt(prompt);
 			toast.info('Generated prompt...');
 		}
