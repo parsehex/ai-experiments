@@ -180,13 +180,21 @@ const generateImg = async (
 	return { image, info };
 };
 
-const aiThoughtMessage = (thoughts: string, label = 'Thoughts'): Message => ({
-	id: uuidv4(),
-	role: 'ASSISTANT',
-	content: thoughts,
-	type: 'thought',
-	thoughtLabel: label,
-});
+const aiThoughtMessage = (
+	thoughts: string,
+	label = 'Thoughts',
+	className = ''
+): Message => {
+	let msg: Message = {
+		id: uuidv4(),
+		role: 'ASSISTANT',
+		content: thoughts,
+		type: 'thought',
+		thoughtLabel: label,
+	};
+	if (className) msg.thoughtClass = className;
+	return msg;
+};
 
 interface Options {
 	wide: boolean;
@@ -249,7 +257,8 @@ function InnerMonologueChat() {
 		const imgThoughts = imgReq.thoughts;
 		const iirtMsg = aiThoughtMessage(
 			imgThoughts,
-			'Is Image Request: ' + imgReq.result
+			'Is Image Request: ' + imgReq.result,
+			'is-image-request'
 		);
 		newMessages = [...newMessages, iirtMsg];
 		setMessages(newMessages);
@@ -258,7 +267,11 @@ function InnerMonologueChat() {
 		if (isImgReq) {
 			const prompt = await genImgPrompt(userMsg.content, lastPrompt);
 			setLastPrompt(prompt);
-			const imgPromptMsg = aiThoughtMessage(prompt, 'Image Prompt');
+			const imgPromptMsg = aiThoughtMessage(
+				prompt,
+				'Image Prompt',
+				'image-prompt'
+			);
 			newMessages = [...newMessages, imgPromptMsg];
 			setMessages(newMessages);
 			const res = await txt2img({
@@ -303,12 +316,29 @@ function InnerMonologueChat() {
 		toast.info('Console cleared', { autoClose: 1000 });
 	};
 
+	const updateThoughts = (msg: Message, msgIndex: number, thought: Message) => {
+		let newMessages = messages.slice();
+		let iirIndex = -1;
+		for (let i = msgIndex; i >= 0; i--) {
+			if (newMessages[i].thoughtClass === thought.thoughtClass) {
+				iirIndex = i;
+				break;
+			}
+		}
+		if (iirIndex === -1)
+			toast.error(`No ${thought.thoughtClass} thought found`);
+		newMessages[iirIndex] = msg;
+		setMessages(newMessages);
+		return newMessages;
+	};
+
 	const regenerateMessage = async (
 		id: string,
 		keepPrompt = false,
 		onlyImage = true
 	) => {
 		const msg = messages.find((msg) => msg.id === id);
+		const msgIndex = messages.findIndex((msg) => msg.id === id);
 		if (!msg) return;
 		const lastMsg = messages[messages.indexOf(msg) - 2];
 		const inputMsg = messages[messages.indexOf(msg) - 1];
@@ -319,6 +349,13 @@ function InnerMonologueChat() {
 		const imgReq = await genIsImgReq(inputMsg, lastMsg || null, chatSummary);
 		const isImgReq = imgReq.result.includes('YES');
 		const imgThoughts = imgReq.thoughts;
+		/** Is-Image-Request Thought Message */
+		const iirMsg = aiThoughtMessage(
+			imgThoughts,
+			'Is Image Request: ' + imgReq.result,
+			'is-image-request'
+		);
+		let newMessages = updateThoughts(iirMsg, msgIndex, iirMsg);
 		if (!isImgReq) return;
 		let prompt = '';
 		let seed = -1;
@@ -327,13 +364,15 @@ function InnerMonologueChat() {
 			// @ts-ignore
 			seed = msg.images[0].seed || lastInfo.seed;
 		} else {
-			prompt = await genImgPrompt(
-				inputMsg.content,
-				lastMsg?.content
-				// imgThoughts
-				// need to generate new thoughts
-			);
+			// TODO need to generate new thoughts
+			prompt = await genImgPrompt(inputMsg.content, lastMsg?.content);
 			setLastPrompt(prompt);
+			const imgPromptMsg = aiThoughtMessage(
+				prompt,
+				'Image Prompt',
+				'image-prompt'
+			);
+			newMessages = updateThoughts(imgPromptMsg, msgIndex, imgPromptMsg);
 		}
 
 		const opt = {
@@ -352,14 +391,13 @@ function InnerMonologueChat() {
 		);
 		toast.success('Generated image');
 		setLastInfo(info);
-		// console.log('prompt', prompt);
-		const newMessages = messages.map((msg) => {
+		newMessages = messages.map((msg) => {
 			if (msg.id === id) {
 				msg.images = [{ url: image, prompt, seed: info.seed }];
 			}
 			return msg;
 		});
-		setMessages(newMessages);
+		setMessages([...newMessages]);
 	};
 
 	const regenerateImage = async (
@@ -381,7 +419,7 @@ function InnerMonologueChat() {
 		if ((keepPrompt || verbatim) && typeof msg.images !== 'string') {
 			prompt = lastPrompt;
 			// @ts-ignore
-			seed = msg.images[0].seed || lastInfo.seed;
+			seed = msg.images[0].seed || lastInfo.seed || -1;
 		} else {
 			const thoughts = await genIsImgReqThoughts(
 				inputMsg,

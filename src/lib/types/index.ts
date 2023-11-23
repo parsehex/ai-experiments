@@ -13,6 +13,7 @@ export interface Message {
 	content: string;
 	type?: 'message' | 'thought';
 	thoughtLabel?: string;
+	thoughtClass?: string;
 	images?: ImgType[];
 }
 
