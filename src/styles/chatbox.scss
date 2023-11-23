@@ -51,6 +51,13 @@
 	font-size: 12px;
 	@apply text-xs text-gray-500 ml-4 mr-2 py-1 rounded-sm bg-gray-100 px-1 font-bold;
 }
+.thought-header {
+	@apply font-bold text-sm items-center;
+	.label {
+		@apply text-gray-500 mr-2 py-1 rounded-sm bg-gray-100 px-1 font-bold;
+		font-size: 0.6em;
+	}
+}
 .chatBox button.bulk-delete {
 	@apply bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full fixed bottom-24 right-4;
 }

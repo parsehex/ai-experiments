@@ -517,6 +517,9 @@ function InnerMonologueChat() {
 				deleteMessage={(id) => {
 					setMessages(messages.filter((msg) => msg.id !== id));
 				}}
+				deleteMessages={(ids) => {
+					setMessages(messages.filter((msg) => !ids.includes(msg.id)));
+				}}
 				handleEdit={(id, content) => {
 					setMessages(
 						messages.map((msg) => {

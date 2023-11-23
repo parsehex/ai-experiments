@@ -9,6 +9,7 @@ export const ChatBox = ({
 	messages,
 	setMessages,
 	deleteMessage,
+	deleteMessages,
 	regenerateMessage,
 	readOnly = false,
 	handleSend,
@@ -22,6 +23,7 @@ export const ChatBox = ({
 	messages: Message[];
 	setMessages: (value: any) => void;
 	deleteMessage?: (id: string) => void;
+	deleteMessages?: (ids: string[]) => void;
 	regenerateMessage?: (id: string) => void | Promise<void>;
 	readOnly?: boolean;
 	handleSend?: (content: string) => void;
@@ -126,6 +128,7 @@ export const ChatBox = ({
 						handleEdit && handleEdit(id, content);
 					}}
 					onCopy={() => navigator.clipboard.writeText(msg.content)}
+					hasSelect={deleteMessages !== undefined}
 					onSelect={(e) => handleSelect(e, msg, idx)}
 					readOnly={readOnly}
 					defExpandImages={defExpandImages}
@@ -133,11 +136,11 @@ export const ChatBox = ({
 					customBtns={customBtns}
 				/>
 			))}
-			{deleteMessage && selectedMessages.size > 0 && (
+			{deleteMessages && selectedMessages.size > 0 && (
 				<button
 					className="bulk-delete"
 					onClick={() => {
-						selectedMessages.forEach((id) => deleteMessage(id));
+						deleteMessages(Array.from(selectedMessages));
 						setSelectedMessages(new Set());
 					}}
 				>

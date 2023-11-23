@@ -11,6 +11,7 @@ interface MessageItemProps {
 	onRegenerate?: (id: string) => void;
 	onEdit: (id: string, content: string) => void;
 	onCopy: (id: string) => void;
+	hasSelect: boolean;
 	onSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
 	readOnly: boolean;
 	extraClass?: string;
@@ -28,6 +29,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	onRegenerate,
 	onEdit,
 	onCopy,
+	hasSelect,
 	onSelect,
 	readOnly,
 	extraClass = '',
@@ -42,6 +44,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	const [isThoughtCollapsed, setIsThoughtCollapsed] = React.useState(
 		!defExpandThoughts
 	);
+
+	const canEdit = !readOnly && message.type !== 'thought';
 
 	const toggleThoughtCollapse = () => {
 		setIsThoughtCollapsed(!isThoughtCollapsed);
@@ -70,12 +74,14 @@ const MessageItem: React.FC<MessageItemProps> = ({
 			className={`message relative mb-1 flex items-center ${extraClass}`}
 			key={index}
 		>
-			<input
-				type="checkbox"
-				className="absolute top-2 left-2"
-				checked={isSelected}
-				onChange={(e) => onSelect(e)}
-			/>
+			{hasSelect && (
+				<input
+					type="checkbox"
+					className="absolute top-2 left-2"
+					checked={isSelected}
+					onChange={(e) => onSelect(e)}
+				/>
+			)}
 
 			<div
 				className={`flex-1 flex flex-col ${
@@ -128,11 +134,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
 					)}
 				</span>
 				<div
-					className="thought-message ml-5 cursor-pointer"
+					className="thought-header ml-6 cursor-pointer"
 					style={{ display: message.type === 'thought' ? 'flex' : 'none' }}
 					onClick={() => toggleThoughtCollapse()}
 				>
-					{message.thoughtLabel ? message.thoughtLabel : 'Thought'}
+					<span className="label">Thought</span>
+					{message.thoughtLabel}
 					{isThoughtCollapsed ? ' ▼' : ' ▲'}
 				</div>
 				<div className="flex items-center">
@@ -162,7 +169,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 									: 'message'
 							}
 							onClick={() => {
-								if (!readOnly) {
+								if (canEdit) {
 									setEditingMsg(message.id);
 									setTempMsgContent(message.content);
 								}
