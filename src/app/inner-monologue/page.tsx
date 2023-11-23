@@ -84,6 +84,7 @@ const genIsImgReqThoughts = async (
 		makePrompt(user, system, 'ChatML'),
 		Params({
 			prefixResponse,
+			temp: 0.25,
 			max: 128,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})
