@@ -79,7 +79,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 			{hasSelect && (
 				<input
 					type="checkbox"
-					className="absolute top-2 left-2"
+					className="absolute top-1 left-2"
 					checked={isSelected}
 					onChange={(e) => onSelect(e)}
 				/>
