@@ -5,42 +5,47 @@ import ImgCarousel from '../ImgCarousel';
 interface MessageItemProps {
 	message: Message;
 	index: number;
-	isThoughtCollapsed: boolean;
 	isSelected: boolean;
 	onToggleRole: (id: string) => void;
 	onDelete?: (id: string) => void;
 	onRegenerate?: (id: string) => void;
 	onEdit: (id: string, content: string) => void;
-	onToggleThoughtCollapse: (id: string) => void;
 	onCopy: (id: string) => void;
 	onSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
 	readOnly: boolean;
 	extraClass?: string;
 	defExpandImages?: boolean;
+	defExpandThoughts?: boolean;
 	customBtns?: CustomBtns;
 }
 
 const MessageItem: React.FC<MessageItemProps> = ({
 	message,
 	index,
-	isThoughtCollapsed,
 	isSelected,
 	onToggleRole,
 	onDelete,
 	onRegenerate,
 	onEdit,
-	onToggleThoughtCollapse,
 	onCopy,
 	onSelect,
 	readOnly,
 	extraClass = '',
 	defExpandImages,
+	defExpandThoughts,
 	customBtns,
 }) => {
 	const contentRef = React.useRef(null as HTMLSpanElement | null);
 	const [contentHeight, setContentHeight] = React.useState(0);
 	const [editingMsg, setEditingMsg] = React.useState<string | null>(null);
 	const [tempMsgContent, setTempMsgContent] = React.useState<string>('');
+	const [isThoughtCollapsed, setIsThoughtCollapsed] = React.useState(
+		!defExpandThoughts
+	);
+
+	const toggleThoughtCollapse = () => {
+		setIsThoughtCollapsed(!isThoughtCollapsed);
+	};
 
 	React.useEffect(() => {
 		if (contentRef.current) {
@@ -55,10 +60,6 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
 	const toggleRole = (id: string) => {
 		onToggleRole(id);
-	};
-
-	const toggleCollapse = (id: string) => {
-		onToggleThoughtCollapse(id);
 	};
 
 	const hasBtns = !!customBtns;
@@ -129,7 +130,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 				<div
 					className="thought-message ml-5 cursor-pointer"
 					style={{ display: message.type === 'thought' ? 'flex' : 'none' }}
-					onClick={() => toggleCollapse(message.id)}
+					onClick={() => toggleThoughtCollapse()}
 				>
 					{message.thoughtLabel ? message.thoughtLabel : 'Thought'}
 					{isThoughtCollapsed ? ' ▼' : ' ▲'}
@@ -161,9 +162,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 									: 'message'
 							}
 							onClick={() => {
-								if (message.type === 'thought') {
-									toggleCollapse(message.id);
-								} else if (!readOnly) {
+								if (!readOnly) {
 									setEditingMsg(message.id);
 									setTempMsgContent(message.content);
 								}

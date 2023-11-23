@@ -14,6 +14,7 @@ export const ChatBox = ({
 	handleSend,
 	multiline = false,
 	defExpandImages = false,
+	defExpandThoughts = false,
 	handleEdit,
 	customBtns,
 }: {
@@ -26,20 +27,16 @@ export const ChatBox = ({
 	handleSend?: (content: string) => void;
 	multiline?: boolean;
 	defExpandImages?: boolean;
+	defExpandThoughts?: boolean;
 	handleEdit?: (id: string, content: string) => void;
-	// TODO custom buttons
 	customBtns?: CustomBtns;
 }) => {
 	const [tempMsgContent, setTempMsgContent] = useState('');
-	const [editingMsg, setEditingMsg] = useState<string | null>(null);
 	const messagesEndRef = useRef<null | HTMLDivElement>(null);
 	const [selectedMessages, setSelectedMessages] = useState<Set<string>>(
 		new Set()
 	);
 	const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
-	const [collapsedThoughts, setCollapsedThoughts] = useState<Set<string>>(
-		new Set()
-	);
 
 	const [roleClassMap, setRoleClassMap] = useState(
 		{} as Record<string, string>
@@ -113,17 +110,6 @@ export const ChatBox = ({
 
 		setSelectedMessages(updatedSelection);
 	};
-	const toggleCollapse = (messageId: string) => {
-		setCollapsedThoughts((prev) => {
-			const newSet = new Set(prev);
-			if (newSet.has(messageId)) {
-				newSet.delete(messageId);
-			} else {
-				newSet.add(messageId);
-			}
-			return newSet;
-		});
-	};
 	return (
 		<div className="chatBox" ref={messagesEndRef}>
 			{messages.map((msg, idx) => (
@@ -132,20 +118,18 @@ export const ChatBox = ({
 					key={idx}
 					message={msg}
 					index={idx}
-					isThoughtCollapsed={collapsedThoughts.has(msg.id)}
 					isSelected={selectedMessages.has(msg.id)}
 					onToggleRole={() => !readOnly && toggleRole(msg.id)}
 					onDelete={deleteMessage}
 					onRegenerate={regenerateMessage}
 					onEdit={(id, content) => {
-						setEditingMsg(null);
 						handleEdit && handleEdit(id, content);
 					}}
-					onToggleThoughtCollapse={() => toggleCollapse(msg.id)}
 					onCopy={() => navigator.clipboard.writeText(msg.content)}
 					onSelect={(e) => handleSelect(e, msg, idx)}
 					readOnly={readOnly}
 					defExpandImages={defExpandImages}
+					defExpandThoughts={defExpandThoughts}
 					customBtns={customBtns}
 				/>
 			))}
