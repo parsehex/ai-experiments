@@ -120,6 +120,16 @@ ${vars}`;
 	return str;
 };
 
+export const Choices = (c: string[]) => {
+	let str = `root ::= (`;
+	for (let i = 0; i < c.length; i++) {
+		str += `"${c[i]}"`;
+		if (i < c.length - 1) str += ` | `;
+	}
+	str += `)`;
+	return str;
+};
+
 export const JsonObject = () => {
 	return `root   ::= (
 		"{" ws (

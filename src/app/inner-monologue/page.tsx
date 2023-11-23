@@ -8,6 +8,7 @@ import { makePrompt } from '@/lib/llm/prompts';
 import { txt2img, txt2imgResponseInfo } from '@/lib/imagen';
 import { toast } from 'react-toastify';
 import * as parts from './prompt-parts';
+import { Choices } from '@/lib/llm/grammar';
 
 const RANCFG_MIN = 1;
 const RANCFG_MAX = 6;
@@ -100,6 +101,7 @@ const genIsImgReq = async (
 		Params({
 			prefixResponse,
 			max: 5,
+			grammar: Choices(['YES', 'NO']),
 		})
 	);
 	result = result.trim().toUpperCase();
