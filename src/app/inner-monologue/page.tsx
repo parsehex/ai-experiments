@@ -1,14 +1,15 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
 import { GenerateOptions, generate } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
-import { txt2img, txt2imgResponseInfo } from '@/lib/imagen';
-import { toast } from 'react-toastify';
-import * as parts from './prompt-parts';
 import { Choices } from '@/lib/llm/grammar';
+import { txt2img } from '@/lib/imagen';
+import { txt2imgResponseInfo } from '@/lib/imagen/types';
+import * as parts from './prompt-parts';
 
 const RANCFG_MIN = 1;
 const RANCFG_MAX = 6;
