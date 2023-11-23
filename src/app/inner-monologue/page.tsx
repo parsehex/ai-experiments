@@ -78,7 +78,7 @@ const genIsImgReqThoughts = async (
 		makePrompt(user, system, 'ChatML'),
 		Params({
 			prefixResponse,
-			max: 96,
+			max: 128,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})
 	);
@@ -300,7 +300,7 @@ function InnerMonologueChat() {
 		setInput('');
 		setChatSummary('');
 		setLastPrompt('');
-		toast.success('Console cleared');
+		toast.info('Console cleared', { autoClose: 1000 });
 	};
 
 	const regenerateMessage = async (
