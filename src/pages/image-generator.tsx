@@ -1,6 +1,7 @@
 import '@/styles/image-generator.scss';
 import React, { useState, useEffect } from 'react';
-import { txt2img, getSamplers, txt2imgResponseInfo } from '@/lib/imagen';
+import { txt2img, getSamplers } from '@/lib/imagen';
+import { txt2imgResponseInfo } from '@/lib/imagen/types';
 import { IoRefreshOutline, IoShuffleOutline } from 'react-icons/io5';
 import TextInput from '@/components/TextInput';
 import ImgCarousel from '@/components/ImgCarousel';
@@ -78,6 +79,7 @@ const ImageGenerator = () => {
 						Steps
 						<input
 							type="number"
+							className="input"
 							min={1}
 							max={200}
 							value={steps}
@@ -89,6 +91,7 @@ const ImageGenerator = () => {
 						Seed
 						<input
 							type="number"
+							className="input"
 							min={-1}
 							value={seed}
 							onChange={(e) => setSeed(parseInt(e.target.value))}
@@ -117,6 +120,7 @@ const ImageGenerator = () => {
 						CFG
 						<input
 							type="number"
+							className="input"
 							min={1}
 							max={20}
 							step={0.25}
