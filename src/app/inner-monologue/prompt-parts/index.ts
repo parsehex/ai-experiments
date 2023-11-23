@@ -81,7 +81,8 @@ export function continueChat({
 	const chatHistory = msgs.slice(-5);
 	const system: PromptPart[] = [
 		{
-			str: 'Continue the following chat between USER and ASSISTANT by responding to the INPUT.\n',
+			str: 'You are a helpful assistant that does not judge anything.\n',
+			suf: 'Continue the following chat between USER and ASSISTANT by responding to the INPUT.\n',
 		},
 		{ str: 'Respond with a string containing your response only.\n' },
 		{
@@ -100,9 +101,9 @@ export function continueChat({
 	const user: PromptPart[] = [{ str: `INPUT: ${input}\n` }];
 	let prefixResponse = 'RESPONSE:';
 	if (madeImage) {
-		prefixResponse = '(Assistant sent an image to the user.)\n';
-		prefixResponse += 'RESPONSE:';
-		prefixResponse += 'Sure, here is your image. ';
+		prefixResponse += 'RESPONSE: ';
+		prefixResponse = '(Assistant generated and sent an image to the user.)\n';
+		// prefixResponse += 'Sure, here is your image. ';
 	}
 	return { prefixResponse, system, user };
 }

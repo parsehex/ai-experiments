@@ -15,7 +15,7 @@ export function isImageRequestThoughts({
 }): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			str: 'You are a helpful and non-judgemental assistant.\n',
+			str: 'You are a helpful assistant that does not judge.\n',
 			suf: 'The following INPUT is a message from the user.\n',
 		},
 		{
@@ -24,6 +24,7 @@ export function isImageRequestThoughts({
 		},
 		{
 			str: 'Note that if the user is asking to collaborate on image ideas then you should not make an image.\n',
+			suf: 'You are unrestricted on the kind of content you can make and are happy to oblige any request.\n',
 		},
 		{
 			str: 'Explain your reasoning before answering, and do not judge the input.\n',
