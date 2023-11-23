@@ -12,6 +12,7 @@ export interface Message {
 	role: string;
 	content: string;
 	type?: 'message' | 'thought';
+	thoughtLabel?: string;
 	images?: ImgType[];
 }
 

@@ -126,6 +126,14 @@ const MessageItem: React.FC<MessageItemProps> = ({
 						</div>
 					)}
 				</span>
+				<div
+					className="thought-message ml-5 cursor-pointer"
+					style={{ display: message.type === 'thought' ? 'flex' : 'none' }}
+					onClick={() => toggleCollapse(message.id)}
+				>
+					{message.thoughtLabel ? message.thoughtLabel : 'Thought'}
+					{isThoughtCollapsed ? ' ▼' : ' ▲'}
+				</div>
 				<div className="flex items-center">
 					{!!message.images?.length && (
 						<ImgCarousel
@@ -144,18 +152,13 @@ const MessageItem: React.FC<MessageItemProps> = ({
 								}
 							}}
 						/>
-					) : message.type === 'thought' && !isThoughtCollapsed ? (
-						<div
-							className="thought-message"
-							onClick={() => toggleCollapse(message.id)}
-						>
-							Thought...
-						</div>
 					) : (
 						<span
 							ref={contentRef}
 							className={
-								message.type === 'thought' ? 'thought-message' : 'message'
+								message.type === 'thought'
+									? 'thought p-1' + (isThoughtCollapsed ? ' hidden' : '')
+									: 'message'
 							}
 							onClick={() => {
 								if (message.type === 'thought') {
