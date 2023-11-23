@@ -33,6 +33,7 @@ const pickSampler = (ran = true) => {
 };
 
 const genInnerMonologue = async (messages: Message[]) => {
+	messages = messages.filter((msg) => msg.type !== 'thought');
 	const promptParts = parts.innerMonologue({ messages });
 	const { prefixResponse, user, system } = promptParts;
 	const result = await generate(
@@ -47,6 +48,7 @@ const genInnerMonologue = async (messages: Message[]) => {
 	return result;
 };
 const genSummarizeChat = async (messages: Message[], lastSummary = '') => {
+	messages = messages.filter((msg) => msg.type !== 'thought');
 	const promptParts = parts.summarizeChat({ messages, lastSummary });
 	const { prefixResponse, user, system } = promptParts;
 	const result = await generate(
@@ -130,6 +132,7 @@ const genContinueChat = async (
 	messages: Message[],
 	{ thoughts, madeImage, summary }: ExtraObj = {}
 ) => {
+	messages = messages.filter((msg) => msg.type !== 'thought');
 	const promptParts = parts.continueChat({
 		input,
 		messages,
@@ -174,6 +177,14 @@ const generateImg = async (
 	const image = res.images[0];
 	return { image, info };
 };
+
+const aiThoughtMessage = (thoughts: string, label = 'Thoughts'): Message => ({
+	id: uuidv4(),
+	role: 'ASSISTANT',
+	content: thoughts,
+	type: 'thought',
+	thoughtLabel: label,
+});
 
 interface Options {
 	wide: boolean;
@@ -227,15 +238,6 @@ function InnerMonologueChat() {
 		const userMsg = newMessages[newMessages.length - 1];
 		setMessages(newMessages);
 
-		// const msgThoughts = await innerMonologue(newMessages);
-		// newMessages.push({
-		// 	role: 'ASSISTANT',
-		// 	content: msgThoughts,
-		// 	id: uuidv4(),
-		// 	type: 'thought',
-		// });
-		// setMessages(newMessages);
-
 		let image: string | undefined;
 		let seed = -1;
 
@@ -243,12 +245,20 @@ function InnerMonologueChat() {
 
 		const imgReq = await genIsImgReq(userMsg, lastMsg || null, chatSummary);
 		const imgThoughts = imgReq.thoughts;
+		const iirtMsg = aiThoughtMessage(
+			imgThoughts,
+			'Is Image Request: ' + imgReq.result
+		);
+		newMessages = [...newMessages, iirtMsg];
+		setMessages(newMessages);
 		const isImgReq = imgReq.result.includes('YES');
 		let infoparams: txt2imgResponseInfo;
-		toast.info('Is image request: ' + imgReq.result);
 		if (isImgReq) {
 			const prompt = await genImgPrompt(userMsg.content, lastPrompt);
 			setLastPrompt(prompt);
+			const imgPromptMsg = aiThoughtMessage(prompt, 'Image Prompt');
+			newMessages = [...newMessages, imgPromptMsg];
+			setMessages(newMessages);
 			const res = await txt2img({
 				prompt,
 				negative_prompt: 'easynegative',
@@ -305,7 +315,6 @@ function InnerMonologueChat() {
 			return;
 		}
 		const imgReq = await genIsImgReq(inputMsg, lastMsg || null, chatSummary);
-		toast.info('Is image request: ' + imgReq.result);
 		const isImgReq = imgReq.result.includes('YES');
 		const imgThoughts = imgReq.thoughts;
 		if (!isImgReq) return;
@@ -519,6 +528,7 @@ function InnerMonologueChat() {
 					);
 				}}
 				defExpandImages={options.expandImages}
+				defExpandThoughts={false}
 				customBtns={{
 					'Regen Image': (id) => regenerateImage(id, 20, false, true),
 					// Variation: should be near the same image
@@ -528,16 +538,11 @@ function InnerMonologueChat() {
 					Better: (id) => regenerateImage(id, 30, true),
 				}}
 			/>
-			{lastInfo && (
+			{chatSummary && (
 				<div className="last-prompt flex">
 					{chatSummary && (
 						<p>
 							Summary: <span>{chatSummary}</span>
-						</p>
-					)}
-					{lastInfo.prompt && (
-						<p>
-							Last Prompt: <span>{lastInfo.prompt}</span>
 						</p>
 					)}
 				</div>
