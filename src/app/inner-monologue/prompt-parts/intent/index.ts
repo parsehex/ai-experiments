@@ -1,6 +1,7 @@
 import { PromptPart } from '@/lib/llm/types';
 import { Message } from '@/lib/types';
 import { PromptPartResponse } from '..';
+import { getLastMsgBefore } from '@/lib/utils';
 
 const AreasOfintent = {
 	IMAGE: 'User is talking about generating an image or wants to see an image',
@@ -31,13 +32,10 @@ export function pickAreaOfIntent({
 			str: 'Respond with a string containing the key of the above Area that you pick only.\n',
 		},
 	];
-	let userMsg;
-	for (let i = messages.length - 1; i >= 0; i--) {
-		if (messages[i].role.toLowerCase() === 'user') {
-			userMsg = messages[i];
-			break;
-		}
-	}
+	const userMsg = getLastMsgBefore(
+		messages,
+		(m) => m.role.toLowerCase() === 'user'
+	);
 	const user: PromptPart[] = [
 		{ if: !!summary, str: 'Chat Summary: ' + summary + '\n' },
 		{ str: `User INPUT: ${userMsg?.content}\n` },

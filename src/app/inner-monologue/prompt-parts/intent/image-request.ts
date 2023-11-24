@@ -2,6 +2,7 @@ import { Message } from '@/lib/types';
 import { PromptPartResponse } from '..';
 import { PromptPart } from '@/lib/llm/types';
 import { Choices } from '@/lib/llm/grammar';
+import { getLastMsgBefore } from '@/lib/utils';
 
 const Intents = {
 	GENERATE: 'User wants an image to be made',
@@ -15,23 +16,18 @@ export function pickImageIntent({
 	messages: Message[];
 	summary?: string;
 }): PromptPartResponse {
-	// user message is the last message with role=user
-	let userMsg, lastMsg;
-	let userMsgIndex = -1;
-	for (let i = messages.length - 1; i >= 0; i--) {
-		if (messages[i].role.toLowerCase() === 'user') {
-			userMsg = messages[i];
-			userMsgIndex = i;
-			break;
-		}
-	}
+	const userMsg = getLastMsgBefore(
+		messages,
+		(m) => m.role.toLowerCase() === 'user'
+	);
 	if (!userMsg) throw new Error('No user message found');
-	for (let i = userMsgIndex - 1; i >= 0; i--) {
-		if (messages[i].role.toLowerCase() === 'assistant') {
-			lastMsg = messages[i];
-			break;
-		}
-	}
+	const lastMsg = getLastMsgBefore(
+		messages,
+		(m) => {
+			return m.role.toLowerCase() === 'assistant';
+		},
+		userMsg
+	);
 	const intentStr = JSON.stringify(Intents, null, '\t');
 	const system: PromptPart[] = [
 		{

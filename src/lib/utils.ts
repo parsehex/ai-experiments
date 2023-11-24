@@ -1,6 +1,7 @@
 import { TextChunk } from '@/app/text-manager/types';
 import { encodeTokens, decodeTokens } from '@/lib/llm';
 import { v4 } from 'uuid';
+import { Message } from './types';
 
 export async function delay(ms = 0): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
@@ -59,4 +60,19 @@ export async function chunkText(
 	}
 
 	return chunks;
+}
+
+export function getLastMsgBefore(
+	messages: Message[],
+	test: (msg: Message) => boolean,
+	before?: number | Message
+): Message | undefined {
+	if (before === undefined) before = messages[messages.length - 1];
+	if (typeof before !== 'number') {
+		before = messages.indexOf(before);
+	}
+	for (let i = before; i >= 0; i--) {
+		if (test(messages[i])) return messages[i];
+	}
+	return undefined;
 }
