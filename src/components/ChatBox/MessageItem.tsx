@@ -68,6 +68,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
 	const hasBtns = !!customBtns;
 	const isThought = message.type === 'thought';
+	const thoughtHasContent = isThought && message.content.length > 0;
 	// make array to iterate over
 	const btns = hasBtns ? Object.entries(customBtns!) : [];
 	return (
@@ -137,13 +138,18 @@ const MessageItem: React.FC<MessageItemProps> = ({
 					)}
 				</span>
 				<div
-					className="thought-header ml-6 cursor-pointer"
+					className={
+						'thought-header ml-6 mr-2' +
+						(thoughtHasContent ? ' cursor-pointer' : '')
+					}
 					style={{ display: message.type === 'thought' ? 'flex' : 'none' }}
-					onClick={() => toggleThoughtCollapse()}
+					onClick={() => {
+						thoughtHasContent && toggleThoughtCollapse();
+					}}
 				>
 					<span className="label">Thought</span>
 					{message.thoughtLabel}
-					{isThoughtCollapsed ? ' ▼' : ' ▲'}
+					{thoughtHasContent && (isThoughtCollapsed ? ' ▼' : ' ▲')}
 				</div>
 				<div className="flex items-center">
 					{!!message.images?.length && (
@@ -168,7 +174,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
 							ref={contentRef}
 							className={
 								message.type === 'thought'
-									? 'thought p-1' + (isThoughtCollapsed ? ' hidden' : '')
+									? 'thought p-1' +
+									  (isThoughtCollapsed || !thoughtHasContent ? ' hidden' : '')
 									: 'message'
 							}
 							onClick={() => {
