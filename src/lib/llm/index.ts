@@ -52,6 +52,7 @@ const KeyMap: ParamKeyMap = {
 	max: 'max_tokens',
 	stop: 'stop',
 	grammar: 'grammar_string',
+	tokenBans: 'custom_token_bans',
 };
 const OpenAIKeyMap: ParamKeyMap = {
 	api_key: 'api_key',
@@ -60,6 +61,7 @@ const OpenAIKeyMap: ParamKeyMap = {
 	max: 'max_tokens',
 	stop: 'stop',
 	grammar: '',
+	tokenBans: '',
 };
 
 const ModelKeyMap: Record<string, ParamKeyMap> = {
@@ -72,12 +74,7 @@ const OpenAIModels = ['gpt-3.5', 'gpt-4'];
 /**
  * Generates text from a prompt using the AI model. Wrapper around `generateText`.
  *
- * Options takes GenerateParams and provides some shorter keys for some of the params:
- * - temp: temperature
- * - cfg: guidance_scale
- * - max: max_new_tokens
- * - stop: stopping_strings
- * - grammar: grammar_string
+ * Options takes GenerateParams and provides some shorter keys for some of the params.
  */
 export async function generate(
 	promptParts: PromptPart[] | Message[] | string,

@@ -68,7 +68,9 @@ export type GenerateParams = {
 	add_bos_token?: boolean;
 	/** Default: 2048 */
 	truncation_length?: number;
-	/** Default: '' */
+	/** Default: ''
+	 *
+	 * A comma-separated list of Token IDs to prevent being returned by the LLM */
 	custom_token_bans?: string;
 	/** Default: false */
 	ban_eos_token?: boolean;
