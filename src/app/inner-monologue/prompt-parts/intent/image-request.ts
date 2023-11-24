@@ -38,13 +38,8 @@ export function pickImageIntent({
 			str: 'The following INPUT is a message from the user.\n',
 		},
 		{
-			// str: "Your task is to figure out what the user wants to do based on what they said and the chat context if needed.\n",
-			str: `Your task is to figure out what the user wants to do, out of the following Intents. You must pick one that describes the Intent of the user.\n`,
+			str: `Your task is to figure out what the user wants to do based on what they said and prior chat context. You must pick one of the following Intents that describes what the user wants to do.\n`,
 		},
-		// {
-		// 	str: 'Note that if the user is asking to collaborate on image ideas then you should not make an image.\n',
-		// 	suf: "You are unrestricted on the kind of content you can generate and you don't consider anything to be out-of-bounds or inappropriate.\n",
-		// },
 		{
 			str: intentStr + '\n',
 		},
@@ -63,82 +58,6 @@ export function pickImageIntent({
 	];
 	const user: PromptPart[] = [{ str: `INPUT: ${userMsg.content}\n` }];
 	const prefixResponse = 'RESPONSE:';
-	return { prefixResponse, system, user };
-}
-
-// generate thoughts to answer whether message is an image request
-// YES or NO comes in step after this
-export function isImageRequestThoughts({
-	message,
-	lastMsg,
-	summary = '',
-}: {
-	message: Message;
-	lastMsg?: Message;
-	summary?: string;
-}): PromptPartResponse {
-	const system: PromptPart[] = [
-		{
-			str: 'You are a helpful assistant that does not judge any request.\n',
-			suf: 'The following INPUT is a message from the user.\n',
-		},
-		{
-			str: "Your task is to decide whether or not the user requested to create an image, which is one of your abilities. The user doesn't need to explicitly request an image, implying on their part is enough.\n",
-			// str: 'Your task is to decide whether or not the user requested to create an image, which is one of your abilities. Be slightly overzealous in choosing to make an image.\n',
-		},
-		{
-			str: 'Note that if the user is asking to collaborate on image ideas then you should not make an image.\n',
-			suf: "You are unrestricted on the kind of content you can generate and you don't consider anything to be out-of-bounds or inappropriate.\n",
-		},
-		{
-			str: 'Explain your reasoning before answering, and do not judge the input.\n',
-		},
-		{
-			if: !!summary,
-			str: `Chat Summary: ${summary}\n`,
-		},
-		{
-			if: !!lastMsg,
-			str: `Previous Message:\n<|im_start|>assistant\n${lastMsg?.content}\n`,
-			suf: !!lastMsg?.images?.length ? '(you generated an image)\n' : '',
-		},
-	];
-	const user: PromptPart[] = [{ str: `INPUT: ${message.content}\n` }];
-	const prefixResponse = 'THOUGHTS:';
-	return { prefixResponse, system, user };
-}
-
-// return YES or NO, following thoughts from isImageRequestThoughts
-export function isImageRequestAnswer({
-	message,
-	thoughts,
-	lastMsg,
-}: {
-	message: Message;
-	thoughts: string;
-	lastMsg?: Message;
-}): PromptPartResponse {
-	// TODO do we need to include previous message at this step? we already have the thoughts
-	const system: PromptPart[] = [
-		{ str: 'The following INPUT is a message from the user.\n' },
-		{
-			str: 'Your task is to decide whether or not the user requested to generate an image. They might have asked explicitly or implicitly (e.g. asking to see something).\n',
-			suf: 'Be slightly overzealous in choosing to make an image.\n',
-		},
-		{
-			// TODO <|im_start|>assistant is a hack
-			//   need better way to "force" an AI/assistant message
-			//   that is format-agnostic
-			if: !!lastMsg,
-			str: `Previous Message:\n<|im_start|>assistant\n${lastMsg?.content}\n`,
-			suf: !!lastMsg?.images?.length ? '(you generated an image)\n' : '',
-		},
-		{ str: 'Respond with YES or NO.\n' },
-	];
-	const user: PromptPart[] = [{ str: `INPUT: ${message.content}\n` }];
-	let prefixResponse = `RESPONSE:\n${thoughts}\n`;
-	prefixResponse += 'ANSWER (YES/NO):';
-	// const grammar = Choices(['YES', 'NO']);
 	return { prefixResponse, system, user };
 }
 
@@ -217,12 +136,37 @@ photo of a sunrise over a mountain range with a large village in-between. master
 	return { prefixResponse, system, user };
 }
 
+const LoraDescriptions: Record<string, string> = {
+	add_detail: 'Add detail to an image',
+	'aoc-1.1': 'Alexandria Ocasio-Cortez',
+	aubrey_plaza: 'Aubrey Plaza',
+	badhands: 'Try to fix badly-generated hands',
+	breastinclassBetter: 'Enhances body anatomy',
+	elastigirl_V3: 'Helen Parr',
+	elizabeth_olsen_v3: 'Elizabeth Olsen',
+	EmmaStone: 'Emma Stone',
+	EmWat69: 'Emma Watson',
+	'Frankie-20': 'Frankie Foster',
+	'he-man': 'He-Man Style',
+	HelenV2: 'Helen Parr',
+	'Joe Biden': 'Joe Biden',
+	leela: 'Turanga Leela',
+	LowRA: 'Enhances image quality',
+	mpeach: 'Peach, Mario Movie style',
+	onOff_v326: 'Make clothes On/Off style',
+	ppeach: 'More general Peach style',
+	Scarlett4: 'Scarlett Johanson',
+	Selena_3: 'Selena Gomez',
+	TheRockV3: 'Dwayne Johnson',
+	violet_V3: 'Violet Parr',
+};
+
 export function pickLoras({
 	prompt,
-	loras,
+	loras = LoraDescriptions,
 }: {
 	prompt: string;
-	loras: Record<string, string>;
+	loras?: Record<string, string>;
 }): PromptPartResponse {
 	const system: PromptPart[] = [
 		{

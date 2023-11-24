@@ -6,7 +6,6 @@ import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
 import { GenerateOptions, generate } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
-import { Choices } from '@/lib/llm/grammar';
 import { txt2img, getLoras } from '@/lib/imagen';
 import { txt2imgResponseInfo } from '@/lib/imagen/types';
 import * as parts from './prompt-parts';
@@ -70,51 +69,6 @@ const genSummarizeChat = async (messages: Message[], lastSummary = '') => {
 	return result;
 };
 
-const genIsImgReqThoughts = async (
-	message: Message,
-	lastMsg?: Message,
-	summary = ''
-) => {
-	const promptParts = parts.isImageRequestThoughts({
-		message,
-		lastMsg,
-		summary,
-	});
-	const { prefixResponse, user, system } = promptParts;
-	const result = await generate(
-		makePrompt(user, system, 'ChatML'),
-		Params({
-			prefixResponse,
-			temp: 0.25,
-			max: 128,
-			stop: ['RESPONSE:', 'INPUT:', '\n'],
-		})
-	);
-	return result.trim();
-};
-const genIsImgReq = async (
-	message: Message,
-	lastMsg?: Message,
-	summary = ''
-) => {
-	const thoughts = await genIsImgReqThoughts(message, lastMsg, summary);
-	const promptParts = parts.isImageRequestAnswer({
-		message,
-		thoughts,
-		lastMsg,
-	});
-	const { prefixResponse, user, system, grammar } = promptParts;
-	let result = await generate(
-		makePrompt(user, system, 'ChatML'),
-		Params({
-			prefixResponse,
-			max: 5,
-			grammar,
-		})
-	);
-	result = result.trim().toUpperCase();
-	return { result, thoughts };
-};
 const genImgPromptThoughts = async (
 	msg: Message,
 	prevMsg?: Message,
@@ -127,6 +81,7 @@ const genImgPromptThoughts = async (
 		Params({
 			prefixResponse,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
+			tokenBans: '13',
 		})
 	);
 	result = result.trim().replace(/"/g, '');
@@ -151,34 +106,9 @@ const genImgPrompt = async (desc: string, prevPrompt = '', thoughts = '') => {
 	return result;
 };
 
-const Loras: Record<string, string> = {
-	add_detail: 'Add detail to an image',
-	'aoc-1.1': 'Alexandria Ocasio-Cortez',
-	aubrey_plaza: 'Aubrey Plaza',
-	badhands: 'Try to fix badly-generated hands',
-	breastinclassBetter: 'Enhances body anatomy',
-	elastigirl_V3: 'Helen Parr',
-	elizabeth_olsen_v3: 'Elizabeth Olsen',
-	EmmaStone: 'Emma Stone',
-	EmWat69: 'Emma Watson',
-	'Frankie-20': 'Frankie Foster',
-	'he-man': 'He-Man Style',
-	HelenV2: 'Helen Parr',
-	'Joe Biden': 'Joe Biden',
-	leela: 'Turanga Leela',
-	LowRA: 'Enhances image quality',
-	mpeach: 'Peach, Mario Movie style',
-	onOff_v326: 'Make clothes On/Off style',
-	ppeach: 'More general Peach style',
-	Scarlett4: 'Scarlett Johanson',
-	Selena_3: 'Selena Gomez',
-	TheRockV3: 'Dwayne Johnson',
-	violet_V3: 'Violet Parr',
-};
-
 export async function addLorasToPrompt(prompt: string) {
-	const loras = await getLoras();
-	const pickLorasParts = parts.pickLoras({ loras: Loras, prompt });
+	// const loras = await getLoras();
+	const pickLorasParts = parts.pickLoras({ prompt });
 	const { prefixResponse, user, system } = pickLorasParts;
 	const result = await generate(
 		makePrompt(user, system, 'ChatML'),
@@ -235,9 +165,8 @@ const genPickIntentArea = async (
 		makePrompt(user, system, 'ChatML'),
 		Params({
 			prefixResponse,
+			temp: 0.25,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
-			// max: 768,
-			// cfg: 1.5,
 		})
 	);
 	return result;
@@ -293,7 +222,7 @@ interface Options {
 }
 const DefaultOptions: Options = {
 	wide: false,
-	expandImages: true,
+	expandImages: false,
 	cfg: 4.5,
 	steps: 20,
 	randomCfg: false,
@@ -347,27 +276,15 @@ function InnerMonologueChat() {
 		let image: string | undefined;
 		let seed = -1;
 
-		// try to get intent
-		const intent = await genPickIntentArea(newMessages, {
+		const intentArea = await genPickIntentArea(newMessages, {
 			summary: chatSummary,
 		});
-		const intentMsg = aiThoughtMessage('', 'Intent: ' + intent, 'intent');
+		const intentMsg = aiThoughtMessage('', 'Intent: ' + intentArea, 'intent');
 		newMessages = [...newMessages, intentMsg];
 		setMessages(newMessages);
 
 		const lastMsg = newMessages[newMessages.length - 2];
-
-		// const imgReq = await genIsImgReq(userMsg, lastMsg || null, chatSummary);
-		// const imgThoughts = imgReq.thoughts;
-		// const iirtMsg = aiThoughtMessage(
-		// 	imgThoughts,
-		// 	'Is Image Request: ' + imgReq.result,
-		// 	'is-image-request'
-		// );
-		// newMessages = [...newMessages, iirtMsg];
-		// setMessages(newMessages);
-		// const isImgReq = imgReq.result.includes('YES');
-		const isImgReq = intent.includes('IMAGE');
+		const isImgReq = intentArea.includes('IMAGE');
 		let infoparams: txt2imgResponseInfo;
 		if (isImgReq) {
 			const promptThoughts = await genImgPromptThoughts(
@@ -388,7 +305,8 @@ function InnerMonologueChat() {
 				promptThoughts
 			);
 			setLastPrompt(prompt);
-			addLorasToPrompt(prompt);
+			// TODO
+			// addLorasToPrompt(prompt);
 			const imgPromptMsg = aiThoughtMessage(
 				prompt,
 				'Image Prompt',
@@ -472,16 +390,13 @@ function InnerMonologueChat() {
 			toast.error('No input message found');
 			return;
 		}
-		const imgReq = await genIsImgReq(inputMsg, lastMsg || null, chatSummary);
-		const isImgReq = imgReq.result.includes('YES');
-		const imgThoughts = imgReq.thoughts;
-		/** Is-Image-Request Thought Message */
-		const iirMsg = aiThoughtMessage(
-			imgThoughts,
-			'Is Image Request: ' + imgReq.result,
-			'is-image-request'
-		);
-		let newMessages = updateThoughts(iirMsg, msgIndex, iirMsg);
+
+		const intentArea = await genPickIntentArea(messages, {
+			summary: chatSummary,
+		});
+		const intentMsg = aiThoughtMessage('', 'Intent: ' + intentArea, 'intent');
+		let newMessages = updateThoughts(intentMsg, msgIndex, intentMsg);
+		const isImgReq = intentArea.includes('IMAGE');
 		if (!isImgReq) return;
 		let prompt = '';
 		let seed = -1;
