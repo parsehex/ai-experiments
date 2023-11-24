@@ -1,7 +1,8 @@
 import { PromptPart } from '@/lib/llm/types';
 import { Message } from '@/lib/types';
 
-export * from './image-request';
+export * from './intent/image-request';
+export * from './intent';
 
 // thoughts on how to do prompt parts differently:
 // we could break parts up into system and user parts, and allow specifying responseprefix
@@ -11,6 +12,7 @@ export interface PromptPartResponse {
 	user: PromptPart[];
 	system?: PromptPart[];
 	prefixResponse?: string;
+	grammar?: string;
 }
 
 // old; not used

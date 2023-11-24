@@ -7,7 +7,7 @@ import { Message } from '@/lib/types';
 import { GenerateOptions, generate } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { Choices } from '@/lib/llm/grammar';
-import { txt2img } from '@/lib/imagen';
+import { txt2img, getLoras } from '@/lib/imagen';
 import { txt2imgResponseInfo } from '@/lib/imagen/types';
 import * as parts from './prompt-parts';
 
@@ -103,20 +103,24 @@ const genIsImgReq = async (
 		thoughts,
 		lastMsg,
 	});
-	const { prefixResponse, user, system } = promptParts;
+	const { prefixResponse, user, system, grammar } = promptParts;
 	let result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
 			prefixResponse,
 			max: 5,
-			grammar: Choices(['YES', 'NO']),
+			grammar,
 		})
 	);
 	result = result.trim().toUpperCase();
 	return { result, thoughts };
 };
-const genImgPrompt = async (desc: string, prevPrompt = '', thoughts = '') => {
-	const promptParts = parts.makeImgPrompt({ desc, prevPrompt, thoughts });
+const genImgPromptThoughts = async (
+	msg: Message,
+	prevMsg?: Message,
+	summary = ''
+) => {
+	const promptParts = parts.imagePromptThoughts({ msg, prevMsg, summary });
 	const { prefixResponse, user, system } = promptParts;
 	let result = await generate(
 		makePrompt(user, system, 'ChatML'),
@@ -130,6 +134,61 @@ const genImgPrompt = async (desc: string, prevPrompt = '', thoughts = '') => {
 	result = result.replace(/[\uD800-\uDFFF]./g, '');
 	return result;
 };
+const genImgPrompt = async (desc: string, prevPrompt = '', thoughts = '') => {
+	const promptParts = parts.makeImgPrompt({ desc, prevPrompt, thoughts });
+	const { prefixResponse, user, system } = promptParts;
+	let result = await generate(
+		makePrompt(user, system, 'ChatML'),
+		Params({
+			prefixResponse,
+			stop: ['RESPONSE:', 'INPUT:', '\n'],
+			tokenBans: '13',
+		})
+	);
+	result = result.trim().replace(/"/g, '');
+	// llm likes to use emojies, remove
+	result = result.replace(/[\uD800-\uDFFF]./g, '');
+	return result;
+};
+
+const Loras: Record<string, string> = {
+	add_detail: 'Add detail to an image',
+	'aoc-1.1': 'Alexandria Ocasio-Cortez',
+	aubrey_plaza: 'Aubrey Plaza',
+	badhands: 'Try to fix badly-generated hands',
+	breastinclassBetter: 'Enhances body anatomy',
+	elastigirl_V3: 'Helen Parr',
+	elizabeth_olsen_v3: 'Elizabeth Olsen',
+	EmmaStone: 'Emma Stone',
+	EmWat69: 'Emma Watson',
+	'Frankie-20': 'Frankie Foster',
+	'he-man': 'He-Man Style',
+	HelenV2: 'Helen Parr',
+	'Joe Biden': 'Joe Biden',
+	leela: 'Turanga Leela',
+	LowRA: 'Enhances image quality',
+	mpeach: 'Peach, Mario Movie style',
+	onOff_v326: 'Make clothes On/Off style',
+	ppeach: 'More general Peach style',
+	Scarlett4: 'Scarlett Johanson',
+	Selena_3: 'Selena Gomez',
+	TheRockV3: 'Dwayne Johnson',
+	violet_V3: 'Violet Parr',
+};
+
+export async function addLorasToPrompt(prompt: string) {
+	const loras = await getLoras();
+	const pickLorasParts = parts.pickLoras({ loras: Loras, prompt });
+	const { prefixResponse, user, system } = pickLorasParts;
+	const result = await generate(
+		makePrompt(user, system, 'ChatML'),
+		Params({
+			prefixResponse,
+			stop: ['RESPONSE:', 'INPUT:', '\n'],
+		})
+	);
+	console.log(result);
+}
 
 interface ExtraObj {
 	thoughts?: string;
@@ -156,9 +215,29 @@ const genContinueChat = async (
 		Params({
 			prefixResponse,
 			max: 768,
-			// temp: 0.25,
 			cfg: 1.5,
-			// stop: ['INPUT:', 'RESPONSE:', 'USER:'],
+		})
+	);
+	return result;
+};
+
+const genPickIntentArea = async (
+	messages: Message[],
+	{ summary }: ExtraObj = {}
+) => {
+	messages = messages.filter((msg) => msg.type !== 'thought');
+	const promptParts = parts.pickAreaOfIntent({
+		messages,
+		summary,
+	});
+	const { prefixResponse, user, system } = promptParts;
+	const result = await generate(
+		makePrompt(user, system, 'ChatML'),
+		Params({
+			prefixResponse,
+			stop: ['RESPONSE:', 'INPUT:', '\n'],
+			// max: 768,
+			// cfg: 1.5,
 		})
 	);
 	return result;
@@ -234,7 +313,7 @@ function InnerMonologueChat() {
 	const [options, setOptions] = useState(DefaultOptions);
 	const [lastPrompt, setLastPrompt] = useState('');
 	const [lastInfo, setLastInfo] = useState({} as txt2imgResponseInfo);
-	const [stepsPreset, setStepsPreset] = useState('Medium' as StepsPreset);
+	const [stepsPreset, setStepsPreset] = useState('Low' as StepsPreset);
 
 	useEffect(() => {
 		if (stepsPreset === 'Low') setOptions({ ...options, steps: 16 });
@@ -268,22 +347,48 @@ function InnerMonologueChat() {
 		let image: string | undefined;
 		let seed = -1;
 
+		// try to get intent
+		const intent = await genPickIntentArea(newMessages, {
+			summary: chatSummary,
+		});
+		const intentMsg = aiThoughtMessage('', 'Intent: ' + intent, 'intent');
+		newMessages = [...newMessages, intentMsg];
+		setMessages(newMessages);
+
 		const lastMsg = newMessages[newMessages.length - 2];
 
-		const imgReq = await genIsImgReq(userMsg, lastMsg || null, chatSummary);
-		const imgThoughts = imgReq.thoughts;
-		const iirtMsg = aiThoughtMessage(
-			imgThoughts,
-			'Is Image Request: ' + imgReq.result,
-			'is-image-request'
-		);
-		newMessages = [...newMessages, iirtMsg];
-		setMessages(newMessages);
-		const isImgReq = imgReq.result.includes('YES');
+		// const imgReq = await genIsImgReq(userMsg, lastMsg || null, chatSummary);
+		// const imgThoughts = imgReq.thoughts;
+		// const iirtMsg = aiThoughtMessage(
+		// 	imgThoughts,
+		// 	'Is Image Request: ' + imgReq.result,
+		// 	'is-image-request'
+		// );
+		// newMessages = [...newMessages, iirtMsg];
+		// setMessages(newMessages);
+		// const isImgReq = imgReq.result.includes('YES');
+		const isImgReq = intent.includes('IMAGE');
 		let infoparams: txt2imgResponseInfo;
 		if (isImgReq) {
-			const prompt = await genImgPrompt(userMsg.content, lastPrompt);
+			const promptThoughts = await genImgPromptThoughts(
+				userMsg,
+				lastMsg,
+				chatSummary
+			);
+			const promptMsg = aiThoughtMessage(
+				promptThoughts,
+				'Image Prompt Thoughts',
+				'image-prompt-thoughts'
+			);
+			newMessages = [...newMessages, promptMsg];
+			setMessages(newMessages);
+			const prompt = await genImgPrompt(
+				userMsg.content,
+				lastPrompt,
+				promptThoughts
+			);
 			setLastPrompt(prompt);
+			addLorasToPrompt(prompt);
 			const imgPromptMsg = aiThoughtMessage(
 				prompt,
 				'Image Prompt',
@@ -291,6 +396,7 @@ function InnerMonologueChat() {
 			);
 			newMessages = [...newMessages, imgPromptMsg];
 			setMessages(newMessages);
+			const start = Date.now();
 			const res = await txt2img({
 				prompt,
 				negative_prompt: 'easynegative',
@@ -302,6 +408,8 @@ function InnerMonologueChat() {
 				width: 512,
 				height: 768,
 			});
+			const end = Date.now();
+			toast.success(`Generated image ${(end - start) / 1000}s`);
 			infoparams = JSON.parse(res.info);
 			setLastInfo(infoparams);
 			image = res.images[0];
@@ -333,6 +441,7 @@ function InnerMonologueChat() {
 		toast.info('Console cleared', { autoClose: 1000 });
 	};
 
+	/** Finds nearest thought of the same class above the given message index and update it. **Calls `setMessages`** */
 	const updateThoughts = (msg: Message, msgIndex: number, thought: Message) => {
 		let newMessages = messages.slice();
 		let iirIndex = -1;
@@ -381,7 +490,17 @@ function InnerMonologueChat() {
 			// @ts-ignore
 			seed = msg.images[0].seed || lastInfo.seed;
 		} else {
-			// TODO need to generate new thoughts
+			const promptThoughts = await genImgPromptThoughts(
+				inputMsg,
+				lastMsg,
+				chatSummary
+			);
+			const promptMsg = aiThoughtMessage(
+				promptThoughts,
+				'Image Prompt Thoughts',
+				'image-prompt-thoughts'
+			);
+			newMessages = updateThoughts(promptMsg, msgIndex, promptMsg);
 			prompt = await genImgPrompt(inputMsg.content, lastMsg?.content);
 			setLastPrompt(prompt);
 			const imgPromptMsg = aiThoughtMessage(
@@ -400,13 +519,16 @@ function InnerMonologueChat() {
 		toast.info(
 			(!keepPrompt ? 'Made new prompt. ' : '') + 'Regenerating image...'
 		);
+		const start = Date.now();
 		const { image, info } = await generateImg(
 			prompt,
 			seed,
 			opt.cfg,
-			opt.sampler
+			opt.sampler,
+			options.steps
 		);
-		toast.success('Generated image');
+		const end = (Date.now() - start) / 1000;
+		toast.success(`Generated image ${end}s`);
 		setLastInfo(info);
 		newMessages = messages.map((msg) => {
 			if (msg.id === id) {
@@ -417,13 +539,21 @@ function InnerMonologueChat() {
 		setMessages([...newMessages]);
 	};
 
-	const regenerateImage = async (
-		msgId: string,
+	const regenerateImage = async ({
+		msgId,
 		verbatim = false,
 		keepPrompt = true,
-		cfg?: number,
-		sampler?: string
-	) => {
+		cfg,
+		sampler,
+		steps,
+	}: {
+		msgId: string;
+		verbatim?: boolean;
+		keepPrompt?: boolean;
+		cfg?: number;
+		sampler?: string;
+		steps?: number;
+	}) => {
 		const msg = messages.find((msg) => msg.id === msgId);
 		if (!msg) return;
 		const lastMsg = messages[messages.indexOf(msg) - 2];
@@ -432,18 +562,39 @@ function InnerMonologueChat() {
 		let prompt = '';
 		let seed = -1;
 		toast.info('Regenerating image...');
+		let newMessages = messages.slice();
 		if ((keepPrompt || verbatim) && typeof msg.images !== 'string') {
 			prompt = lastPrompt;
 			// @ts-ignore
-			seed = msg.images[0].seed || lastInfo.seed || -1;
+			if (verbatim) seed = msg.images[0].seed || lastInfo.seed || -1;
 		} else {
-			const thoughts = await genIsImgReqThoughts(
+			const promptThoughts = await genImgPromptThoughts(
 				inputMsg,
-				lastMsg || null,
+				lastMsg,
 				chatSummary
 			);
-			prompt = await genImgPrompt(inputMsg.content, lastMsg?.content, thoughts);
+			const promptMsg = aiThoughtMessage(
+				promptThoughts,
+				'Image Prompt Thoughts',
+				'image-prompt-thoughts'
+			);
+			newMessages = updateThoughts(promptMsg, messages.indexOf(msg), promptMsg);
+			prompt = await genImgPrompt(
+				inputMsg.content,
+				lastMsg?.content,
+				promptThoughts
+			);
 			setLastPrompt(prompt);
+			const imgPromptMsg = aiThoughtMessage(
+				prompt,
+				'Image Prompt',
+				'image-prompt'
+			);
+			newMessages = updateThoughts(
+				imgPromptMsg,
+				messages.indexOf(msg),
+				imgPromptMsg
+			);
 			toast.info('Generated prompt...');
 		}
 
@@ -457,16 +608,18 @@ function InnerMonologueChat() {
 			if (sampler) opt.sampler = sampler;
 			else opt.sampler = pickSampler(options.randomSampler);
 		}
-
+		const start = Date.now();
 		const { image, info } = await generateImg(
 			prompt,
 			seed,
 			opt.cfg,
-			opt.sampler
+			opt.sampler,
+			steps || options.steps
 		);
 		setLastInfo(info);
-		toast.success('Generated image');
-		const newMessages = messages.map((msg) => {
+		const end = (Date.now() - start) / 1000;
+		toast.success(`Generated image ${end}s`);
+		newMessages = messages.map((msg) => {
 			if (msg.id === msgId) {
 				msg.images = [{ url: image, prompt, seed: info.seed }];
 			}
@@ -563,6 +716,10 @@ function InnerMonologueChat() {
 						}
 						onChange={(e) => {
 							setStepsPreset(e.target.value as StepsPreset);
+							if (e.target.value === 'Custom') return;
+							// @ts-ignore
+							const steps = StepsPresets[e.target.value as StepsPreset];
+							setOptions({ ...options, steps });
 						}}
 					>
 						<option value="Low">Low</option>
@@ -621,11 +778,25 @@ function InnerMonologueChat() {
 				defExpandImages={options.expandImages}
 				defExpandThoughts={false}
 				customBtns={{
-					'Regen Image': (id) => regenerateImage(id, false, true),
+					// generate new prompt and everything else
+					'New Image': (id) =>
+						regenerateImage({ msgId: id, keepPrompt: false }),
+					// use same prompt and seed
+					'Regen Image': (id) => regenerateImage({ msgId: id, verbatim: true }),
 					// Variation: should be near the same image
-					Variation: (id) => regenerateImage(id, false, true, GET_RANDOM_CFG()),
+					Variation: (id) =>
+						regenerateImage({
+							msgId: id,
+							keepPrompt: true,
+							cfg: GET_RANDOM_CFG(),
+						}),
 					// Better: same image but more steps
-					Better: (id) => regenerateImage(id, true),
+					Better: (id) =>
+						regenerateImage({
+							msgId: id,
+							verbatim: true,
+							steps: options.steps * 1.25,
+						}),
 				}}
 			/>
 			{chatSummary && (
