@@ -3,9 +3,10 @@ import * as openai from './openai-api';
 import { GenerateParams } from '../types/ooba.new';
 import { PromptPart, PromptFormatResponse, Message } from './types';
 
-// TODO we may need to change the prompt parts to be able to split into system and user
+// TODO add getTokenIDs function to get ids of tokens in a string using whichever api is being used
+
 /**
- * Constructs a prompt for AI generation by concatenating various prompt parts.
+ * Constructs a prompt for LLM generation by concatenating various prompt parts.
  * Each part can be conditionally included based on a boolean condition and can
  * have optional prefixes or suffixes attached to it (empty content str is ignored too).
  *
