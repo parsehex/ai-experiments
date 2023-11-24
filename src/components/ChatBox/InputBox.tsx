@@ -28,7 +28,7 @@ const InputBox: React.FC<InputBoxProps> = ({
 	};
 
 	return (
-		<div className="input-container px-2 mt-2">
+		<div className="input-container mt-3 gap-2">
 			{multiline ? (
 				<textarea
 					className="input mr-2 grow"
@@ -41,7 +41,7 @@ const InputBox: React.FC<InputBoxProps> = ({
 			) : (
 				<input
 					type="text"
-					className="input mr-2 grow"
+					className="input grow"
 					value={input}
 					onChange={handleChange}
 					onKeyDown={handleKeyDown}

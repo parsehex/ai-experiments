@@ -16,12 +16,14 @@ interface ImgCarouselProps {
 	images: ImgType[];
 	maxContentHeight?: number;
 	defaultExpanded?: boolean;
+	className?: string;
 }
 
 const ImgCarousel = ({
 	images,
 	maxContentHeight = 0,
 	defaultExpanded = false,
+	...rest
 }: ImgCarouselProps) => {
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -82,9 +84,10 @@ const ImgCarousel = ({
 		return anchor;
 	};
 
+	const extraClass = rest.className ? ' ' + rest.className : '';
 	return (
 		<div
-			className="carousel-images"
+			className={'carousel-images' + extraClass}
 			style={{ maxHeight: `${calculatedMaxHeight}px` }}
 		>
 			<a
