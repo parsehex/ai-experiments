@@ -36,9 +36,7 @@ export function pickImageIntent({
 		{
 			str: `Your task is to figure out what the user wants to do based on what they said and prior chat context. You must pick one of the following Intents that describes what the user wants to do.\n`,
 		},
-		{
-			str: intentStr + '\n',
-		},
+		{ str: intentStr + '\n' },
 		{
 			str: 'Respond with a string containing the key of the above Intent that you pick only.\n',
 		},
@@ -115,7 +113,7 @@ Start with a sentence describing what the overall image depicts. Follow with a l
 Do not reference the image itself in the prompt.\n`,
 		},
 		{
-			str: `Write a prompt similar to the following but more elaborate:
+			str: `Write a prompt similar to the following but in significantly more detail:
 photo of a sunrise over a mountain range with a large village in-between. masterpiece, high quality, morning, bloom, stunning\n`,
 		},
 		// {
