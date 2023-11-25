@@ -3,6 +3,8 @@ import { Message } from '@/lib/types';
 import { PromptPartResponse } from '..';
 import { getLastMsgBefore } from '@/lib/utils';
 
+export * from './image';
+
 const AreasOfintent = {
 	IMAGE: 'User is talking about generating an image or wants to see an image',
 	// IMAGE_PLAN:

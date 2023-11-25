@@ -1,7 +1,6 @@
 import { PromptPart } from '@/lib/llm/types';
 import { Message } from '@/lib/types';
 
-export * from './intent/image-request';
 export * from './intent';
 
 // thoughts on how to do prompt parts differently:
