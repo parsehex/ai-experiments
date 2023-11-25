@@ -3,8 +3,10 @@ import { pipeline } from 'stream';
 import { promisify } from 'util';
 import { NextRequest } from 'next/server';
 import { File } from 'buffer';
+import { lookup } from 'mime-types';
 // @ts-ignore
 import parseRTF from 'rtf-parser';
+import { WhisperResultChunk } from '@/lib/types';
 
 export const config = {
 	api: {
@@ -16,7 +18,6 @@ export async function POST(req: NextRequest) {
 	try {
 		const data = await req.formData();
 		const file: File = data.get('file') as any;
-		console.log('file', file);
 
 		if (!file || Array.isArray(file) || !file?.stream) {
 			return new Response('No file uploaded or incorrect file structure.', {
@@ -46,6 +47,13 @@ export async function POST(req: NextRequest) {
 			case 'rtf':
 				res.convertedText = await rtfToText(text);
 				res.type = 'rtf';
+				break;
+			case 'webm':
+			case 'mp4':
+			case 'mp3':
+			case 'wav':
+				res.convertedText = await audioToText(inputFilePath);
+				res.type = 'whisper';
 				break;
 			default:
 				return new Response('Unsupported file type.', { status: 400 });
@@ -100,6 +108,34 @@ function rtfToText(fileStr: any): Promise<(RTFObject | RTFContentObject)[]> {
 			resolve(result.content);
 		});
 	});
+}
+async function audioToText(filePath: string) {
+	let wavPath: string;
+	const filename = filePath.split('/').pop();
+	const buffer = await fs.readFile(filePath);
+	const fileType = lookup(filePath) || 'audio/webm';
+	const content = new Blob([buffer], { type: fileType });
+
+	// convert-to-wav converts to format whisper.cpp expects
+	const data = new FormData();
+	data.append('file', content, filename);
+	const res = await fetch('http://localhost:8085/api/convert-to-wav', {
+		method: 'POST',
+		body: data,
+	});
+	const buf = await res.arrayBuffer();
+	wavPath = filePath + '.wav';
+	await fs.writeFile(wavPath, Buffer.from(buf));
+
+	const res2 = await fetch('http://localhost:8085/api/whisper-cpp', {
+		method: 'POST',
+		body: JSON.stringify({ filepath: wavPath }),
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	});
+	const parts: WhisperResultChunk[] = await res2.json();
+	return parts;
 }
 
 async function useWordExtractor(inputFilePath: string) {
