@@ -33,3 +33,20 @@ export type PhaseType = {
 	processOutput?: (output: string) => string;
 	shouldStop?: (output: string) => boolean;
 };
+
+export interface WhisperResultChunk {
+	/**
+	 * Timestamp of the start of the chunk.
+	 *
+	 * e.g. `"00:00:00.000"`
+	 */
+	start: string;
+	/**
+	 * Timestamp of the end of the chunk.
+	 *
+	 * e.g. `"00:00:00.000"`
+	 */
+	end: string;
+	/** The speech during that chunk. */
+	speech: string;
+}
