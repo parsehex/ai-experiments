@@ -23,6 +23,8 @@ const InputBox: React.FC<InputBoxProps> = ({
 	setInput,
 	multiline = false,
 }) => {
+	const [autoSend, setAutoSend] = React.useState(false);
+
 	const handleKeyDown = (e: KeyboardEvent) => {
 		if (e.key !== 'Enter') return;
 		if (multiline && !e.shiftKey) return;
@@ -42,9 +44,21 @@ const InputBox: React.FC<InputBoxProps> = ({
 			<RecordButton
 				onResult={(r) => {
 					const text = combineWhisperParts(r);
-					setInput(text.trim());
+					if (autoSend) {
+						onMessageSubmit(text);
+					} else {
+						setInput(text);
+					}
 				}}
 			/>
+			<label className="flex flex-col items-center text-xs">
+				Auto Send
+				<input
+					type="checkbox"
+					checked={autoSend}
+					onChange={(e) => setAutoSend(e.target.checked)}
+				/>
+			</label>
 			{multiline ? (
 				<textarea
 					className="input mr-2 grow"
