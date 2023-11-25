@@ -7,10 +7,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
 		<>
 			<Header />
 			<main>{children}</main>
-			<ToastContainer
-				position="bottom-center"
-				autoClose={3000}
-			/>
+			<ToastContainer position="bottom-center" autoClose={3000} />
 		</>
 	);
 };

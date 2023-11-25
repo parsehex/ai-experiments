@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/fluent-ffmpeg": "^2.1.24",
     "@types/formidable": "^3.4.5",
+    "@types/mime-types": "^2.1.4",
     "@types/word-extractor": "^1.0.5",
     "axios": "^1.5.1",
     "cheerio": "^1.0.0-rc.12",
@@ -20,6 +21,7 @@
     "ffmpeg-static": "^5.2.0",
     "formidable": "^3.5.1",
     "langchain": "^0.0.166",
+    "mime-types": "^2.1.35",
     "multipart": "^0.1.5",
     "next": "13.5.4",
     "react": "^18",

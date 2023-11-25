@@ -1,4 +1,6 @@
 import React, { KeyboardEvent } from 'react';
+import RecordButton from '../RecordButton';
+import { WhisperResultChunk } from '@/lib/types';
 
 interface InputBoxProps {
 	onMessageSubmit: (content: string) => void;
@@ -6,6 +8,14 @@ interface InputBoxProps {
 	setInput: (value: string) => void;
 	multiline?: boolean;
 }
+const combineWhisperParts = (parts: WhisperResultChunk[]) => {
+	let text = '';
+	for (let i = 0; i < parts.length; i++) {
+		const part = parts[i];
+		text += part.speech;
+	}
+	return text;
+};
 
 const InputBox: React.FC<InputBoxProps> = ({
 	onMessageSubmit,
@@ -29,6 +39,12 @@ const InputBox: React.FC<InputBoxProps> = ({
 
 	return (
 		<div className="input-container mt-3 gap-2">
+			<RecordButton
+				onResult={(r) => {
+					const text = combineWhisperParts(r);
+					setInput(text.trim());
+				}}
+			/>
 			{multiline ? (
 				<textarea
 					className="input mr-2 grow"

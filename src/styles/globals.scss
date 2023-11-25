@@ -132,3 +132,12 @@ textarea {
 .action-item:hover .delete-action-button {
 	display: block; /* Show on hover */
 }
+
+button {
+	&.start-record {
+		@apply bg-green-500 hover:bg-green-600 text-white p-2 rounded-md;
+	}
+	&.stop-record {
+		@apply bg-red-500 hover:bg-red-600 text-white p-2 rounded-md;
+	}
+}
