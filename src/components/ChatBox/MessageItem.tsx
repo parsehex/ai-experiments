@@ -68,7 +68,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
 		!defExpandThoughts
 	);
 	const [isPromise, setIsPromise] = React.useState(false);
-	const [asyncContent, setAsyncContent] = React.useState<string>('');
+	let initialAsyncContent = '';
+	if (typeof message.content === 'string')
+		initialAsyncContent = message.content;
+
+	const [asyncContent, setAsyncContent] =
+		React.useState<string>(initialAsyncContent);
 	React.useEffect(() => {
 		if (message.content instanceof Promise) {
 			setIsPromise(true);
