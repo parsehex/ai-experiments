@@ -17,18 +17,12 @@ export function imagePromptThoughts({
 			suf: 'The following INPUT is a message requesting an image.\n',
 		},
 		{
-			str: `Your task is to describe the image that you want to make based on the input. If the input is vague, feel free to creatively interpret it.
+			str: `Your task is to describe the image that you want to make based on the input and associated context. If the input is vague, you have some leniency in your interpretation.
 Important: Do not reference the image in your response, simply describe it.
 You can only create 1 image at a time, do not describe multiple images.
-Respond with the description only.\n`,
+Respond with a string containing the description only.\n`,
 		},
-		// {
-		// 	str: 'Describe the image that you want to create based on the input and chat summary.\n',
-		// },
 		{ if: !!summary, str: 'Chat Summary: ' + summary + '\n' },
-		// {
-		// 	str: 'Respond with a string containing the prompt only.\n',
-		// },
 		{
 			if: !!prevMsg,
 			str:
@@ -37,9 +31,6 @@ Respond with the description only.\n`,
 	];
 	const user: PromptPart[] = [{ str: `INPUT: ${msg.content}\n` }];
 	let prefixResponse = 'RESPONSE:\n';
-	// if (thoughts.length) prefixResponse += `\n${thoughts}\nANSWER: `;
-	// prefixResponse +=
-	// 	'\nSure! This is the description of the image I want to make:\n';
 	return { prefixResponse, system, user };
 }
 
