@@ -77,7 +77,7 @@ interface Options {
 }
 const DefaultOptions: Options = {
 	wide: false,
-	expandImages: false,
+	expandImages: true,
 	cfg: 4.5,
 	steps: 20,
 	randomCfg: false,
@@ -129,6 +129,7 @@ function InnerMonologueChat() {
 		setMessages(newMessages);
 
 		let image: string | undefined;
+		let imagePrompt = '';
 		let seed = -1;
 
 		const intentArea = await gen.pickIntentArea(newMessages, {
@@ -146,10 +147,10 @@ function InnerMonologueChat() {
 		const isImgReq = intentArea.includes('IMAGE');
 		let infoparams: txt2imgResponseInfo;
 		if (isImgReq) {
-			const specificIntent = await gen.pickImageIntent(newMessages, {
-				summary: chatSummary,
-			});
-			console.log('specificIntent', specificIntent);
+			// const specificIntent = await gen.pickImageIntent(newMessages, {
+			// 	summary: chatSummary,
+			// });
+			// console.log('specificIntent', specificIntent);
 			const promptThoughts = await gen.imgPromptThoughts(
 				userMsg,
 				lastMsg,
@@ -162,11 +163,18 @@ function InnerMonologueChat() {
 			);
 			newMessages = [...newMessages, promptMsg];
 			setMessages(newMessages);
-			const prompt = await gen.imgPrompt(
-				userMsg.content,
-				lastPrompt,
-				promptThoughts
+			const detectedDesc = await gen.imgPromptFromInput(userMsg, newMessages, {
+				summary: chatSummary,
+			});
+			const dT = aiThoughtMessage(
+				detectedDesc,
+				'Detected Description',
+				'detected-desc'
 			);
+			newMessages = [...newMessages, dT];
+			setMessages(newMessages);
+			const prompt = await gen.imgPrompt(detectedDesc, promptThoughts);
+			imagePrompt = prompt;
 			setLastPrompt(prompt);
 			// TODO
 			// addLorasToPrompt(prompt);
@@ -198,6 +206,7 @@ function InnerMonologueChat() {
 
 		const response = await gen.continueChat(userInput, newMessages, {
 			madeImage: !!image,
+			imagePrompt: imagePrompt,
 		});
 		toast.success('Response generated');
 		const aiMessage: Message = {
@@ -386,11 +395,7 @@ function InnerMonologueChat() {
 				'image-prompt-thoughts'
 			);
 			newMessages = updateThoughts(promptMsg, messages.indexOf(msg), promptMsg);
-			prompt = await gen.imgPrompt(
-				inputMsg.content,
-				lastMsg?.content,
-				promptThoughts
-			);
+			prompt = await gen.imgPrompt(inputMsg.content, promptThoughts);
 			setLastPrompt(prompt);
 			const imgPromptMsg = aiThoughtMessage(
 				prompt,

@@ -45,7 +45,8 @@ export const ChatBox = ({
 	);
 
 	useEffect(() => {
-		if (messagesEndRef.current) {
+		const lastMsgIsThought = messages[messages.length - 1]?.type === 'thought';
+		if (messagesEndRef.current && !lastMsgIsThought) {
 			const top = messagesEndRef.current.scrollHeight;
 			messagesEndRef.current.scroll({ top, behavior: 'smooth' });
 		}

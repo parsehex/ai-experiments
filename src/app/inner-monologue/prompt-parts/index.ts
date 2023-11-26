@@ -69,12 +69,14 @@ export function continueChat({
 	messages,
 	thoughts = '',
 	madeImage = false,
+	imagePrompt = '',
 	summary = '',
 }: {
 	input: string;
 	messages: Message[];
 	thoughts?: string;
 	madeImage?: boolean;
+	imagePrompt?: string;
 	summary?: string;
 }): PromptPartResponse {
 	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}`);
@@ -103,8 +105,16 @@ export function continueChat({
 	let prefixResponse = 'RESPONSE:';
 	if (madeImage) {
 		prefixResponse += 'RESPONSE: ';
-		prefixResponse = '(Assistant generated and sent an image to the user.)\n';
-		// prefixResponse += 'Sure, here is your image. ';
+		prefixResponse = '(Assistant generated and sent an image';
+		if (imagePrompt.length) {
+			prefixResponse += ` of the following to the user: "`;
+			prefixResponse += imagePrompt;
+			prefixResponse += `"`;
+		} else {
+			prefixResponse += ' to the user.';
+		}
+		prefixResponse += ')\n';
+		prefixResponse += 'ASSISTANT:\n';
 	}
 	return { prefixResponse, system, user };
 }

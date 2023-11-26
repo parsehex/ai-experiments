@@ -1,8 +1,10 @@
+import { toast } from 'react-toastify';
 import { GenerateOptions, generate } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { Message } from '@/lib/types';
 import * as parts from '../prompt-parts';
-import { toast } from 'react-toastify';
+
+export * from './image';
 
 const DefaultLLMParams = {
 	temp: 0.7,
@@ -12,7 +14,7 @@ const DefaultLLMParams = {
 	repetition_penalty: 1.15,
 	stop: ['RESPONSE:', 'INPUT:'],
 };
-const Params = (p: GenerateOptions): GenerateOptions =>
+export const Params = (p: GenerateOptions): GenerateOptions =>
 	Object.assign({}, DefaultLLMParams, p);
 
 // TODO function to get full Intent-path from input
@@ -67,18 +69,16 @@ export const imgPromptThoughts = async (
 	result = result.replace(/[\uD800-\uDFFF]./g, '');
 	return result;
 };
-export const imgPrompt = async (
-	desc: string,
-	prevPrompt = '',
-	thoughts = ''
-) => {
-	const promptParts = parts.makeImgPrompt({ desc, prevPrompt, thoughts });
+export const imgPrompt = async (desc: string, thoughts = '') => {
+	const promptParts = parts.makeImgPrompt({ desc, thoughts });
 	const { prefixResponse, user, system } = promptParts;
 	let result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
 			prefixResponse,
-			temp: 0.25,
+			temp: 0.5,
+			repetition_penalty: 1.25,
+			truncation_length: 4098,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 			tokenBans: '13',
 		})
@@ -106,13 +106,14 @@ export async function addLorasToPrompt(prompt: string) {
 interface ExtraObj {
 	thoughts?: string;
 	madeImage?: boolean;
+	imagePrompt?: string;
 	summary?: string;
 }
 
 export const continueChat = async (
 	input: string,
 	messages: Message[],
-	{ thoughts, madeImage, summary }: ExtraObj = {}
+	{ thoughts, madeImage, summary, imagePrompt }: ExtraObj = {}
 ) => {
 	messages = messages.filter((msg) => msg.type !== 'thought');
 	const promptParts = parts.continueChat({
@@ -120,6 +121,7 @@ export const continueChat = async (
 		messages,
 		thoughts,
 		madeImage,
+		imagePrompt,
 		summary,
 	});
 	const { prefixResponse, user, system } = promptParts;
@@ -127,10 +129,13 @@ export const continueChat = async (
 		makePrompt(user, system, 'ChatML'),
 		Params({
 			prefixResponse,
-			max: 768,
+			max: 512,
+			temp: 0.5,
+			custom_token_bans: '13',
+			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})
 	);
-	return result;
+	return result.trim();
 };
 
 export const pickIntentArea = async (

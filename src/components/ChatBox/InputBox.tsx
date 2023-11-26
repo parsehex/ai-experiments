@@ -23,7 +23,7 @@ const InputBox: React.FC<InputBoxProps> = ({
 	setInput,
 	multiline = false,
 }) => {
-	const [autoSend, setAutoSend] = React.useState(false);
+	const [autoSend, setAutoSend] = React.useState(true);
 
 	const handleKeyDown = (e: KeyboardEvent) => {
 		if (e.key !== 'Enter') return;
