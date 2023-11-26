@@ -5,6 +5,7 @@ export type PromptPart = {
 	suf?: string; // A string to append to the content if the condition is true
 };
 
+/** The format that chat LLMs/ChatGPT expect. */
 export interface Message<RoleType = string> {
 	role: RoleType;
 	content: string;

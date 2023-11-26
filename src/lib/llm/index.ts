@@ -1,7 +1,7 @@
 import * as ooba from './ooba-api.new';
 import * as openai from './openai-api';
 import { GenerateParams } from '../types/ooba.new';
-import { PromptPart, PromptFormatResponse, Message } from './types';
+import { PromptPart, PromptFormatResponse, Message } from '../types/llm';
 
 // TODO add getTokenIDs function to get ids of tokens in a string using whichever api is being used
 

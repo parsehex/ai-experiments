@@ -1,4 +1,4 @@
-import { Message } from './types';
+import { Message } from '../types/llm';
 
 type OpenAIRoleType = 'system' | 'user' | 'assistant';
 interface OpenAIChatCompletionParams {

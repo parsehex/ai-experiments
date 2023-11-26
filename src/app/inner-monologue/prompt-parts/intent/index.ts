@@ -1,4 +1,4 @@
-import { PromptPart } from '@/lib/llm/types';
+import { PromptPart } from '@/lib/types/llm';
 import { Message } from '@/lib/types';
 import { PromptPartResponse } from '..';
 import { getMsgBefore } from '@/lib/utils';
@@ -40,6 +40,6 @@ export function pickAreaOfIntent({
 		{ if: !!summary, str: 'Chat Summary: ' + summary + '\n' },
 		{ str: `User INPUT: ${userMsg?.content}\n` },
 	];
-	const prefixResponse = 'RESPONSE:';
+	const prefixResponse = 'INTENT:';
 	return { prefixResponse, system, user };
 }

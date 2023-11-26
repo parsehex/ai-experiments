@@ -7,6 +7,7 @@ interface ImageObj {
 }
 export type ImgType = string | ImageObj;
 
+/** A more general object for this app to use. */
 export interface Message {
 	id: string;
 	role: string;

@@ -3,7 +3,11 @@
 // in formats that dont, i guess just start the user message with the system?
 
 import { stringFromPromptParts } from '.';
-import { PromptFormatsObj, PromptFormatResponse, PromptPart } from './types';
+import {
+	PromptFormatsObj,
+	PromptFormatResponse,
+	PromptPart,
+} from '../types/llm';
 
 // (user = user.trim()), (system = system?.trim());
 // this is just trimming both strings
