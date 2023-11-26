@@ -1,10 +1,33 @@
 import { CustomBtns, Message } from '@/lib/types';
 import React from 'react';
+import ClipLoader from 'react-spinners/ClipLoader';
 import ImgCarousel from '../ImgCarousel';
 import TextInput from '../TextInput';
+import { AlternateMessage } from '.';
 
+/*
+interface ImageObj {
+	url: string;
+	prompt?: string;
+	seed?: string | number;
+}
+export type ImgType = string | ImageObj;
+export interface Message {
+	id: string;
+	role: string;
+	content: string;
+	type?: 'message' | 'thought';
+	thoughtLabel?: string;
+	thoughtClass?: string;
+	images?: ImgType[];
+}
+export interface AlternateMessage extends Message {
+	content: string | Promise<string>;
+}
+*/
 interface MessageItemProps {
-	message: Message;
+	message: AlternateMessage;
+	// message: Message;
 	index: number;
 	isSelected: boolean;
 	onToggleRole: (id: string) => void;
@@ -44,6 +67,19 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	const [isThoughtCollapsed, setIsThoughtCollapsed] = React.useState(
 		!defExpandThoughts
 	);
+	const [isPromise, setIsPromise] = React.useState(false);
+	const [asyncContent, setAsyncContent] = React.useState<string>('');
+	React.useEffect(() => {
+		if (message.content instanceof Promise) {
+			setIsPromise(true);
+			message.content.then((resolvedContent) => {
+				setAsyncContent(resolvedContent);
+				setIsPromise(false);
+			});
+		} else {
+			setAsyncContent(message.content);
+		}
+	}, [message.content]);
 
 	const canEdit = !readOnly && message.type !== 'thought';
 
@@ -61,9 +97,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	};
 
 	const hasBtns = !!customBtns;
-	const thoughtHasContent = isThought && message.content.length > 0;
+	const thoughtHasContent = isThought && asyncContent.length > 0;
 	const msgHasContent =
-		message.content.length > 0 || (message.images && message.images.length > 0);
+		asyncContent.length > 0 || (message.images && message.images.length > 0);
 	const btns = hasBtns ? Object.entries(customBtns!) : [];
 	const MessageHeader = () => (
 		<span className="message-header">
@@ -158,12 +194,12 @@ const MessageItem: React.FC<MessageItemProps> = ({
 					onClick={(e) => {
 						if (canEdit) {
 							setEditingMsg(message.id);
-							setTempMsgContent(message.content);
+							setTempMsgContent(asyncContent);
 						}
 						e.stopPropagation();
 					}}
 				>
-					{message.content}
+					{asyncContent}
 				</span>
 			)}
 		</div>
@@ -176,7 +212,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 			key={index}
 		>
 			<div className="header flex items-center">
-				{hasSelect && (
+				{hasSelect && !isPromise && (
 					<input
 						type="checkbox"
 						// className="absolute top-2 left-2"
@@ -184,6 +220,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 						onChange={(e) => onSelect(e)}
 					/>
 				)}
+				{isPromise && <ClipLoader size={20} color={'#000'} loading={true} />}
 
 				{isThought ? <ThoughtHeader /> : <MessageHeader />}
 			</div>

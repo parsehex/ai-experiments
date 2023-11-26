@@ -52,13 +52,14 @@ const generateImg = async (
 };
 
 const aiThoughtMessage = (
-	thoughts: string,
+	thoughts: string | Promise<string>,
 	label = 'Thoughts',
 	className = ''
 ): Message => {
 	let msg: Message = {
 		id: uuidv4(),
 		role: 'ASSISTANT',
+		// @ts-ignore
 		content: thoughts,
 		type: 'thought',
 		thoughtLabel: label,
@@ -204,13 +205,14 @@ function InnerMonologueChat() {
 			image = res.images[0];
 		}
 
-		const response = await gen.continueChat(userInput, newMessages, {
+		const response = gen.continueChat(userInput, newMessages, {
 			madeImage: !!image,
 			imagePrompt: imagePrompt,
 		});
 		toast.success('Response generated');
 		const aiMessage: Message = {
 			role: 'ASSISTANT',
+			// @ts-ignore
 			content: response,
 			id: uuidv4(),
 		};

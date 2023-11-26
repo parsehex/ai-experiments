@@ -4,6 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import MessageItem from './MessageItem';
 import InputBox from './InputBox';
 
+// @ts-ignore
+export interface AlternateMessage extends Message {
+	content: string | Promise<string>;
+}
+
 export const ChatBox = ({
 	roles = ['USER', 'ASSISTANT'],
 	messages,
@@ -20,7 +25,8 @@ export const ChatBox = ({
 	customBtns,
 }: {
 	roles?: string[];
-	messages: Message[];
+	messages: AlternateMessage[];
+	// messages: Message[];
 	setMessages: (value: any) => void;
 	deleteMessage?: (id: string) => void;
 	deleteMessages?: (ids: string[]) => void;
@@ -80,7 +86,7 @@ export const ChatBox = ({
 
 	const handleSelect = (
 		e: React.ChangeEvent<HTMLInputElement>,
-		msg: Message,
+		msg: AlternateMessage,
 		idx: number
 	) => {
 		const updatedSelection = new Set(selectedMessages);
@@ -128,7 +134,7 @@ export const ChatBox = ({
 					onEdit={(id, content) => {
 						handleEdit && handleEdit(id, content);
 					}}
-					onCopy={() => navigator.clipboard.writeText(msg.content)}
+					onCopy={async () => navigator.clipboard.writeText(await msg.content)}
 					hasSelect={deleteMessages !== undefined}
 					onSelect={(e) => handleSelect(e, msg, idx)}
 					readOnly={readOnly}
