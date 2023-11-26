@@ -14,7 +14,7 @@ import {
 	Sentences,
 } from '@/lib/llm/grammar';
 import { generate } from '@/lib/llm';
-import { PromptPart } from '@/lib/llm/types';
+import { PromptPart } from '@/lib/types/llm';
 import { addCharacterOptions } from './hover-menus';
 import {
 	genCharacters,

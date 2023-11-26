@@ -1,5 +1,5 @@
-import { PromptPart } from '@/lib/llm/types';
 import { Message } from '@/lib/types';
+import { PromptPart } from '@/lib/types/llm';
 
 export * from './intent';
 

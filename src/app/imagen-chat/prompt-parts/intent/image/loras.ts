@@ -1,4 +1,4 @@
-import { PromptPart } from '@/lib/llm/types';
+import { PromptPart } from '@/lib/types/llm';
 import { PromptPartResponse } from '../..';
 
 const LoraDescriptions: Record<string, string> = {

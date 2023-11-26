@@ -1,6 +1,6 @@
 import { Message } from '@/lib/types';
 import { PromptPartResponse } from '../..';
-import { PromptPart } from '@/lib/llm/types';
+import { PromptPart } from '@/lib/types/llm';
 import { Choices } from '@/lib/llm/grammar';
 import { getMsgBefore } from '@/lib/utils';
 
