@@ -2,7 +2,7 @@ import { Message } from '@/lib/types';
 import { PromptPartResponse } from '../..';
 import { PromptPart } from '@/lib/llm/types';
 import { Choices } from '@/lib/llm/grammar';
-import { getLastMsgBefore } from '@/lib/utils';
+import { getMsgBefore } from '@/lib/utils';
 
 export * from './image-prompt';
 export * from './loras';
@@ -21,12 +21,12 @@ export function pickImageIntent({
 	messages: Message[];
 	summary?: string;
 }): PromptPartResponse {
-	const userMsg = getLastMsgBefore(
+	const userMsg = getMsgBefore(
 		messages,
 		(m) => m.role.toLowerCase() === 'user'
 	);
 	if (!userMsg) throw new Error('No user message found');
-	const lastMsg = getLastMsgBefore(
+	const lastMsg = getMsgBefore(
 		messages,
 		(m) => {
 			return m.role.toLowerCase() === 'assistant';

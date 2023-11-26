@@ -62,7 +62,7 @@ export async function chunkText(
 	return chunks;
 }
 
-export function getLastMsgBefore(
+export function getMsgBefore(
 	messages: Message[],
 	test: (msg: Message) => boolean,
 	before?: number | Message
@@ -75,4 +75,18 @@ export function getLastMsgBefore(
 		if (test(messages[i])) return messages[i];
 	}
 	return undefined;
+}
+export function getMsgIndexBefore(
+	messages: Message[],
+	test: (msg: Message) => boolean,
+	before?: number | Message
+): number {
+	if (before === undefined) before = messages[messages.length - 1];
+	if (typeof before !== 'number') {
+		before = messages.indexOf(before);
+	}
+	for (let i = before; i >= 0; i--) {
+		if (test(messages[i])) return i;
+	}
+	return -1;
 }

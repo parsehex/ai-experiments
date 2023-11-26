@@ -7,7 +7,7 @@ import { Message } from '@/lib/types';
 import { txt2img } from '@/lib/imagen';
 import { txt2imgResponseInfo } from '@/lib/imagen/types';
 import * as gen from './generate';
-import { getLastMsgBefore } from '@/lib/utils';
+import { getMsgBefore, getMsgIndexBefore } from '@/lib/utils';
 
 const RANCFG_MIN = 1;
 const RANCFG_MAX = 6;
@@ -94,7 +94,6 @@ function InnerMonologueChat() {
 		},
 	]);
 	const [chatSummary, setChatSummary] = useState('');
-	const [input, setInput] = useState('');
 	const [options, setOptions] = useState(DefaultOptions);
 	const [lastPrompt, setLastPrompt] = useState('');
 	const [lastInfo, setLastInfo] = useState({} as txt2imgResponseInfo);
@@ -107,8 +106,6 @@ function InnerMonologueChat() {
 	}, [stepsPreset]);
 
 	const updateSummary = async (msgs = messages) => {
-		// call this after every message, only actually summarize after
-		//   maybe 4 messages, at least eventually
 		const summary = await gen.summarizeChat(msgs, chatSummary);
 		setChatSummary(summary);
 		// console.log('summary', summary);
@@ -120,7 +117,6 @@ function InnerMonologueChat() {
 			toast.error('Please enter a message');
 			return;
 		}
-		setInput('');
 
 		let newMessages = [
 			...messages,
@@ -140,7 +136,7 @@ function InnerMonologueChat() {
 		newMessages = [...newMessages, intentMsg];
 		setMessages(newMessages);
 
-		const lastMsg = getLastMsgBefore(
+		const lastMsg = getMsgBefore(
 			newMessages,
 			(m) => m.type !== 'thought' && m.role.toLowerCase() === 'assistant',
 			userMsg
@@ -177,8 +173,7 @@ function InnerMonologueChat() {
 			const prompt = await gen.imgPrompt(detectedDesc, promptThoughts);
 			imagePrompt = prompt;
 			setLastPrompt(prompt);
-			// TODO
-			// addLorasToPrompt(prompt);
+			// await addLorasToPrompt(prompt);
 			const imgPromptMsg = aiThoughtMessage(
 				prompt,
 				'Image Prompt',
@@ -227,7 +222,6 @@ function InnerMonologueChat() {
 	const handleClear = () => {
 		console.clear();
 		setMessages([]);
-		setInput('');
 		setChatSummary('');
 		setLastPrompt('');
 		toast.info('Console cleared', { autoClose: 1000 });
@@ -235,18 +229,16 @@ function InnerMonologueChat() {
 
 	/** Finds nearest thought of the same class above the given message index and update it. **Calls `setMessages`** */
 	const updateThoughts = (msg: Message, msgIndex: number, thought: Message) => {
-		let newMessages = messages.slice();
-		let iirIndex = -1;
-		for (let i = msgIndex; i >= 0; i--) {
-			if (newMessages[i].thoughtClass === thought.thoughtClass) {
-				iirIndex = i;
-				break;
-			}
-		}
+		const newMessages = messages.slice();
+		const iirIndex = getMsgIndexBefore(
+			newMessages,
+			(m) => m.thoughtClass === thought.thoughtClass,
+			msgIndex
+		);
 		if (iirIndex === -1)
 			toast.error(`No ${thought.thoughtClass} thought found`);
 		newMessages[iirIndex] = msg;
-		setMessages(newMessages);
+		setMessages([...newMessages]);
 		return newMessages;
 	};
 
@@ -258,12 +250,12 @@ function InnerMonologueChat() {
 		const msg = messages.find((msg) => msg.id === id);
 		const msgIndex = messages.findIndex((msg) => msg.id === id);
 		if (!msg) return;
-		const inputMsg = getLastMsgBefore(
+		const inputMsg = getMsgBefore(
 			messages,
 			(m) => m.role.toLowerCase() === 'user',
 			msg
 		);
-		const lastMsg = getLastMsgBefore(
+		const lastMsg = getMsgBefore(
 			messages,
 			(m) => m.type !== 'thought' && m.role.toLowerCase() === 'assistant',
 			inputMsg
@@ -354,12 +346,12 @@ function InnerMonologueChat() {
 	}) => {
 		const msg = messages.find((msg) => msg.id === msgId);
 		if (!msg) return;
-		const inputMsg = getLastMsgBefore(
+		const inputMsg = getMsgBefore(
 			messages,
 			(m) => m.role.toLowerCase() === 'user',
 			msg
 		);
-		const lastMsg = getLastMsgBefore(
+		const lastMsg = getMsgBefore(
 			messages,
 			(m) => m.type !== 'thought' && m.role.toLowerCase() === 'assistant',
 			inputMsg

@@ -1,7 +1,7 @@
 import { PromptPart } from '@/lib/llm/types';
 import { Message } from '@/lib/types';
 import { PromptPartResponse } from '..';
-import { getLastMsgBefore } from '@/lib/utils';
+import { getMsgBefore } from '@/lib/utils';
 
 export * from './image';
 
@@ -32,7 +32,7 @@ export function pickAreaOfIntent({
 			str: 'Respond with a string containing the key of the above Area that you pick only.\n',
 		},
 	];
-	const userMsg = getLastMsgBefore(
+	const userMsg = getMsgBefore(
 		messages,
 		(m) => m.role.toLowerCase() === 'user'
 	);
