@@ -1,6 +1,7 @@
 import { CustomBtns, Message } from '@/lib/types';
 import React from 'react';
 import ImgCarousel from '../ImgCarousel';
+import TextInput from '../TextInput';
 
 interface MessageItemProps {
 	message: Message;
@@ -38,8 +39,6 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	customBtns,
 }) => {
 	const isThought = message.type === 'thought';
-	const contentRef = React.useRef(null as HTMLSpanElement | null);
-	const [contentHeight, setContentHeight] = React.useState(0);
 	const [editingMsg, setEditingMsg] = React.useState<string | null>(null);
 	const [tempMsgContent, setTempMsgContent] = React.useState<string>('');
 	const [isThoughtCollapsed, setIsThoughtCollapsed] = React.useState(
@@ -51,12 +50,6 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	const toggleThoughtCollapse = () => {
 		setIsThoughtCollapsed(!isThoughtCollapsed);
 	};
-
-	React.useEffect(() => {
-		if (contentRef.current) {
-			setContentHeight(contentRef.current.offsetHeight);
-		}
-	}, [message.content]);
 
 	const handleMessageEdit = (id: string, content: string) => {
 		onEdit(id, content);
@@ -71,13 +64,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
 	const thoughtHasContent = isThought && message.content.length > 0;
 	const msgHasContent =
 		message.content.length > 0 || (message.images && message.images.length > 0);
-	// make array to iterate over
 	const btns = hasBtns ? Object.entries(customBtns!) : [];
 	const MessageHeader = () => (
-		<span
-			className="message-header"
-			// style={{ display: isThought ? 'none' : 'flex' }}
-		>
+		<span className="message-header">
 			<span
 				className={`role ${message.role.toLowerCase().replace(/ /g, '_')}`}
 				onClick={() => !readOnly && toggleRole(message.id)}
@@ -123,7 +112,6 @@ const MessageItem: React.FC<MessageItemProps> = ({
 				'thought-header ml-2 mr-2' +
 				(thoughtHasContent ? ' cursor-pointer' : '')
 			}
-			// style={{ display: isThought ? 'flex' : 'none' }}
 			onClick={() => {
 				thoughtHasContent && toggleThoughtCollapse();
 			}}
@@ -137,7 +125,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
 		<div
 			className={
 				'flex items-center ml-1' +
-				(isThought && isThoughtCollapsed ? '' : ' mt-1')
+				(isThought && isThoughtCollapsed ? '' : ' mt-1') +
+				(!msgHasContent ? ' hidden' : '')
 			}
 		>
 			{!!message.images?.length && (
@@ -148,11 +137,11 @@ const MessageItem: React.FC<MessageItemProps> = ({
 				/>
 			)}
 			{editingMsg === message.id ? (
-				<textarea
-					className="input w-96"
-					value={tempMsgContent}
-					onChange={(e) => setTempMsgContent(e.target.value)}
-					onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+				<TextInput
+					value={[tempMsgContent, setTempMsgContent]}
+					canCopy={false}
+					isTextarea
+					onKeyDown={(e) => {
 						if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
 							handleMessageEdit(message.id, tempMsgContent);
 						}
@@ -160,18 +149,18 @@ const MessageItem: React.FC<MessageItemProps> = ({
 				/>
 			) : (
 				<span
-					ref={contentRef}
 					className={
 						message.type === 'thought'
 							? 'thought' +
 							  (isThoughtCollapsed || !thoughtHasContent ? ' hidden' : '')
 							: 'message-content'
 					}
-					onClick={() => {
+					onClick={(e) => {
 						if (canEdit) {
 							setEditingMsg(message.id);
 							setTempMsgContent(message.content);
 						}
+						e.stopPropagation();
 					}}
 				>
 					{message.content}
@@ -198,7 +187,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
 
 				{isThought ? <ThoughtHeader /> : <MessageHeader />}
 			</div>
-			{msgHasContent && <MessageContent />}
+			<MessageContent />
 		</div>
 	);
 };
