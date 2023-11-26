@@ -7,8 +7,6 @@ export * from './image';
 
 const AreasOfintent = {
 	IMAGE: 'User is talking about generating an image or wants to see an image',
-	// IMAGE_PLAN:
-	// 	'User is discussing an image they want to make but not requesting it yet',
 	TEXT: 'User wants a written response',
 };
 

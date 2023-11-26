@@ -8,9 +8,10 @@ export * from './image-prompt';
 export * from './loras';
 
 const Intents = {
-	GENERATE: 'User wants an image to be made at this point in the conversation',
-	REVISE: 'User wants to revise a previous image',
-	PLAN: 'User wants to plan an image to make later',
+	GENERATE:
+		'User wants an image to be made at this point in the conversation; they are conveying what they want to see',
+	REVISE: 'User wants to revise a previously-made image',
+	PLAN: 'User wants to plan out an image to make in a collaborative manner with the Assistant',
 };
 
 export function pickImageIntent({
@@ -58,3 +59,15 @@ export function pickImageIntent({
 	const prefixResponse = 'RESPONSE:';
 	return { prefixResponse, system, user };
 }
+
+// what do each of the intents mean?
+// generate: make an image now
+//   the user's message or context should convey what they want to see
+//   given the message and context, construct a description of the image as faithful to the user's intent as possible
+//   feed description forward to create image prompt
+// revise: user wants to change an image to see a different version
+//   identify the image that the user wants to change and extract its prompt
+//   given the message, context, and past prompt, construct a description of the changes to make
+//   revise prompt and regenerate image
+// plan: user wants to plan the changes to an image prompt with the ai before making it
+//   user's message may be about a new image or one that was previously generated
