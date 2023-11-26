@@ -63,7 +63,7 @@ export function imgPromptReqDesc({
 		},
 		{
 			str: `Your task is to determine what the requested image is using the input and associated context.
-You must describe the image using as much original language from the input as possible and appropriate. That is, change the input as little as possible in order to make sense.\n`,
+You must describe the image using as much verbatim language from the input as possible. That is, change the input as little as possible in order for it to make sense.\n`,
 		},
 		{
 			str: 'Respond with a string containing the description only.\n',
