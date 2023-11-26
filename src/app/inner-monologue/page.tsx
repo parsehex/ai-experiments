@@ -354,14 +354,26 @@ function InnerMonologueChat() {
 			inputMsg
 		);
 		if (!inputMsg) return;
+		let newMessages = messages.slice();
 		let prompt = '';
 		let seed = -1;
 		toast.info('Regenerating image...');
-		let newMessages = messages.slice();
-		if ((keepPrompt || verbatim) && typeof msg.images !== 'string') {
-			prompt = lastPrompt;
-			// @ts-ignore
-			if (verbatim) seed = msg.images[0].seed || lastInfo.seed || -1;
+		const img = msg.images && msg.images[0];
+		let hasOldPrompt = false;
+		let oldPrompt = '';
+		if (img && typeof img !== 'string' && img.prompt) {
+			hasOldPrompt = !!img.prompt;
+			oldPrompt = img.prompt;
+		} else {
+			// TODO probably not really a good idea
+			hasOldPrompt = !!lastPrompt;
+			oldPrompt = lastPrompt;
+		}
+		if ((keepPrompt || verbatim) && hasOldPrompt) {
+			prompt = oldPrompt;
+			if (verbatim && typeof img !== 'string')
+				// @ts-ignore
+				seed = img?.seed || lastInfo.seed || -1;
 		} else {
 			const promptThoughts = await gen.imgPromptThoughts(
 				inputMsg,
