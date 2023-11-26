@@ -60,7 +60,7 @@ export const imgPromptThoughts = async (
 		makePrompt(user, system, 'ChatML'),
 		Params({
 			prefixResponse,
-			stop: ['RESPONSE:', 'INPUT:', '\n'],
+			stop: ['RESPONSE:', 'INPUT:', '\n', '<|im_end|>'],
 			tokenBans: '13',
 		})
 	);

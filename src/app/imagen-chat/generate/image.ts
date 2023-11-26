@@ -24,7 +24,7 @@ export const imgPromptFromInput = async (
 			temp: 0.15,
 			repetition_penalty: 1.25,
 			truncation_length: 4098,
-			stop: ['RESPONSE:', 'INPUT:', '\n'],
+			stop: ['RESPONSE:', 'INPUT:', '\n', '<|im_end|>'],
 			tokenBans: '13',
 		})
 	);
