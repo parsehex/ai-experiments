@@ -93,9 +93,9 @@ export const demos: ItemProps[] = [
 		tags: ['Story', 'LLM', 'Memory'],
 	},
 	{
-		title: 'Inner Monologue Chat',
-		description: 'Chat where AI considers how to respond',
-		href: '/inner-monologue',
+		title: 'Imagen Chat',
+		description: 'Chat with the ability to generate images',
+		href: '/imagen-chat',
 		tags: ['Chat', 'LLM', 'Imagen'],
 	},
 	{

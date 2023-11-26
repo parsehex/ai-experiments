@@ -3,7 +3,7 @@ const pageTitleMap: Record<string, string> = {
 	'/conversational-summary': 'Conversational Summary Chat',
 	'/entity-memory': 'Entity Memory Chat',
 	'/image-generator': 'Image Generator',
-	'/inner-monologue': 'Inner Monologue Chat',
+	'/imagen-chat': 'Imagen Chat',
 	'/langchain-chat': 'Langchain Chat',
 	'/redacter': 'Redacter',
 	'/role-play': 'Role Play Chat',

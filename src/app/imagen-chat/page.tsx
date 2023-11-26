@@ -6,8 +6,8 @@ import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types';
 import { txt2img } from '@/lib/imagen';
 import { txt2imgResponseInfo } from '@/lib/imagen/types';
-import * as gen from './generate';
 import { getMsgBefore, getMsgIndexBefore } from '@/lib/utils';
+import * as gen from './generate';
 
 const RANCFG_MIN = 1;
 const RANCFG_MAX = 6;
