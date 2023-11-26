@@ -7,6 +7,7 @@ import { Message } from '@/lib/types';
 import { txt2img } from '@/lib/imagen';
 import { txt2imgResponseInfo } from '@/lib/imagen/types';
 import * as gen from './generate';
+import { getLastMsgBefore } from '@/lib/utils';
 
 const RANCFG_MIN = 1;
 const RANCFG_MAX = 6;
@@ -137,10 +138,18 @@ function InnerMonologueChat() {
 		newMessages = [...newMessages, intentMsg];
 		setMessages(newMessages);
 
-		const lastMsg = newMessages[newMessages.length - 2];
+		const lastMsg = getLastMsgBefore(
+			newMessages,
+			(m) => m.type !== 'thought' && m.role.toLowerCase() === 'assistant',
+			userMsg
+		);
 		const isImgReq = intentArea.includes('IMAGE');
 		let infoparams: txt2imgResponseInfo;
 		if (isImgReq) {
+			const specificIntent = await gen.pickImageIntent(newMessages, {
+				summary: chatSummary,
+			});
+			console.log('specificIntent', specificIntent);
 			const promptThoughts = await gen.imgPromptThoughts(
 				userMsg,
 				lastMsg,
@@ -238,8 +247,17 @@ function InnerMonologueChat() {
 		const msg = messages.find((msg) => msg.id === id);
 		const msgIndex = messages.findIndex((msg) => msg.id === id);
 		if (!msg) return;
-		const lastMsg = messages[messages.indexOf(msg) - 2];
-		const inputMsg = messages[messages.indexOf(msg) - 1];
+		const inputMsg = getLastMsgBefore(
+			messages,
+			(m) => m.role.toLowerCase() === 'user',
+			msg
+		);
+		const lastMsg = getLastMsgBefore(
+			messages,
+			(m) => m.type !== 'thought' && m.role.toLowerCase() === 'assistant',
+			inputMsg
+		);
+		console.log('lastMsg', lastMsg);
 		if (!inputMsg) {
 			toast.error('No input message found');
 			return;
@@ -325,8 +343,16 @@ function InnerMonologueChat() {
 	}) => {
 		const msg = messages.find((msg) => msg.id === msgId);
 		if (!msg) return;
-		const lastMsg = messages[messages.indexOf(msg) - 2];
-		const inputMsg = messages[messages.indexOf(msg) - 1];
+		const inputMsg = getLastMsgBefore(
+			messages,
+			(m) => m.role.toLowerCase() === 'user',
+			msg
+		);
+		const lastMsg = getLastMsgBefore(
+			messages,
+			(m) => m.type !== 'thought' && m.role.toLowerCase() === 'assistant',
+			inputMsg
+		);
 		if (!inputMsg) return;
 		let prompt = '';
 		let seed = -1;

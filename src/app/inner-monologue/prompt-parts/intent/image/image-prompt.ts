@@ -17,7 +17,10 @@ export function imagePromptThoughts({
 			suf: 'The following INPUT is a message requesting an image.\n',
 		},
 		{
-			str: 'Your task is to describe the image that you want to make.\n',
+			str: `Your task is to describe the image that you want to make.
+Important: Do not reference the image in your response, simply describe it.
+You can only create 1 image at a time, do not describe multiple images.
+Respond with the description only.\n`,
 		},
 		// {
 		// 	str: 'Describe the image that you want to create based on the input and chat summary.\n',
@@ -33,9 +36,10 @@ export function imagePromptThoughts({
 		},
 	];
 	const user: PromptPart[] = [{ str: `INPUT: ${msg.content}\n` }];
-	let prefixResponse = 'RESPONSE:';
+	let prefixResponse = 'RESPONSE:\n';
 	// if (thoughts.length) prefixResponse += `\n${thoughts}\nANSWER: `;
-	prefixResponse += '\nSure! I want to make this image:\n';
+	// prefixResponse +=
+	// 	'\nSure! This is the description of the image I want to make:\n';
 	return { prefixResponse, system, user };
 }
 
@@ -56,7 +60,8 @@ The description should follow a specific format.\n`,
 		},
 		{
 			str: `Format:
-Start with a sentence describing what the overall image depicts. Follow with a list of visual keywords and phrases that describe details in the image. You should list the keywords after the sentence without a label.
+Start with a sentence describing what the overall image depicts. Follow with a list of visual keywords and phrases that describe details in the image. You should list the keywords after the sentence without a label. Do not list contradictory keywords.
+If you want to emphasize an aspect of the image, describe the visual details of it in multiple ways.
 Do not reference the image itself in the prompt.\n`,
 		},
 		{

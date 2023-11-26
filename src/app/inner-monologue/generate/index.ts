@@ -15,6 +15,8 @@ const DefaultLLMParams = {
 const Params = (p: GenerateOptions): GenerateOptions =>
 	Object.assign({}, DefaultLLMParams, p);
 
+// TODO function to get full Intent-path from input
+
 export const innerMonologue = async (messages: Message[]) => {
 	messages = messages.filter((msg) => msg.type !== 'thought');
 	const promptParts = parts.innerMonologue({ messages });
@@ -76,6 +78,7 @@ export const imgPrompt = async (
 		makePrompt(user, system, 'ChatML'),
 		Params({
 			prefixResponse,
+			temp: 0.25,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 			tokenBans: '13',
 		})
@@ -144,6 +147,28 @@ export const pickIntentArea = async (
 	const result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
+			prefixResponse,
+			temp: 0.25,
+			stop: ['RESPONSE:', 'INPUT:', '\n'],
+		})
+	);
+	return result;
+};
+
+export const pickImageIntent = async (
+	messages: Message[],
+	{ summary }: ExtraObj = {}
+) => {
+	messages = messages.filter((msg) => msg.type !== 'thought');
+	const promptParts = parts.pickImageIntent({
+		messages,
+		summary,
+	});
+	const { prefixResponse, user, system } = promptParts;
+	const result = await generate(
+		makePrompt(user, system, 'ChatML'),
+		Params({
+			max: 16,
 			prefixResponse,
 			temp: 0.25,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
