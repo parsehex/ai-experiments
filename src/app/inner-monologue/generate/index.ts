@@ -128,7 +128,6 @@ export const continueChat = async (
 		Params({
 			prefixResponse,
 			max: 768,
-			cfg: 1.5,
 		})
 	);
 	return result;
