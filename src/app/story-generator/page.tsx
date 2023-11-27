@@ -43,6 +43,22 @@ const StoryGenerator = () => {
 	const [selectedPreset, setSelectedPreset] = useState<string>(starter.name);
 	const [userInfluence, setUserInfluence] = useState('');
 	const divRef = React.useRef<HTMLDivElement>(null);
+	const setFunc = (v: string): void =>
+		setTmpManualLine({
+			...tmpManualLine,
+			value: {
+				v,
+				set: setFunc,
+			},
+		});
+	const [tmpManualLine, setTmpManualLine] = useState({
+		value: {
+			v: '',
+			set: setFunc,
+		},
+		characterName: '',
+		type: 'Narrative' as 'Narrative' | 'Dialogue',
+	});
 
 	useEffect(() => {
 		if (divRef.current) {
@@ -585,6 +601,55 @@ const StoryGenerator = () => {
 						</button>
 					</div>
 				))}
+				<select
+					value={tmpManualLine.type}
+					onChange={(e) => {
+						const o = { ...tmpManualLine, type: e.target.value as any };
+						if (o.type === 'Dialogue') {
+							o.characterName = characters[0].name;
+						}
+						setTmpManualLine(o);
+					}}
+				>
+					<option value="Narrative">Narrative</option>
+					<option value="Dialogue">Dialogue</option>
+				</select>
+				{tmpManualLine.type === 'Dialogue' && (
+					<select
+						value={tmpManualLine.characterName}
+						onChange={(e) =>
+							setTmpManualLine({
+								...tmpManualLine,
+								characterName: e.target.value,
+							})
+						}
+					>
+						{characters.map((char) => (
+							<option key={char.id} value={char.name}>
+								{char.name}
+							</option>
+						))}
+					</select>
+				)}
+				<TextInput
+					placeholder="Write next line..."
+					value={[tmpManualLine.value.v, setFunc]}
+					onKeyDown={(e) => {
+						if (e.key !== 'Enter') return;
+						const newAction: Action = {
+							id: v4(),
+							type: tmpManualLine.type,
+							str: tmpManualLine.value.v,
+							characterName: tmpManualLine.characterName,
+						};
+						setActions([...actions, newAction]);
+						setTmpManualLine({
+							...tmpManualLine,
+							value: { ...tmpManualLine.value, v: '' },
+						});
+					}}
+					canCopy={false}
+				/>
 			</div>
 		</div>
 	);
