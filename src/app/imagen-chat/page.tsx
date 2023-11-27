@@ -75,6 +75,7 @@ interface Options {
 	steps: number;
 	randomCfg: boolean;
 	randomSampler: boolean;
+	showThoughts: boolean;
 }
 const DefaultOptions: Options = {
 	wide: false,
@@ -83,6 +84,7 @@ const DefaultOptions: Options = {
 	steps: 20,
 	randomCfg: false,
 	randomSampler: true,
+	showThoughts: false,
 };
 type StepsPreset = 'Low' | 'Medium' | 'High' | 'Custom';
 function InnerMonologueChat() {
@@ -108,7 +110,6 @@ function InnerMonologueChat() {
 	const updateSummary = async (msgs = messages) => {
 		const summary = await gen.summarizeChat(msgs, chatSummary);
 		setChatSummary(summary);
-		// console.log('summary', summary);
 	};
 
 	// user sends a message
@@ -117,7 +118,6 @@ function InnerMonologueChat() {
 			toast.error('Please enter a message');
 			return;
 		}
-
 		let newMessages = [
 			...messages,
 			{ role: 'USER', content: userInput, id: uuidv4() },
@@ -198,13 +198,13 @@ function InnerMonologueChat() {
 			infoparams = JSON.parse(res.info);
 			setLastInfo(infoparams);
 			image = res.images[0];
+			toast.success('Image generated');
 		}
 
 		const response = gen.continueChat(userInput, newMessages, {
 			madeImage: !!image,
 			imagePrompt: imagePrompt,
 		});
-		toast.success('Response generated');
 		const aiMessage: Message = {
 			role: 'ASSISTANT',
 			// @ts-ignore
@@ -437,6 +437,16 @@ function InnerMonologueChat() {
 	return (
 		<div className={`inner-monologue-chat ${options.wide ? '' : 'container'}`}>
 			<div>
+				<label>
+					Show Thoughts
+					<input
+						type="checkbox"
+						checked={options.showThoughts}
+						onChange={(e) =>
+							setOptions({ ...options, showThoughts: e.target.checked })
+						}
+					/>
+				</label>
 				<button className="delete" onClick={handleClear}>
 					Clear
 				</button>
@@ -559,7 +569,11 @@ function InnerMonologueChat() {
 				</label>
 			</div>
 			<ChatBox
-				messages={messages}
+				messages={
+					options.showThoughts
+						? messages
+						: messages.filter((m) => m.type !== 'thought')
+				}
 				setMessages={setMessages}
 				handleSend={handleSend}
 				regenerateMessage={(id) => {
