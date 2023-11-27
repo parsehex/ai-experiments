@@ -1,6 +1,5 @@
 import { Message } from '@/lib/types';
-import { PromptPartResponse } from '../..';
-import { PromptPart } from '@/lib/types/llm';
+import { PromptPart, PromptPartResponse } from '@/lib/types/llm';
 
 export function imagePromptThoughts({
 	msg,

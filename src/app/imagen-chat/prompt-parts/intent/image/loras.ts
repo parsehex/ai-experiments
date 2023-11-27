@@ -1,5 +1,4 @@
-import { PromptPart } from '@/lib/types/llm';
-import { PromptPartResponse } from '../..';
+import { PromptPart, PromptPartResponse } from '@/lib/types/llm';
 
 const LoraDescriptions: Record<string, string> = {
 	add_detail: 'Add detail to an image',

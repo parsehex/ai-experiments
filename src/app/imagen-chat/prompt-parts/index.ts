@@ -1,18 +1,11 @@
 import { Message } from '@/lib/types';
-import { PromptPart } from '@/lib/types/llm';
+import { PromptPart, PromptPartResponse } from '@/lib/types/llm';
 
 export * from './intent';
 
 // thoughts on how to do prompt parts differently:
 // we could break parts up into system and user parts, and allow specifying responseprefix
 // this way we could pass all the parts to the makeprompt function, and it would put them together
-
-export interface PromptPartResponse {
-	user: PromptPart[];
-	system?: PromptPart[];
-	prefixResponse?: string;
-	grammar?: string;
-}
 
 // old; not used
 export function innerMonologue({
