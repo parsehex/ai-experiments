@@ -3,7 +3,8 @@ import { GenerateOptions, generate } from '@/lib/llm';
 import { parseResponse } from '@/lib/ooba-utils';
 import { Message } from '@/lib/types';
 import { delay } from '@/lib/utils';
-import { testPrompts } from './prompts';
+import { makePrompt } from '@/lib/llm/prompts';
+import * as parts from './prompts';
 
 interface MessagesOptions {
 	messages: Message[];
@@ -36,15 +37,21 @@ interface ConstructPromptOptions {
 		msgs?: Message[],
 		customDescription?: string,
 		descOrder?: 'prepend' | 'append' | false
-	) => string;
+	) => { prompt: string; system: string; user: string };
 }
 
+const CurrentPromptFormat = 'ChatML';
+
 const baseParams: GenerateOptions = {
-	temp: 0.75,
+	temp: 0.5,
 	max: 512,
-	cfg: 1.25,
+	// cfg: 1.25,
 	repetition_penalty: 1.25,
-	repetition_penalty_range: 64,
+	// repetition_penalty_range: 64,
+	// prefixResponse: 'RESPONSE:\n',
+	// stop: ['\n'],
+	custom_token_bans: '13',
+	// ban_eos_token: true,
 };
 type MessageHandlerOptions = MessagesOptions &
 	CharacterOptions &
@@ -104,7 +111,8 @@ class MessageHandler {
 		let updatedMessages = [...messages, newMessage];
 
 		setMessages(updatedMessages);
-		const prompt = constructPrompt(updatedMessages);
+		const { user, system } = constructPrompt(updatedMessages);
+		const prompt = makePrompt(user, system, CurrentPromptFormat);
 
 		const options: GenerateOptions = { ...baseParams };
 		if (oneAtATime) options.stop = [selectedCharacter || '\n'];
@@ -139,11 +147,12 @@ class MessageHandler {
 		this.isGenerating = true;
 		const { messages, setMessages, constructPrompt } = this.options;
 		msgs = msgs || messages;
-		const prompt = constructPrompt(
+		const { user, system } = constructPrompt(
 			messages,
 			'Continue the conversation based on the following. Your response should start with a character NAME, or be an action/narrative desribing what is happening.',
 			'prepend'
 		);
+		const prompt = makePrompt(user, system, CurrentPromptFormat);
 		const options: GenerateOptions = Object.assign({}, baseParams);
 		if (count === 1) options.stop = ['\n'];
 
@@ -181,21 +190,24 @@ class MessageHandler {
 		this.isGenerating = true;
 		const { messages, selectedCharacter, setInput, input, constructPrompt } =
 			this.options;
-		let prompt = constructPrompt(
+		const { user, system } = constructPrompt(
 			messages,
 			'Finish the last line based on the following conversation.',
 			'prepend'
-		).trim();
-		prompt += '\n';
+		);
+		let prompt = makePrompt(user, system, CurrentPromptFormat);
+		// prompt += '\n';
 		const char = selectedCharacter;
+		let prefixResponse = '';
 		if (char) {
-			prompt += `${char}: `;
+			prefixResponse += `${char}: `;
 		}
 		if (input) {
-			prompt += input.trim();
+			prefixResponse += input.trim();
 		}
 		console.log(prompt);
 		const options: GenerateOptions = Object.assign({}, baseParams, {
+			prefixResponse,
 			ban_eos_token: true,
 			stop: ['\n'],
 		});
@@ -224,17 +236,18 @@ class MessageHandler {
 
 		const messagesUpToMsg = messages.slice(0, index);
 
-		const prompt = constructPrompt(
+		const { user, system } = constructPrompt(
 			messagesUpToMsg,
 			'Write the next line based on the following conversation.',
 			'prepend'
 		);
+		let prompt = makePrompt(user, system, CurrentPromptFormat);
 		const result = await generate(
-			prompt.trim() + '\n',
+			prompt,
 			Object.assign({}, baseParams, {
 				temp: 0.75,
-				stop: ['\n'],
-				ban_eos_token: true,
+				// stop: ['\n'],
+				// ban_eos_token: true,
 			})
 		);
 		const generatedMessage = parseResponse((result || '').trim())[0];
@@ -256,9 +269,9 @@ class MessageHandler {
 	};
 
 	handleTest = async () => {
-		this.options.setInput(
-			testPrompts[Math.floor(Math.random() * testPrompts.length)]
-		);
+		// this.options.setInput(
+		// 	testPrompts[Math.floor(Math.random() * testPrompts.length)]
+		// );
 		this.handleSend();
 	};
 

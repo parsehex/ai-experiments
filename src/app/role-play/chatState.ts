@@ -20,29 +20,37 @@ export const useChatState = () => {
 		/** Prepend or append the custom description to the chat description, or only show the custom description */
 		descOrder?: 'prepend' | 'append' | false
 	) => {
+		let system = '';
+		let user = '';
 		let prompt = '';
 		if (customDescription) {
 			if (descOrder === 'prepend') {
-				prompt += customDescription + '\n' + description;
+				// prompt += customDescription + '\n' + description;
+				system += customDescription + '\n' + description;
 			}
 			if (descOrder === 'append') {
-				prompt += description + customDescription;
+				// prompt += description + customDescription;
+				system += description + customDescription;
 			}
 		}
 		if (!customDescription || descOrder === false) {
-			prompt += customDescription;
+			// prompt += customDescription;
+			system += customDescription;
 		}
-		if (prompt) {
-			prompt += '\n\n';
-		}
+		// if (prompt) {
+		// 	prompt += '\n\n';
+		// }
 		msgs.forEach((msg) => {
 			if (msg.role === 'ACTION' || !msg.role) {
-				prompt += `${msg.content}\n`;
+				// prompt += `${msg.content}\n`;
+				user += `${msg.content}\n`;
 				return;
 			}
-			prompt += `${msg.role}: ${msg.content}\n`;
+			// prompt += `${msg.role}: ${msg.content}\n`;
+			user += `${msg.role}: ${msg.content}\n`;
 		});
-		return prompt + '\n';
+
+		return { prompt, system, user };
 	};
 
 	return {

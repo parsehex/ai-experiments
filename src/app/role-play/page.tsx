@@ -159,7 +159,7 @@ function RolePlay() {
 				<textarea
 					className="input mr-2"
 					onKeyDown={(e) => {
-						if (e.key === 'Enter' && e.shiftKey) {
+						if (e.key === 'Enter' && !e.shiftKey) {
 							e.preventDefault();
 							handleSend();
 						}
