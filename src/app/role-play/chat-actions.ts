@@ -42,7 +42,7 @@ interface ConstructPromptOptions {
 const baseParams: GenerateOptions = {
 	temp: 0.75,
 	max: 512,
-	cfg: 1.25,
+	// cfg: 1.25,
 	repetition_penalty: 1.25,
 	repetition_penalty_range: 64,
 };

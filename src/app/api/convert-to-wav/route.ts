@@ -5,11 +5,11 @@ import { promisify } from 'util';
 import { NextRequest } from 'next/server';
 import { File } from 'buffer';
 
-export const config = {
-	api: {
-		bodyParser: false,
-	},
-};
+// export const config = {
+// 	api: {
+// 		bodyParser: false,
+// 	},
+// };
 
 export async function POST(req: NextRequest) {
 	try {

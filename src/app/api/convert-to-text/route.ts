@@ -8,11 +8,11 @@ import { lookup } from 'mime-types';
 import parseRTF from 'rtf-parser';
 import { WhisperResultChunk } from '@/lib/types';
 
-export const config = {
-	api: {
-		bodyParser: false,
-	},
-};
+// export const config = {
+// 	api: {
+// 		bodyParser: false,
+// 	},
+// };
 
 export async function POST(req: NextRequest) {
 	try {
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 				break;
 			case 'doc':
 			case 'docx':
-				res.convertedText = await useWordExtractor(inputFilePath);
+				res.convertedText = await wordExtractor(inputFilePath);
 				res.type = 'string';
 				break;
 			case 'rtf':
@@ -138,7 +138,7 @@ async function audioToText(filePath: string) {
 	return parts;
 }
 
-async function useWordExtractor(inputFilePath: string) {
+async function wordExtractor(inputFilePath: string) {
 	const WordExtractor = (await import('word-extractor')).default;
 	const extractor = new WordExtractor();
 	const doc = await extractor.extract(inputFilePath);
