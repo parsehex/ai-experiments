@@ -28,14 +28,20 @@ const ImageGenerator = () => {
 	const [generatedImages, setGeneratedImages] = useState([] as string[]);
 	const [lastGenParams, setLastGenParams] = useState({} as txt2imgResponseInfo);
 	const [genTime, setGenTime] = useState(0);
+	const [sdOnline, setSdOnline] = useState(false);
 
 	useEffect(() => {
-		getSamplers().then((samplers) => {
-			const samplerNames = samplers.map((sampler) => sampler.name);
-			setSamplers(samplerNames);
-			const i = samplerNames.indexOf('Euler a');
-			setSelectedSampler(samplers[i || 0].name);
-		});
+		getSamplers()
+			.then((samplers) => {
+				setSdOnline(true);
+				const samplerNames = samplers.map((sampler) => sampler.name);
+				setSamplers(samplerNames);
+				const i = samplerNames.indexOf('Euler a');
+				setSelectedSampler(samplers[i || 0].name);
+			})
+			.catch(() => {
+				setSdOnline(false);
+			});
 	}, []);
 
 	const handleSubmit = async () => {
@@ -59,8 +65,8 @@ const ImageGenerator = () => {
 		setLastGenParams(params);
 	};
 
-	return (
-		<div className="flex">
+	const GenOptions = () => {
+		return (
 			<div className="gen-options">
 				<div>
 					<TextInput
@@ -150,6 +156,12 @@ const ImageGenerator = () => {
 					<span className="params">(last: {genTime / 1000}s)</span>
 				)}
 			</div>
+		);
+	};
+
+	return (
+		<div className="flex">
+			{/* <GenOptions />
 
 			{!!generatedImages.length && (
 				<div className="gen-image flex flex-col">
@@ -157,6 +169,24 @@ const ImageGenerator = () => {
 						<span className="params">{lastGenParams.infotexts[0]}</span>
 					)}
 					<ImgCarousel images={generatedImages} defaultExpanded={true} />
+				</div>
+			)} */}
+			{sdOnline ? (
+				<>
+					<GenOptions />
+
+					{!!generatedImages.length && (
+						<div className="gen-image flex flex-col">
+							{lastGenParams.infotexts?.length && (
+								<span className="params">{lastGenParams.infotexts[0]}</span>
+							)}
+							<ImgCarousel images={generatedImages} defaultExpanded={true} />
+						</div>
+					)}
+				</>
+			) : (
+				<div className="gen-image flex flex-col">
+					<h2>Stable Diffusion is offline</h2>
 				</div>
 			)}
 		</div>
