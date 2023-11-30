@@ -1,6 +1,6 @@
 // first api to support is sd
 
-import { cors } from '../utils';
+import { addCorsIfNot } from '../utils';
 import { Lora, Sampler, txt2imgParams, txt2imgResponse } from './types';
 
 // base: localhost:7860
@@ -13,17 +13,7 @@ let adjusted = false;
 
 function fixUrl() {
 	if (adjusted) return;
-	let host = window.location.host.split(':')[0]; // Remove port number if exists
-	// Regular expression for IPv4 address
-	let ipPattern = new RegExp(
-		'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
-	);
-	if (ipPattern.test(host)) {
-		BASE_URL = `http://${host}:7860`;
-	} else if (host.includes('.')) {
-		// BASE_URL = '';
-	}
-	BASE_URL = cors(BASE_URL);
+	BASE_URL = addCorsIfNot(BASE_URL, 7860);
 	adjusted = true;
 }
 

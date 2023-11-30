@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { cors } from '@/lib/utils';
+import { addCorsIfNot, cors } from '@/lib/utils';
 
 const TranscribeAudio: React.FC = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -19,8 +19,9 @@ const TranscribeAudio: React.FC = () => {
 		formData.append('file', selectedFile);
 
 		try {
+			const base = addCorsIfNot('http://localhost:5000/', 5000);
 			const response = await axios.post(
-				cors('http://localhost:5000/v1/audio/transcriptions'),
+				`${base}v1/audio/transcriptions`,
 				formData,
 				{
 					headers: { 'Content-Type': 'multipart/form-data' },

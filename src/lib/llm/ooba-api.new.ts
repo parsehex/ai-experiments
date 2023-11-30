@@ -15,24 +15,14 @@ import {
 	ModelInfoResponse,
 	NewModelInfo,
 } from '../types/ooba.new';
-import { cors } from '../utils';
+import { addCorsIfNot } from '../utils';
 
 let BASE_URL = 'http://localhost:5000';
 let adjusted = false;
 
 function fixUrl() {
 	if (adjusted) return;
-	let host = location.host.split(':')[0]; // Remove port number if exists
-	// Regular expression for IPv4 address
-	let ipPattern = new RegExp(
-		'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
-	);
-	if (ipPattern.test(host)) {
-		BASE_URL = `http://${host}:5000`;
-	} else if (host.includes('.')) {
-		// BASE_URL = '';
-	}
-	BASE_URL = cors(BASE_URL);
+	BASE_URL = addCorsIfNot(BASE_URL, 5000);
 	adjusted = true;
 }
 

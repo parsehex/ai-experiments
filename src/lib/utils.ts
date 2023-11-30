@@ -6,9 +6,6 @@ import { Message } from './types';
 export async function delay(ms = 0): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
-export function cors(url: string): string {
-	return `http://127.0.0.1:2222/${url}`;
-}
 
 export async function chunkText(
 	chunk: TextChunk,
@@ -89,4 +86,22 @@ export function getMsgIndexBefore(
 		if (test(messages[i])) return i;
 	}
 	return -1;
+}
+
+export function cors(url: string): string {
+	return `http://127.0.0.1:2222/${url}`;
+}
+export function addCorsIfNot(base: string, port?: number | string): string {
+	if (base.includes(':2222')) return base;
+	let url = base;
+	let ipPattern = new RegExp(
+		'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+	);
+	if (ipPattern.test(base) && port) {
+		url = `http://${base}:${port}/`;
+	} else if (base.includes('.')) {
+		// url = '';
+	}
+	url = cors(url);
+	return url;
 }
