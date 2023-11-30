@@ -161,16 +161,6 @@ const ImageGenerator = () => {
 
 	return (
 		<div className="flex">
-			{/* <GenOptions />
-
-			{!!generatedImages.length && (
-				<div className="gen-image flex flex-col">
-					{lastGenParams.infotexts?.length && (
-						<span className="params">{lastGenParams.infotexts[0]}</span>
-					)}
-					<ImgCarousel images={generatedImages} defaultExpanded={true} />
-				</div>
-			)} */}
 			{sdOnline ? (
 				<>
 					<GenOptions />
