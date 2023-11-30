@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently \"next dev -H 0.0.0.0 -p 8085\" \"npm run cors-server\"",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently \"next start -H 0.0.0.0 -p 8085\" \"npm run cors-server\"",
     "lint": "next lint",
     "cors-server": "node scripts/cors-anywhere.js"
   },
