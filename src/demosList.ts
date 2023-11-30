@@ -81,7 +81,7 @@ const componentPrototypes: ItemProps[] = [
 
 export const demos: ItemProps[] = [
 	{
-		title: 'Role Play',
+		title: 'Role Chat',
 		description: 'Character-based chat/role play without LangChain',
 		href: '/role-play',
 		tags: ['Chat', 'Story', 'LLM'],
@@ -96,7 +96,13 @@ export const demos: ItemProps[] = [
 		title: 'Imagen Chat',
 		description: 'Chat with the ability to generate images',
 		href: '/imagen-chat',
-		tags: ['Chat', 'LLM', 'Imagen'],
+		tags: ['Chat', 'LLM', 'Imagen', 'STT'],
+	},
+	{
+		title: 'Speak Chat',
+		description: 'Chat with end-to-end speech',
+		href: '/speak-chat',
+		tags: ['Chat', 'LLM', 'STT'],
 	},
 	{
 		// inspiration: https://old.reddit.com/r/LocalLLaMA/comments/17fmhcb/
