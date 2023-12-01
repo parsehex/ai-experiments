@@ -105,3 +105,17 @@ export function addCorsIfNot(base: string, port?: number | string): string {
 	url = cors(url);
 	return url;
 }
+
+// function to parse url params
+export function getParams(url: string): Record<string, string> {
+	const params: Record<string, string> = {};
+	const urlParts = url.split('?');
+	if (urlParts.length > 1) {
+		const urlParams = urlParts[1].split('&');
+		for (const param of urlParams) {
+			const [key, value] = param.split('=');
+			params[key] = value;
+		}
+	}
+	return params;
+}

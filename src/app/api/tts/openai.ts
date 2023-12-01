@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Speaker } from '.';
+import { Speaker } from './types';
 
 export async function generateTTS(
 	input: string,
@@ -16,9 +16,11 @@ export async function generateTTS(
 		headers: {
 			Authorization: `Bearer ${apiKey}`,
 		},
-		responseType: 'blob',
+		// responseType: 'blob',
 	});
-	return response.data;
+	// convert to from string to blob
+	const blob = new Blob([response.data], { type: 'audio/mpeg' });
+	return blob;
 }
 export async function getSpeakers(): Promise<Speaker[]> {
 	const names = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];

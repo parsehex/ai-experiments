@@ -1,8 +1,8 @@
 // https://docs.sillytavern.app/extras/extensions/xtts/
 // (also needed to `sudo apt-get install portaudio19-dev`)
 
-import { addCorsIfNot } from '../utils';
-import { Speaker } from '.';
+import { addCorsIfNot } from '@/lib/utils';
+import { Speaker } from './types';
 
 const urlBase = 'http://localhost:8020/';
 // http://localhost:8020/docs
@@ -34,7 +34,7 @@ export async function generateTTS(
 		speaker_wav,
 		language: 'en',
 	};
-	const url = addCorsIfNot(urlBase, 8020) + 'tts_to_audio';
+	let url = addCorsIfNot(urlBase, 8020) + 'tts_to_audio/';
 	const response = await fetch(url, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -43,7 +43,34 @@ export async function generateTTS(
 	if (!response.ok) {
 		throw new Error(`XTTS API responded with status: ${response.status}`);
 	}
-	return await response.blob();
+	const blob = await response.blob();
+	return blob;
+}
+
+export async function generateTTSFile(
+	text: string,
+	speaker_wav: string,
+	file: string
+): Promise<Blob> {
+	const requestBody: TTFRequestBody = {
+		text,
+		speaker_wav,
+		language: 'en',
+		file_name_or_path: '',
+	};
+	const url = addCorsIfNot(urlBase, 8020) + 'tts_to_file/';
+	if (!file.endsWith('.wav')) file += '.wav';
+	requestBody.file_name_or_path = file;
+
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(requestBody),
+	});
+	if (!response.ok) {
+		throw new Error(`XTTS API responded with status: ${response.status}`);
+	}
+	return await response.json();
 }
 
 export async function getSpeakers(): Promise<Speaker[]> {

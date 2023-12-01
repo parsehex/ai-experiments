@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TextInput from '@/components/TextInput';
-import { Provider, Speaker, getSpeakers, generateTTS } from '@/lib/tts';
+import { getSpeakers, generateTTS } from '@/lib/tts';
+import { Provider, Speaker } from '@/app/api/tts/types';
 
 const TtsDemo: React.FC = () => {
 	const [text, setText] = useState<string>('');
