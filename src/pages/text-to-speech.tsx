@@ -12,27 +12,31 @@ const TtsDemo: React.FC = () => {
 	const [isGenerating, setIsGenerating] = useState<boolean>(false);
 	const [isOnline, setIsOnline] = useState<boolean>(false);
 
+	const refreshSpeakers = async () => {
+		try {
+			const speakers = await getSpeakers(provider);
+			setIsOnline(true);
+			setVoices(speakers);
+			setSelectedVoice(speakers[0]);
+		} catch (error) {
+			setIsOnline(false);
+		}
+	};
+
 	useEffect(() => {
-		getSpeakers(provider)
-			.then((speakers) => {
-				setIsOnline(true);
-				setVoices(speakers);
-				setSelectedVoice(speakers[0]);
-			})
-			.catch(() => {
-				setIsOnline(false);
-			});
+		refreshSpeakers();
 	}, []);
+	useEffect(() => {
+		if (provider) refreshSpeakers();
+	}, [provider]);
 
 	const handleGenerate = async () => {
 		setIsGenerating(true);
 		try {
 			if (!selectedVoice) throw new Error('No voice selected');
-			console.time('generateTTS');
-			const audioBlob = await generateTTS(text, provider, selectedVoice.name);
-			const audioUrl = URL.createObjectURL(audioBlob);
+			const audioData = await generateTTS(text, provider, selectedVoice.name);
+			const audioUrl = URL.createObjectURL(audioData);
 			setAudioUrl(audioUrl);
-			console.timeEnd('generateTTS');
 		} catch (error) {
 			console.error('Error generating speech', error);
 		} finally {
@@ -61,6 +65,7 @@ const TtsDemo: React.FC = () => {
 						onChange={(e) => setProvider(e.target.value as Provider)}
 					>
 						<option value="XTTS">XTTS</option>
+						<option value="OpenAI">OpenAI</option>
 					</select>
 				</label>
 				{provider && (
@@ -109,8 +114,8 @@ const TtsDemo: React.FC = () => {
 				<h2>TTS Offline</h2>
 			) : (
 				<>
-					<Options />
-					<Input />
+					{Options()}
+					{Input()}
 					{audioUrl && (
 						<div>
 							<audio controls src={audioUrl}></audio>
