@@ -34,9 +34,12 @@ const TtsDemo: React.FC = () => {
 		setIsGenerating(true);
 		try {
 			if (!selectedVoice) throw new Error('No voice selected');
+			const start = Date.now();
 			const audioData = await generateTTS(text, provider, selectedVoice.name);
 			const audioUrl = URL.createObjectURL(audioData);
 			setAudioUrl(audioUrl);
+			const end = Date.now();
+			console.log('Generated audio in', end - start, 'ms');
 		} catch (error) {
 			console.error('Error generating speech', error);
 		} finally {
