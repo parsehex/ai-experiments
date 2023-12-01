@@ -227,9 +227,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
 				)}
 				{isPromise && <ClipLoader size={20} color={'#000'} loading={true} />}
 
-				{isThought ? <ThoughtHeader /> : <MessageHeader />}
+				{isThought ? ThoughtHeader() : MessageHeader()}
 			</div>
-			<MessageContent />
+			{msgHasContent && MessageContent()}
 		</div>
 	);
 };
