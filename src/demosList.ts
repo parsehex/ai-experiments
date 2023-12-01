@@ -7,6 +7,18 @@ export type ItemProps = {
 
 const tools: ItemProps[] = [
 	{
+		title: 'Image Generator',
+		description: 'Interface to Stable Diffusion for image generation',
+		href: '/image-generator',
+		tags: ['Imagen', 'Tool'],
+	},
+	{
+		title: 'Text to Speech',
+		description: 'Text to speech utility',
+		href: '/text-to-speech',
+		tags: ['TTS', 'Tool'],
+	},
+	{
 		title: 'Summarizer',
 		description: 'Summarize collections of text',
 		href: '/summarizer',
@@ -19,12 +31,6 @@ const tools: ItemProps[] = [
 		tags: ['Whisper', 'Tool'],
 	},
 	{
-		title: 'Image Generator',
-		description: 'Interface to Stable Diffusion for image generation',
-		href: '/image-generator',
-		tags: ['Imagen', 'Tool'],
-	},
-	{
 		title: 'Redacter',
 		description: 'Paste any text and remove identifying information',
 		href: '/redacter',
@@ -35,12 +41,6 @@ const tools: ItemProps[] = [
 		description: 'Demo showing how to use vision models',
 		// href: '/vision',
 		tags: ['Tool'],
-	},
-	{
-		title: 'Text to Speech',
-		description: 'Text to speech utility',
-		// href: '/text-to-speech',
-		tags: ['TTS', 'Tool'],
 	},
 	{
 		title: 'Document QA',

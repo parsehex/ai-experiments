@@ -10,6 +10,7 @@ const pageTitleMap: Record<string, string> = {
 	'/simple-chat': 'Simple Chat',
 	'/story-generator': 'Story Generator',
 	'/summarizer': 'Summarizer',
+	'/text-to-speech': 'Text to Speech',
 	'/thought-chain': 'Thought Chain',
 };
 
