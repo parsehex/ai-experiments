@@ -29,16 +29,21 @@ export interface Message {
 	role: string;
 	content: string;
 	type: 'message' | 'thought';
-	images?: ImgType[];
+	images: ImgType[];
 	thoughtLabel?: string;
 	thoughtClass?: string;
 }
+// how can we update Message to support keeping a history of edits to the content?
+// allow content to be an object? could have an array for the history, and a selected index
+// also tts? user will want to be able to regenerate tts, so similar needs
+// makes sense to me to keep tts alongside the content used to generate it
+
 // @ts-ignore
 export interface ChatBoxMessage extends Message {
 	content: string | Promise<string>;
 }
 
-export type PromptFormatResponse = string | Message[];
+export type PromptFormatResponse = string | RawMessage[];
 type PromptFormat = (user: string, system?: string) => PromptFormatResponse;
 export interface PromptFormatsObj {
 	[key: string]: PromptFormat;

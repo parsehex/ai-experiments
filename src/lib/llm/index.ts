@@ -1,7 +1,12 @@
 import * as ooba from './ooba-api.new';
 import * as openai from './openai-api';
 import { GenerateParams } from '../types/ooba.new';
-import { PromptPart, PromptFormatResponse, Message } from '../types/llm';
+import {
+	PromptPart,
+	PromptFormatResponse,
+	Message,
+	RawMessage,
+} from '../types/llm';
 
 // TODO add getTokenIDs function to get ids of tokens in a string using whichever api is being used
 
@@ -78,7 +83,7 @@ const OpenAIModels = ['gpt-3.5', 'gpt-4'];
  * Options takes GenerateParams and provides some shorter keys for some of the params.
  */
 export async function generate(
-	promptParts: PromptPart[] | Message[] | string,
+	promptParts: PromptPart[] | (Message | RawMessage)[] | string,
 	options?: GenerateOptions
 ): Promise<string> {
 	let openaiOrOoba: 'ooba' | 'OpenAI' | '' = '';

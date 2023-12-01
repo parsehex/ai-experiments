@@ -7,6 +7,7 @@ import {
 	PromptFormatsObj,
 	PromptFormatResponse,
 	PromptPart,
+	RawMessage,
 } from '../types/llm';
 
 // (user = user.trim()), (system = system?.trim());
@@ -53,7 +54,7 @@ const PromptFormats: PromptFormatsObj = {
 		let arr = [];
 		if (system) arr.push({ role: 'system', content: system });
 		arr.push({ role: 'user', content: user });
-		return arr;
+		return arr as RawMessage[];
 	},
 };
 const ModelPromptFormats = {};

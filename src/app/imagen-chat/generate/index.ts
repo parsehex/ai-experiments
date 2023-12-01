@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
 import { GenerateOptions, generate } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
-import { Message } from '@/lib/types';
+import { Message } from '@/lib/types/llm';
 import * as parts from '../prompt-parts';
 
 export * from './image';

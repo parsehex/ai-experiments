@@ -1,12 +1,9 @@
 import { v4 } from 'uuid';
 import * as ooba from './ooba-api';
+import { Message } from './types/llm';
+import { makeMsg } from './utils/messages';
 
-interface Message {
-	id: string;
-	role: string;
-	content: string;
-}
-export function parseResponse(response: string): Message[] {
+export function parseResponse(response: string) {
 	const lines = response.split('\n');
 	// does the first line have a colon after some uppercase text?
 	// if not
@@ -24,11 +21,7 @@ export function parseResponse(response: string): Message[] {
 		if (separatorIndex > -1 && spaceCount <= 2) {
 			const role = line.substring(0, separatorIndex).trim().toUpperCase();
 			const content = line.substring(separatorIndex + 1).trim();
-			newMessages.push({
-				id: v4(),
-				role,
-				content,
-			});
+			newMessages.push(makeMsg('message', role, content));
 		} else if (tLine) {
 			// } else if (
 			// 	(tLine.startsWith('[') && tLine.endsWith(']')) ||
@@ -38,11 +31,7 @@ export function parseResponse(response: string): Message[] {
 			// remove brackets
 			const content = tLine;
 			// const content = tLine.substring(1, tLine.length - 1).trim();
-			newMessages.push({
-				id: v4(),
-				role: 'ACTION',
-				content,
-			});
+			newMessages.push(makeMsg('message', 'ACTION', content));
 		}
 	});
 	console.log(response, newMessages);

@@ -1,9 +1,10 @@
 import { v4 } from 'uuid';
 import { GenerateOptions, generate } from '@/lib/llm';
 import { parseResponse } from '@/lib/ooba-utils';
-import { Message } from '@/lib/types';
+import { Message } from '@/lib/types/llm';
 import { delay } from '@/lib/utils';
 import { testPrompts } from './prompts';
+import { addMsg, makeMsg } from '@/lib/utils/messages';
 
 interface MessagesOptions {
 	messages: Message[];
@@ -65,12 +66,8 @@ class MessageHandler {
 	handleAdd = () => {
 		const { messages, setMessages, selectedCharacter, setInput, input } =
 			this.options;
-		const newMessage: Message = {
-			id: v4(),
-			role: selectedCharacter || 'ACTION',
-			content: input,
-		};
-		setMessages([...messages, newMessage]);
+		const newMsg = makeMsg('message', selectedCharacter || 'ACTION', input);
+		setMessages([...messages, newMsg]);
 		setInput('');
 	};
 
@@ -92,18 +89,10 @@ class MessageHandler {
 		const userInput = input;
 		setInput('');
 
-		const newMessage: Message = {
-			id: v4(),
-			role: selectedCharacter,
-			content: userInput,
-		};
-		if (!newMessage.role) {
-			newMessage.role = 'ACTION';
-		}
+		const newMsg = makeMsg('message', selectedCharacter || 'ACTION', userInput);
+		if (!newMsg.role) newMsg.role = 'ACTION';
 
-		let updatedMessages = [...messages, newMessage];
-
-		setMessages(updatedMessages);
+		let updatedMessages = addMsg(newMsg, messages, setMessages);
 		const prompt = constructPrompt(updatedMessages);
 
 		const options: GenerateOptions = { ...baseParams };
