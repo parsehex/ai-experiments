@@ -3,11 +3,20 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
-import { Message } from '@/lib/types';
+import { Message } from '@/lib/types/llm';
 import { txt2img } from '@/lib/imagen';
 import { txt2imgResponseInfo } from '@/lib/imagen/types';
-import { getMsgBefore, getMsgIndexBefore } from '@/lib/utils';
+import {
+	addMsg,
+	getMsgBefore,
+	getMsgIndexBefore,
+	makeMsg,
+	makeThoughtMsg,
+} from '@/lib/utils/messages';
 import * as gen from './generate';
+
+// NOTE: If we set message content to a promise the chatbox will show a spinner while waiting for the promise to resolve
+// (despite TS errors -- it's implemented but not typed)
 
 const RANCFG_MIN = 1;
 const RANCFG_MAX = 6;
@@ -51,22 +60,22 @@ const generateImg = async (
 	return { image, info };
 };
 
-const aiThoughtMessage = (
-	thoughts: string | Promise<string>,
-	label = 'Thoughts',
-	className = ''
-): Message => {
-	let msg: Message = {
-		id: uuidv4(),
-		role: 'ASSISTANT',
-		// @ts-ignore
-		content: thoughts,
-		type: 'thought',
-		thoughtLabel: label,
-	};
-	if (className) msg.thoughtClass = className;
-	return msg;
-};
+// const aiThoughtMessage = (
+// 	thoughts: string | Promise<string>,
+// 	label = 'Thoughts',
+// 	className = ''
+// ): Message => {
+// 	let msg: Message = {
+// 		id: uuidv4(),
+// 		role: 'ASSISTANT',
+// 		// @ts-ignore
+// 		content: thoughts,
+// 		type: 'thought',
+// 		thoughtLabel: label,
+// 	};
+// 	if (className) msg.thoughtClass = className;
+// 	return msg;
+// };
 
 interface Options {
 	wide: boolean;
@@ -88,13 +97,12 @@ const DefaultOptions: Options = {
 };
 type StepsPreset = 'Low' | 'Medium' | 'High' | 'Custom';
 function InnerMonologueChat() {
-	const [messages, setMessages] = useState<Message[]>([
-		{
-			role: 'ASSISTANT',
-			content: 'Hi, what do you want to talk about?',
-			id: uuidv4(),
-		},
-	]);
+	const defMsg = makeMsg(
+		'message',
+		'ASSISTANT',
+		'Hi, what do you want to talk about?'
+	);
+	const [messages, setMessages] = useState<Message[]>([defMsg]);
 	const [chatSummary, setChatSummary] = useState('');
 	const [options, setOptions] = useState(DefaultOptions);
 	const [lastPrompt, setLastPrompt] = useState('');
@@ -118,12 +126,8 @@ function InnerMonologueChat() {
 			toast.error('Please enter a message');
 			return;
 		}
-		let newMessages = [
-			...messages,
-			{ role: 'USER', content: userInput, id: uuidv4() },
-		];
-		const userMsg = newMessages[newMessages.length - 1];
-		setMessages(newMessages);
+		const userMsg = makeMsg('message', 'USER', userInput);
+		let newMessages = addMsg(userMsg, messages, setMessages);
 
 		let image: string | undefined;
 		let imagePrompt = '';
@@ -132,9 +136,9 @@ function InnerMonologueChat() {
 		const intentArea = await gen.pickIntentArea(newMessages, {
 			summary: chatSummary,
 		});
-		const intentMsg = aiThoughtMessage('', 'Intent: ' + intentArea, 'intent');
-		newMessages = [...newMessages, intentMsg];
-		setMessages(newMessages);
+		// intent doesnt have thought content
+		const intentMsg = makeThoughtMsg('', 'Intent: ' + intentArea, 'intent');
+		newMessages = addMsg(intentMsg, newMessages, setMessages);
 
 		const lastMsg = getMsgBefore(
 			newMessages,
@@ -148,39 +152,41 @@ function InnerMonologueChat() {
 			// 	summary: chatSummary,
 			// });
 			// console.log('specificIntent', specificIntent);
-			const promptThoughts = await gen.imgPromptThoughts(
+			const promptThoughts = gen.imgPromptThoughts(
 				userMsg,
 				lastMsg,
 				chatSummary
 			);
-			const promptMsg = aiThoughtMessage(
+			const promptMsg = makeThoughtMsg(
+				// @ts-ignore
 				promptThoughts,
 				'Image Prompt Thoughts',
 				'image-prompt-thoughts'
 			);
-			newMessages = [...newMessages, promptMsg];
-			setMessages(newMessages);
-			const detectedDesc = await gen.imgPromptFromInput(userMsg, newMessages, {
+			newMessages = addMsg(promptMsg, newMessages, setMessages);
+			const detectedDesc = gen.imgPromptFromInput(userMsg, newMessages, {
 				summary: chatSummary,
 			});
-			const dT = aiThoughtMessage(
+			const dT = makeThoughtMsg(
+				// @ts-ignore
 				detectedDesc,
 				'Detected Description',
 				'detected-desc'
 			);
-			newMessages = [...newMessages, dT];
-			setMessages(newMessages);
-			const prompt = await gen.imgPrompt(detectedDesc, promptThoughts);
+			newMessages = addMsg(dT, newMessages, setMessages);
+			const prompt = await gen.imgPrompt(
+				await detectedDesc,
+				await promptThoughts
+			);
 			imagePrompt = prompt;
 			setLastPrompt(prompt);
 			// await addLorasToPrompt(prompt);
-			const imgPromptMsg = aiThoughtMessage(
+			const imgPromptMsg = makeThoughtMsg(
 				prompt,
 				'Image Prompt',
 				'image-prompt'
 			);
-			newMessages = [...newMessages, imgPromptMsg];
-			setMessages(newMessages);
+			newMessages = addMsg(imgPromptMsg, newMessages, setMessages);
 			const start = Date.now();
 			const res = await txt2img({
 				prompt,
@@ -205,17 +211,13 @@ function InnerMonologueChat() {
 			madeImage: !!image,
 			imagePrompt: imagePrompt,
 		});
-		const aiMessage: Message = {
-			role: 'ASSISTANT',
-			// @ts-ignore
-			content: response,
-			id: uuidv4(),
-		};
+		const o: any = {};
 		if (image) {
-			aiMessage.images = [{ url: image, prompt: lastInfo.prompt, seed }];
+			o.images = [{ url: image, prompt: lastInfo.prompt, seed }];
 		}
-		newMessages = [...newMessages, aiMessage];
-		setMessages(newMessages);
+		// @ts-ignore
+		const aiMessage = makeMsg('message', 'ASSISTANT', response, o);
+		newMessages = addMsg(aiMessage, newMessages, setMessages);
 		updateSummary(newMessages);
 	};
 
@@ -269,7 +271,7 @@ function InnerMonologueChat() {
 		const intentArea = await gen.pickIntentArea(messages, {
 			summary: chatSummary,
 		});
-		const intentMsg = aiThoughtMessage('', 'Intent: ' + intentArea, 'intent');
+		const intentMsg = makeThoughtMsg('', 'Intent: ' + intentArea, 'intent');
 		let newMessages = updateThoughts(intentMsg, msgIndex, intentMsg);
 		const isImgReq = intentArea.includes('IMAGE');
 		if (!isImgReq) return;
@@ -285,7 +287,7 @@ function InnerMonologueChat() {
 				lastMsg,
 				chatSummary
 			);
-			const promptMsg = aiThoughtMessage(
+			const promptMsg = makeThoughtMsg(
 				promptThoughts,
 				'Image Prompt Thoughts',
 				'image-prompt-thoughts'
@@ -293,7 +295,7 @@ function InnerMonologueChat() {
 			newMessages = updateThoughts(promptMsg, msgIndex, promptMsg);
 			prompt = await gen.imgPrompt(inputMsg.content, lastMsg?.content);
 			setLastPrompt(prompt);
-			const imgPromptMsg = aiThoughtMessage(
+			const imgPromptMsg = makeThoughtMsg(
 				prompt,
 				'Image Prompt',
 				'image-prompt'
@@ -383,7 +385,7 @@ function InnerMonologueChat() {
 				lastMsg,
 				chatSummary
 			);
-			const promptMsg = aiThoughtMessage(
+			const promptMsg = makeThoughtMsg(
 				promptThoughts,
 				'Image Prompt Thoughts',
 				'image-prompt-thoughts'
@@ -391,7 +393,7 @@ function InnerMonologueChat() {
 			newMessages = updateThoughts(promptMsg, messages.indexOf(msg), promptMsg);
 			prompt = await gen.imgPrompt(inputMsg.content, promptThoughts);
 			setLastPrompt(prompt);
-			const imgPromptMsg = aiThoughtMessage(
+			const imgPromptMsg = makeThoughtMsg(
 				prompt,
 				'Image Prompt',
 				'image-prompt'

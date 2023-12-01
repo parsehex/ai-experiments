@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { v4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
-import { Message } from '@/lib/types';
 import { generate } from '@/lib/llm';
-import { PromptPart } from '@/lib/types/llm';
+import { PromptPart, Message } from '@/lib/types/llm';
+import { addMsg, makeMsg } from '@/lib/utils/messages';
 
 const summarize = async (messages: Message[], summary?: string) => {
 	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}\n`).join('');
@@ -63,31 +63,19 @@ function ConversationalSummaryChat() {
 		if (!userInput) return;
 		setInput('');
 
-		const userMsgId = v4();
-		const resMsgId = v4();
-		let newMessages = [
-			...messages,
-			{ role: 'USER', content: userInput, id: userMsgId },
-		] as Message[];
-		setMessages(newMessages);
+		const userMsg = makeMsg('message', 'USER', userInput);
+		let newMessages = addMsg(userMsg, messages, setMessages);
 
 		const chatSummary = summary || '';
-		const lastMessage = messages[messages.length - 1];
-		let lastMessageWithRole = '';
-		if (lastMessage) {
-			lastMessageWithRole = `${lastMessage.role}: ${lastMessage.content}`;
+		const lastMsg = messages[messages.length - 1];
+		let lastMesgWithRole = '';
+		if (lastMsg) {
+			lastMesgWithRole = `${lastMsg.role}: ${lastMsg.content}`;
 		}
-		const response = await sendInput(
-			userInput,
-			lastMessageWithRole,
-			chatSummary
-		);
+		const response = await sendInput(userInput, lastMesgWithRole, chatSummary);
 
-		newMessages = [
-			...newMessages,
-			{ role: 'ASSISTANT', content: response, id: resMsgId },
-		];
-		setMessages(newMessages);
+		const resMsg = makeMsg('message', 'ASSISTANT', response);
+		newMessages = addMsg(resMsg, newMessages, setMessages);
 
 		const msgsToSummarize = [...newMessages];
 		// we should only summarize the new messages

@@ -1,13 +1,9 @@
 import '@/styles/chatbox.scss';
-import { CustomBtns, Message } from '@/lib/types';
+import { CustomBtns } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
 import MessageItem from './MessageItem';
 import InputBox from './InputBox';
-
-// @ts-ignore
-export interface AlternateMessage extends Message {
-	content: string | Promise<string>;
-}
+import { ChatBoxMessage } from '@/lib/types/llm';
 
 export const ChatBox = ({
 	roles = ['USER', 'ASSISTANT'],
@@ -25,7 +21,7 @@ export const ChatBox = ({
 	customBtns,
 }: {
 	roles?: string[];
-	messages: AlternateMessage[];
+	messages: ChatBoxMessage[];
 	// messages: Message[];
 	setMessages: (value: any) => void;
 	deleteMessage?: (id: string) => void;
@@ -60,7 +56,7 @@ export const ChatBox = ({
 
 	const toggleRole = (messageId: string) => {
 		setMessages((prevMessages: any) => {
-			return prevMessages.map((msg: Message) => {
+			return prevMessages.map((msg: ChatBoxMessage) => {
 				if (msg.id === messageId) {
 					// console.log(msg);
 					const currentIndex = roles.indexOf(msg.role);
@@ -86,7 +82,7 @@ export const ChatBox = ({
 
 	const handleSelect = (
 		e: React.ChangeEvent<HTMLInputElement>,
-		msg: AlternateMessage,
+		msg: ChatBoxMessage,
 		idx: number
 	) => {
 		const updatedSelection = new Set(selectedMessages);

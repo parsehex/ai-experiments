@@ -1,7 +1,7 @@
-import { Message } from '@/lib/types';
+import { Message } from '@/lib/types/llm';
 import { PromptPart, PromptPartResponse } from '@/lib/types/llm';
 import { Choices } from '@/lib/llm/grammar';
-import { getMsgBefore } from '@/lib/utils';
+import { getMsgBefore } from '@/lib/utils/messages';
 
 export * from './image-prompt';
 export * from './loras';

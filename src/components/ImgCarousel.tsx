@@ -2,7 +2,7 @@ import '@/styles/carousel.scss';
 import { useState } from 'react';
 import LeftArrow from './svg/LeftArrow';
 import RightArrow from './svg/RightArrow';
-import { ImgType } from '@/lib/types';
+import { ImgType } from '@/lib/types/llm';
 import { IoDownloadOutline } from 'react-icons/io5';
 
 const MIN_HEIGHT = 128;

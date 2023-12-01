@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
-import { Message } from '@/lib/types';
+import { Message } from '@/lib/types/llm';
 import { generate } from '@/lib/llm';
 import { FaMicrophone, FaStop } from 'react-icons/fa';
 import { MicVAD } from '@ricky0123/vad-web';
+import { addMsg, makeMsg } from '@/lib/utils/messages';
 
 function SimpleChat() {
 	const vad = () => {
@@ -15,27 +16,25 @@ function SimpleChat() {
 	const [micVadInstance, setMicVadInstance] = useState<any>(null);
 	const [micStarted, setMicStarted] = useState<boolean>(false);
 	const [inputStr, setInputStr] = useState<string>('');
-	const [messages, setMessages] = useState<Message[]>([
-		{
-			id: uuidv4(),
-			role: 'ASSISTANT',
-			content: "Hi, I'm a chatbot. How can I help you today?",
-		},
-	]);
+	const defMsg = makeMsg(
+		'message',
+		'ASSISTANT',
+		"Hi, I'm a chatbot. How can I help you today?"
+	);
+	const [messages, setMessages] = useState<Message[]>([defMsg]);
 
 	const handleSend = async (input = inputStr) => {
 		if (!input.trim()) return;
 
-		const userMessage = { id: uuidv4(), role: 'USER', content: input.trim() };
-		const newMessages = [...messages, userMessage];
-		setMessages(newMessages);
+		const userMessage = makeMsg('message', 'USER', input);
+		const newMessages = addMsg(userMessage, messages, setMessages);
 
-		const response = {
-			id: uuidv4(),
-			role: 'ASSISTANT',
-			content: await getAIResponse(input.trim()),
-		};
-		setMessages([...newMessages, response]);
+		const response = makeMsg(
+			'message',
+			'ASSISTANT',
+			await getAIResponse(input.trim())
+		);
+		addMsg(response, newMessages, setMessages);
 	};
 
 	const getAIResponse = async (input: string) => {

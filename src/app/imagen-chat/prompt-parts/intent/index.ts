@@ -1,6 +1,6 @@
 import { PromptPart, PromptPartResponse } from '@/lib/types/llm';
-import { Message } from '@/lib/types';
-import { getMsgBefore } from '@/lib/utils';
+import { Message } from '@/lib/types/llm';
+import { getMsgBefore } from '@/lib/utils/messages';
 
 export * from './image';
 

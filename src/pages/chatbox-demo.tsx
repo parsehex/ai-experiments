@@ -1,23 +1,18 @@
 import React, { useState } from 'react';
 import { ChatBox } from '@/components/ChatBox';
-import { Message } from '@/lib/types';
-import { v4 as uuidv4 } from 'uuid';
+import { Message } from '@/lib/types/llm';
+import { makeMsg } from '@/lib/utils/messages';
 
 function ChatboxDemo() {
 	const [messages, setMessages] = useState<Message[]>([]);
-	const [input, setInput] = useState('');
 
 	const handleMessageSubmit = (content: string) => {
-		const lastMessageRole = messages[messages.length - 1]?.role || 'ASSISTANT';
-		const role = lastMessageRole === 'USER' ? 'ASSISTANT' : 'USER';
+		const lastMsgRole = messages[messages.length - 1]?.role || 'ASSISTANT';
+		const nextRole = lastMsgRole === 'USER' ? 'ASSISTANT' : 'USER';
 		if (content.trim() !== '') {
 			console.log(content);
-			const newMessage: Message = {
-				id: uuidv4(),
-				role,
-				content,
-			};
-			setMessages([...messages, newMessage]);
+			const newMsg = makeMsg('message', nextRole, content);
+			setMessages([...messages, newMsg]);
 		}
 	};
 

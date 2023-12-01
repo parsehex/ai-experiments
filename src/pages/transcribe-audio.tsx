@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { addCorsIfNot, cors } from '@/lib/utils';
+import { addCorsIfNot } from '@/lib/utils';
 
 const TranscribeAudio: React.FC = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);

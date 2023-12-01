@@ -1,33 +1,12 @@
-import { CustomBtns, Message } from '@/lib/types';
+import { CustomBtns } from '@/lib/types';
 import React from 'react';
 import ClipLoader from 'react-spinners/ClipLoader';
 import ImgCarousel from '../ImgCarousel';
 import TextInput from '../TextInput';
-import { AlternateMessage } from '.';
+import { ChatBoxMessage } from '@/lib/types/llm';
 
-/*
-interface ImageObj {
-	url: string;
-	prompt?: string;
-	seed?: string | number;
-}
-export type ImgType = string | ImageObj;
-export interface Message {
-	id: string;
-	role: string;
-	content: string;
-	type?: 'message' | 'thought';
-	thoughtLabel?: string;
-	thoughtClass?: string;
-	images?: ImgType[];
-}
-export interface AlternateMessage extends Message {
-	content: string | Promise<string>;
-}
-*/
 interface MessageItemProps {
-	message: AlternateMessage;
-	// message: Message;
+	message: ChatBoxMessage;
 	index: number;
 	isSelected: boolean;
 	onToggleRole: (id: string) => void;

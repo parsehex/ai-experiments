@@ -2,31 +2,26 @@
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
-import { Message } from '@/lib/types';
+import { Message } from '@/lib/types/llm';
 import { generate } from '@/lib/llm';
+import { addMsg, makeMsg } from '@/lib/utils/messages';
 
 function SimpleChat() {
-	const [messages, setMessages] = useState<Message[]>([
-		{
-			id: uuidv4(),
-			role: 'ASSISTANT',
-			content: "Hi, I'm a chatbot. How can I help you today?",
-		},
-	]);
+	const defMsg = makeMsg(
+		'message',
+		'ASSISTANT',
+		"Hi, I'm a chatbot. How can I help you today?"
+	);
+	const [messages, setMessages] = useState<Message[]>([defMsg]);
 
 	const handleSend = async (input: string) => {
 		if (!input.trim()) return;
 
-		const userMessage = { id: uuidv4(), role: 'USER', content: input.trim() };
-		const newMessages = [...messages, userMessage];
-		setMessages(newMessages);
+		const userMsg = makeMsg('message', 'USER', input);
+		const newMsgs = addMsg(userMsg, messages, setMessages);
 
-		const response = {
-			id: uuidv4(),
-			role: 'ASSISTANT',
-			content: await getAIResponse(input.trim()),
-		};
-		setMessages([...newMessages, response]);
+		const resMsg = makeMsg('message', 'ASSISTANT', await getAIResponse(input));
+		addMsg(resMsg, newMsgs, setMessages);
 	};
 
 	const getAIResponse = async (input: string) => {
@@ -52,6 +47,10 @@ ${messagesStr}<|im_end|>
 
 	return (
 		<div className="chat-container">
+			<p>
+				This chat is hardcoded to use the <u>ChatML</u> prompt format. For best
+				results, use an appropriate model.
+			</p>
 			<ChatBox
 				messages={messages}
 				setMessages={setMessages}

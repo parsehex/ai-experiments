@@ -1,8 +1,8 @@
-import { Message } from '../types/llm';
+import { RawMessage } from '../types/llm';
 
 type OpenAIRoleType = 'system' | 'user' | 'assistant';
 interface OpenAIChatCompletionParams {
-	prompt: Message<OpenAIRoleType>[];
+	prompt: RawMessage<OpenAIRoleType>[];
 	api_key: string;
 	/** Default: 1 */
 	temperature?: number;
@@ -28,7 +28,7 @@ interface OpenAIChatCompletionResponse {
 	system_fingerprint: string;
 	choices: {
 		index: number;
-		message: Message<OpenAIRoleType>;
+		message: RawMessage<OpenAIRoleType>;
 		/** E.g. "stop" or "length" */
 		finish_reason: string;
 	}[];

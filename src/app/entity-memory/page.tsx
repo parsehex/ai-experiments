@@ -9,7 +9,7 @@ import { Serialized } from 'langchain/load/serializable';
 import { EntityMemory } from 'langchain/memory';
 import { ChatBox } from '@/components/ChatBox';
 import { getLLM } from '@/lib/llms';
-import { Message } from '@/lib/types';
+import { Message, RawMessage } from '@/lib/types/llm';
 import { testPrompts } from './prompts';
 
 // TODO add other chat routes to prototype other agents
@@ -21,7 +21,7 @@ function EntityMemoryChat() {
 			role: 'assistant',
 			content: "Hi, I'm a chatbot who can search the web. How can I help you?",
 		},
-	] as Message[]);
+	] as RawMessage[]);
 	const [input, setInput] = useState('');
 	const [openaiKey, setOpenaiKey] = useState('');
 	const [executor, setExecutor] = useState(null as AgentExecutor | null);
@@ -77,7 +77,7 @@ function EntityMemoryChat() {
 		setMessages([
 			...messages,
 			{ role: 'user', content: userInput },
-		] as Message[]);
+		] as RawMessage[]);
 
 		const result = await executor.call({ input: userInput }, [
 			{
@@ -101,7 +101,7 @@ function EntityMemoryChat() {
 		}
 		newMessages.push({ role: 'assistant', content: response });
 
-		setMessages(newMessages as Message[]);
+		setMessages(newMessages as RawMessage[]);
 
 		const newEntities = await executor.memory?.loadMemoryVariables({
 			input: '',
@@ -127,7 +127,7 @@ function EntityMemoryChat() {
 			/>
 			<div className="container">
 				<ChatBox
-					messages={messages}
+					messages={messages as Message[]}
 					setMessages={setMessages}
 					roles={['user', 'assistant', 'assistant-thinking']}
 				/>
