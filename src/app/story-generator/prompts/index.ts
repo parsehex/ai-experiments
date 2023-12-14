@@ -1,4 +1,4 @@
-import { PromptPart } from '@/lib/types/llm';
+import { PromptPart, PromptPartResponse } from '@/lib/types/llm';
 import { Character, Plot, Action } from '../types';
 
 function CharacterString(chars: Character[], isThought = true) {
@@ -61,14 +61,16 @@ function hasPlot(plot: Plot) {
 export function genStoryDescription(
 	chars: Character[],
 	plot: Plot
-): PromptPart[] {
+): PromptPartResponse {
 	// use whatever info we have to generate a story description
 	const charStr = CharacterString(chars);
-	return [
+	const system: PromptPart[] = [
 		{
-			str: 'Write a short story description based on the following info. The description should concisely explain what the story is mainly about. Make sure not to go into too much detail. It should be compelling and creative.\n\n',
-			suf: `STORY INFO:\n`,
+			str: 'Write a short story description based on the following info. The description should concisely explain what the story is mainly about. Make sure not to go into too much detail. It should be compelling and creative.',
 		},
+	];
+	const user: PromptPart[] = [
+		{ str: 'STORY INFO:' },
 		{
 			if: !!plot.tone,
 			str: `TONE: ${plot.tone}\n`,
@@ -78,8 +80,9 @@ export function genStoryDescription(
 			str: `${SettingString(plot)}\n`,
 		},
 		{ if: chars.length > 0, str: `CHARACTERS:\n${charStr}\n` },
-		{ str: 'RESPONSE:\n' },
 	];
+	const prefixResponse = 'DESCRIPTION:';
+	return { user, system, prefixResponse };
 }
 
 export function genCharacters(

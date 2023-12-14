@@ -7,7 +7,7 @@ const params: GenerateOptions = {
 	temp: 0.01,
 	cfg: 1.05,
 	stop: ['<|im_end|>'],
-	top_k: 20,
+	// top_k: 20,
 };
 function Redacter() {
 	// https://microsoft.github.io/presidio/tutorial/00_getting_started/

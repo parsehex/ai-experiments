@@ -1,4 +1,5 @@
 import * as ooba from './ooba-api.new';
+import * as newapi from './new-api';
 import * as openai from './openai-api';
 import { GenerateParams } from '../types/ooba.new';
 import {
@@ -60,6 +61,15 @@ const KeyMap: ParamKeyMap = {
 	grammar: 'grammar_string',
 	tokenBans: 'custom_token_bans',
 };
+const NewKeyMap: ParamKeyMap = {
+	api_key: '',
+	temp: 'temperature',
+	cfg: '',
+	max: 'max_tokens',
+	stop: 'stop',
+	grammar: '',
+	tokenBans: '',
+};
 const OpenAIKeyMap: ParamKeyMap = {
 	api_key: 'api_key',
 	temp: 'temperature',
@@ -72,6 +82,7 @@ const OpenAIKeyMap: ParamKeyMap = {
 
 const ModelKeyMap: Record<string, ParamKeyMap> = {
 	ooba: KeyMap,
+	new: NewKeyMap,
 	OpenAI: OpenAIKeyMap,
 };
 
@@ -86,7 +97,7 @@ export async function generate(
 	promptParts: PromptPart[] | (Message | RawMessage)[] | string,
 	options?: GenerateOptions
 ): Promise<string> {
-	let openaiOrOoba: 'ooba' | 'OpenAI' | '' = '';
+	let modelType: 'ooba' | 'OpenAI' | 'new' | '' = '';
 	let model = '';
 	let promptFormat = 'flexible';
 	let prompt: PromptFormatResponse = '';
@@ -97,18 +108,17 @@ export async function generate(
 		const openaiModel = OpenAIModels.find((m) => model.startsWith(m));
 		if (openaiModel) {
 			promptFormat = 'OpenAI';
-			openaiOrOoba = 'OpenAI';
+			modelType = 'OpenAI';
 			if (!options.api_key) {
 				throw new Error(
 					'OpenAI model requires api_key to be passed in options'
 				);
 			}
 		} else {
-			openaiOrOoba = 'ooba';
+			modelType = 'new';
 		}
-	} else if (options && !options.model) {
-		model = 'ooba';
-		openaiOrOoba = 'ooba';
+	} else {
+		modelType = 'new';
 	}
 	if (Array.isArray(promptParts)) {
 		// look at first part to determine type
@@ -128,8 +138,8 @@ export async function generate(
 	}
 
 	const params: GenerateParams = { prompt: prompt as any };
-	if (options && openaiOrOoba) {
-		const modelKeyMap = ModelKeyMap[openaiOrOoba];
+	if (options && modelType) {
+		const modelKeyMap = ModelKeyMap[modelType];
 		for (const [key, value] of Object.entries(options)) {
 			const paramKey = modelKeyMap[key as keyof GenerateOptions];
 			// remove falsy values that are not boolean, or remove empty paramKeys
@@ -153,13 +163,10 @@ export async function generate(
 		delete params.prefixResponse;
 	}
 	let res = '';
-	if (openaiOrOoba === 'ooba') {
-		if (!params?.auto_max_new_tokens && !params?.max_tokens) {
-			params.auto_max_new_tokens = true;
-		}
-		const resp = await ooba.generateText(params);
-		res = resp.choices[0].text;
-	} else if (openaiOrOoba === 'OpenAI') {
+	if (modelType === 'new') {
+		const resp = await newapi.generateText(params);
+		res = resp.text;
+	} else if (modelType === 'OpenAI') {
 		params.api_key = options?.api_key;
 		params.model = model;
 		params.messages = prompt as Message[];
@@ -181,7 +188,7 @@ export async function getModel(model: string): Promise<string> {
 	if (model.startsWith('gpt-') || model.toLowerCase().includes('openai')) {
 		return 'OpenAI';
 	} else if (model) {
-		const res = await ooba.getModel();
+		const res = await newapi.getModel();
 		return res.model_name || 'None';
 	} else {
 		throw new Error('No model specified');

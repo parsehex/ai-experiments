@@ -30,6 +30,7 @@ import {
 import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
 import StarterPresets from './starters';
+import { makePrompt } from '@/lib/llm/prompts';
 
 const StoryGenerator = () => {
 	const starter = StarterPresets[0];
@@ -123,15 +124,20 @@ const StoryGenerator = () => {
 		p: Plot = plot
 	) => {
 		const parts = genStoryDescription(c, p);
-		const generatedDescription = await generate(parts, {
-			temp: 0.25,
-			cfg: 1.5,
-			grammar: Lines({
-				n: 1,
-				sentences: { min: 2, max: 5, startWithWord: true },
-			}),
-			// log: { response: 'Description:' },
-		});
+		const { user, system, prefixResponse } = parts;
+		const generatedDescription = await generate(
+			makePrompt(user, system, 'ChatML'),
+			{
+				max: 128,
+				// temp: 0.25,
+				// cfg: 1.5,
+				// grammar: Lines({
+				// 	n: 1,
+				// 	sentences: { min: 2, max: 5, startWithWord: true },
+				// }),
+				// log: { response: 'Description:' },
+			}
+		);
 
 		setPlot((prevPlot) => ({
 			...prevPlot,
