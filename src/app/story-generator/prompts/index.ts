@@ -1,5 +1,5 @@
 import { PromptPart } from '@/lib/types/llm';
-import { Character, Plot, Action } from './types';
+import { Character, Plot, Action } from '../types';
 
 function CharacterString(chars: Character[], isThought = true) {
 	const mapFunc = (c: Character) => {

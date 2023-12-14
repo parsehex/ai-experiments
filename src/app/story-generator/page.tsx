@@ -26,7 +26,7 @@ import {
 	genStarter,
 	genStoryDescription,
 	genTone,
-} from './prompt-parts';
+} from './prompts';
 import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
 import StarterPresets from './starters';
