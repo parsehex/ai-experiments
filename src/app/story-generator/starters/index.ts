@@ -1,5 +1,6 @@
 import { StarterPreset } from '../types';
 import buttandjohn from './buttandjohn';
+import gwis from './gwis';
 
 export const StarterPresets: StarterPreset[] = [
 	{
@@ -17,6 +18,7 @@ export const StarterPresets: StarterPreset[] = [
 		},
 	},
 	buttandjohn(),
+	gwis(),
 ];
 
 export default StarterPresets;

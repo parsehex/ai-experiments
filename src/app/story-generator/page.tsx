@@ -32,7 +32,7 @@ import { Character, Plot, Action } from './types';
 import StarterPresets from './starters';
 
 const StoryGenerator = () => {
-	const starter = StarterPresets[1];
+	const starter = StarterPresets[0];
 	const defCharacters = starter.defaultCharacters;
 	const defPlot = starter.defaultPlot;
 	const [characters, setCharacters] = useState<Character[]>(defCharacters);
