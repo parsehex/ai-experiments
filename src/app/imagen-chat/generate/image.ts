@@ -1,9 +1,8 @@
-import { GenerateOptions, generate } from '@/lib/llm';
+import { generate, Params } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { Message } from '@/lib/types/llm';
 import * as parts from '../prompt-parts';
 import { toast } from 'react-toastify';
-import { Params } from '.';
 
 export const imgPromptFromInput = async (
 	inputMsg: Message,

@@ -1,21 +1,10 @@
 import { toast } from 'react-toastify';
-import { GenerateOptions, generate } from '@/lib/llm';
+import { generate, Params } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { Message } from '@/lib/types/llm';
 import * as parts from '../prompt-parts';
 
 export * from './image';
-
-const DefaultLLMParams = {
-	temp: 0.7,
-	top_p: 0.9,
-	max: 256,
-	top_k: 20,
-	repetition_penalty: 1.15,
-	stop: ['RESPONSE:', 'INPUT:'],
-};
-export const Params = (p: GenerateOptions): GenerateOptions =>
-	Object.assign({}, DefaultLLMParams, p);
 
 // TODO function to get full Intent-path from input
 

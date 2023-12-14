@@ -221,3 +221,14 @@ export async function decodeTokens(
 		throw new Error('No model specified');
 	}
 }
+
+const DefaultLLMParams = {
+	temp: 0.7,
+	top_p: 0.9,
+	max: 256,
+	top_k: 20,
+	repetition_penalty: 1.15,
+	stop: ['RESPONSE:', 'INPUT:'],
+};
+export const Params = (p: GenerateOptions): GenerateOptions =>
+	Object.assign({}, DefaultLLMParams, p);
