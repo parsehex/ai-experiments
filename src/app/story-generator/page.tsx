@@ -14,26 +14,16 @@ import {
 	Sentences,
 } from '@/lib/llm/grammar';
 import { generate } from '@/lib/llm';
-import { PromptPart } from '@/lib/types/llm';
+import { PromptPart, PromptPartResponse } from '@/lib/types/llm';
 import { addCharacterOptions } from './hover-menus';
-import {
-	genCharacters,
-	genDialogueAction,
-	genFillCharacterDetails,
-	genNarrativeAction,
-	genPickAction,
-	genSetting,
-	genStarter,
-	genStoryDescription,
-	genTone,
-} from './prompts';
+import * as parts from './prompts';
 import { makeCharacter } from './story';
 import { Character, Plot, Action } from './types';
 import StarterPresets from './starters';
 import { makePrompt } from '@/lib/llm/prompts';
 
 const StoryGenerator = () => {
-	const starter = StarterPresets[0];
+	const starter = StarterPresets[StarterPresets.length - 1];
 	const defCharacters = starter.defaultCharacters;
 	const defPlot = starter.defaultPlot;
 	const [characters, setCharacters] = useState<Character[]>(defCharacters);
@@ -123,19 +113,16 @@ const StoryGenerator = () => {
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
-		const parts = genStoryDescription(c, p);
-		const { user, system, prefixResponse } = parts;
+		const { user, system, prefixResponse, grammar } = parts.genStoryDescription(
+			c,
+			p
+		);
 		const generatedDescription = await generate(
 			makePrompt(user, system, 'ChatML'),
 			{
 				max: 128,
-				// temp: 0.25,
-				// cfg: 1.5,
-				// grammar: Lines({
-				// 	n: 1,
-				// 	sentences: { min: 2, max: 5, startWithWord: true },
-				// }),
-				// log: { response: 'Description:' },
+				prefixResponse,
+				grammar,
 			}
 		);
 
@@ -155,12 +142,17 @@ const StoryGenerator = () => {
 		if (!num) num = Math.floor(Math.random() * 5) + 1;
 
 		for (let i = 0; i < num; i++) {
-			const parts = genCharacters([...chars], p, relevance);
-			const result = await generate(parts, {
+			const { user, system, prefixResponse, grammar } = parts.genCharacters(
+				[...chars],
+				p,
+				relevance
+			);
+			const result = await generate(makePrompt(user, system, 'ChatML'), {
 				temp: 0.75,
-				cfg: 1.15,
-				grammar: CharacterObject(),
+				// cfg: 1.15,
 				max: 512,
+				prefixResponse,
+				grammar,
 				// log: { response: 'Character:' },
 			});
 			const char = JSON.parse(result) as Character;
@@ -183,11 +175,13 @@ const StoryGenerator = () => {
 	const fillCharacterDetails = async (character: Character) => {
 		if (character.isComplete()) return;
 
-		const parts = genFillCharacterDetails(character, characters, plot);
-		const result = await generate(parts, {
+		const { user, system, prefixResponse, grammar } =
+			parts.genFillCharacterDetails(character, characters, plot);
+		const result = await generate(makePrompt(user, system, 'ChatML'), {
 			temp: 0.75,
-			cfg: 1.5,
-			grammar: CharacterObject(),
+			// cfg: 1.5,
+			grammar,
+			prefixResponse,
 			max: 512,
 			// log: { response: 'Character:' },
 		});
@@ -207,11 +201,11 @@ const StoryGenerator = () => {
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
-		const parts = genSetting(c, p);
+		const { user, system, prefixResponse, grammar } = parts.genSetting(c, p);
 		const result = JSON.parse(
-			await generate(parts, {
-				cfg: 1.25,
-				grammar: SettingObject(),
+			await generate(makePrompt(user, system, 'ChatML'), {
+				prefixResponse,
+				grammar,
 				max: 256,
 				log: { response: 'Setting:' },
 			})
@@ -227,11 +221,12 @@ const StoryGenerator = () => {
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
-		const parts = genTone(c, p);
-		const result = await generate(parts, {
+		const { user, system, prefixResponse, grammar } = parts.genTone(c, p);
+		const result = await generate(makePrompt(user, system, 'ChatML'), {
 			temp: 0.25,
 			cfg: 1.15,
-			grammar: Sentences(1),
+			grammar,
+			prefixResponse,
 			max: 100,
 			log: { response: 'Tone:' },
 		});
@@ -242,11 +237,12 @@ const StoryGenerator = () => {
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
-		const parts = genStarter(c, p);
-		const result = await generate(parts, {
+		const { user, system, prefixResponse, grammar } = parts.genStarter(c, p);
+		const result = await generate(makePrompt(user, system, 'ChatML'), {
 			// cfg: 1.25,
 			temp: 0.25,
-			grammar: Sentences(1, false, 1, 3),
+			grammar,
+			prefixResponse,
 			max: 256,
 			log: { response: 'Intro:', prompt: 'Intro Prompt:' },
 		});
@@ -280,22 +276,28 @@ const StoryGenerator = () => {
 				},
 			];
 		}
-		const actionParts = genPickAction(c, p, a, userRequest);
-		const actionStr = await generate(actionParts, {
+		let { user, system, prefixResponse, grammar } = parts.genPickAction(
+			c,
+			p,
+			a,
+			userRequest
+		);
+		const actionStr = await generate(makePrompt(user, system, 'ChatML'), {
 			temp: 0.25,
 			cfg: 1.25,
-			grammar: ActionObject(),
+			grammar,
+			prefixResponse,
 			max: 384,
 			log: { response: 'Thought:', prompt: 'Thought Prompt:' },
 		});
 		const actionThoughts: Omit<Action, 'aiThoughts'> = JSON.parse(actionStr);
 		actionThoughts.id = v4();
 
-		let actionParts2: PromptPart[] = [];
+		let actionParts2: PromptPartResponse;
 		if (actionThoughts.type === 'Narrative') {
-			actionParts2 = genNarrativeAction(c, p, a, actionThoughts.str);
-		} else if (actionThoughts.type === 'Dialogue') {
-			actionParts2 = genDialogueAction(
+			actionParts2 = parts.genNarrativeAction(c, p, a, actionThoughts.str);
+		} else {
+			actionParts2 = parts.genDialogueAction(
 				c,
 				p,
 				a,
@@ -303,12 +305,15 @@ const StoryGenerator = () => {
 				actionThoughts.characterName || ''
 			);
 		}
-		const result = await generate(actionParts2, {
+		user = actionParts2.user;
+		system = actionParts2.system;
+		prefixResponse = actionParts2.prefixResponse;
+		grammar = actionParts2.grammar;
+		const result = await generate(makePrompt(user, system, 'ChatML'), {
 			temp: actionThoughts.type === 'Dialogue' ? 0.25 : 0.01,
 			cfg: 1.1,
-			// grammar: Lines({ n: 1, sentences: { min: 1, max: 5 } }),
-			grammar:
-				actionThoughts.type === 'Dialogue' ? '' : Sentences(1, false, 1, 3),
+			grammar,
+			prefixResponse,
 			max: 512,
 			log: { response: 'Action:', prompt: 'Action Prompt:' },
 			stop: ['\n'],
