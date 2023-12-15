@@ -1,0 +1,22 @@
+import logging
+
+LOG_LEVEL = logging.INFO
+
+HOST = "127.0.0.1"
+PORT = 5000
+
+LLM_MODELS_DIR = "/your/llm/models/dir"
+SD_MODELS_DIR = "/your/sd/models/dir"
+
+LLM_MODEL = "filename.smthing"
+# LLM_MODEL = "hf:HuggingFaceModel/Name"
+TTS_MODEL = "hf:coqui/XTTS-v2"
+
+LLM_DEFAULT_SEED = -1
+LLM_MAX_SEQ_LEN = 4096 # (n_ctx)
+LLM_SCALE_POS_EMB = 1.5
+
+SD_MODEL = "model.safetensors"
+SD_USE_SDXL = False
+SD_DEFAULT_STEPS = 20
+SD_DEFAULT_CFG = 6.0

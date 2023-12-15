@@ -1,0 +1,18 @@
+accelerate
+diffusers
+emoji
+fastapi
+gradio
+huggingface_hub
+numpy
+omegaconf
+simpleaudio
+torch
+torchaudio
+TTS
+transformers
+uvicorn
+
+https://github.com/turboderp/exllamav2/releases/download/v0.0.10/exllamav2-0.0.10+cu121-cp311-cp311-linux_x86_64.whl
+
+# also `CMAKE_ARGS="-DLLAMA_CUBLAS=on" pip install llama-cpp-python`

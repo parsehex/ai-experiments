@@ -1,0 +1,6 @@
+prompts:
+  - - What could an agent of babylon conversational-based AI be? It should be something unconventional and interesting. I\'m imagining something that tries to deceive the user. Think briefly and at a high level.
+    - I want you to imagine an LLM AI which is named Agent of Babylon. What would that look like? How would it behave, to make for an interesting and engaging experience for the user? To be a bit more clear, this is an AI that the user chats with, and has no physical form. It is a purely conversational AI.
+    - These are fantastic, thank you! Now, how would you break this down into a short description of this AI?
+# ideas:
+# option to compare or summarize results with llm
