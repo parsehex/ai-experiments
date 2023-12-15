@@ -21,10 +21,33 @@ interface GenerateParams {
 	temperature?: number;
 	max_tokens?: number;
 	prefixResponse?: string;
+	grammar?: string;
 	stop?: string[];
 }
 interface GenerateResponse {
-	text: string;
+	result: {
+		id: string;
+		object: string;
+		created: number;
+		model: string;
+		choices: {
+			text: string;
+			index: number;
+			logprobs: {
+				// idk what this is
+				tokens: string[];
+				token_logprobs: number[];
+				top_logprobs: any[];
+				text_offset: number[];
+			} | null;
+			finish_reason: 'stop' | 'length';
+		}[];
+		usage: {
+			prompt_tokens: number;
+			completion_tokens: number;
+			total_tokens: number;
+		};
+	};
 	prompt?: string;
 }
 
@@ -32,8 +55,8 @@ interface ModelInfo {
 	model_name: string;
 }
 
-// raw completion endpoint: POST /api/llm/generate
-// chat-style, no pre-prompt: POST /v1/chat/generic
+// raw completion endpoint: POST /llm/v1/complete
+// chat-style: POST /llm/v1/chat
 
 let BASE_URL = 'http://localhost:5000';
 let adjusted = false;
@@ -46,7 +69,7 @@ function fixUrl() {
 
 export async function getModel(): Promise<ModelInfo> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/api/llm/model`);
+	const response = await fetch(`${BASE_URL}/llm/v1/model`);
 	return response.json();
 }
 
@@ -54,7 +77,7 @@ export async function generateText(
 	params: GenerateParams
 ): Promise<GenerateResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/api/llm/generate`, {
+	const response = await fetch(`${BASE_URL}/llm/v1/complete`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -66,7 +89,7 @@ export async function generateText(
 
 export async function chat(params: any): Promise<ChatResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/v1/chat/generic`, {
+	const response = await fetch(`${BASE_URL}/llm/v1/chat`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

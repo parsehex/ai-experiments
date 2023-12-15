@@ -36,6 +36,7 @@ yarn-error.log*
 next-env.d.ts
 
 **/venv/**/*
+**/__pycache__/**/*
 
 src/app/story-generator/starters.ts
 py/settings.py

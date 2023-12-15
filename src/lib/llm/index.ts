@@ -165,7 +165,7 @@ export async function generate(
 	let res = '';
 	if (modelType === 'new') {
 		const resp = await newapi.generateText(params);
-		res = resp.text;
+		res = resp.result.choices[0].text;
 	} else if (modelType === 'OpenAI') {
 		params.api_key = options?.api_key;
 		params.model = model;
