@@ -1,5 +1,5 @@
 from typing import Generator, List, Union
-import logging, os, time
+import logging, os, re, time
 from py_api.args import Args
 from .llm_base import LLMClient_Base
 from llama_cpp import Llama, LlamaGrammar, LlamaCache
@@ -9,10 +9,29 @@ logger = logging.getLogger(__name__)
 
 def LlamaCppConfig(model_path):
 	model_file_name = os.path.basename(model_path)
+	# figure out the model size (examples: 7b, 13b, 30b, or others)
+	# also get the quant (e.g. "Q5_K_M")
+	size = ''
+	quant = ''
+	# match a period or hyphen followed by a number
+	match = re.search(r'(\.|-)(\d+)b(\.|-)', model_file_name.lower())
+	if match:
+		size = match.group(2)
+	# match a period followed by "q" and a number, with optional groups of "_[a-z0-9]" after
+	match = re.search(r'\.(q\d(_[a-z0-9])+)', model_file_name.lower())
+	if match:
+		quant = match.group(1)
+
+	if size == '':
+		print(f"WARNING: Could not determine model size from model name {model_file_name}.")
+	if quant == '':
+		print(f"WARNING: Could not determine quantization from model name {model_file_name}.")
+	if size != '' and quant != '':
+		print(f"Model Size: {size} | Quant: {quant}")
 	return {
 		'model_path': model_path,
 		'n_threads': 8,
-		'n_gpu_layers': 35,
+		'n_gpu_layers': 35, # TODO calc from size and quant
 		'n_ctx': 4096, # TODO: docs say 0 = from model -- does it work?
 		'verbose': False, # setting LLM_VERBOSE ?
 	}
