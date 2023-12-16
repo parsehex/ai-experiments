@@ -32,6 +32,15 @@ if __name__ == "__main__":
 	logging.basicConfig(level=args.log_level)
 	logger = logging.getLogger(__name__)
 
+	totalmem = torch.cuda.get_device_properties(0).total_memory
+	totalmem /= 1024**3
+	usedmem = torch.cuda.memory_allocated(0)
+	usedmem /= 1024**3
+	freemem = totalmem - usedmem
+	logger.debug(f"Total GPU memory: {totalmem:.2f} GB")
+	if freemem < 1:
+		raise RuntimeError("Not enough GPU memory to run LLM.")
+
 	llm = LLM.LLMClient_LlamaCppPython.instance
 	llm.load_model()
 
