@@ -14,7 +14,7 @@ def LlamaCppConfig(model_path):
 	size = ''
 	quant = ''
 	# match a period or hyphen followed by a number
-	match = re.search(r'(\.|-)(\d+)b(\.|-)', model_file_name.lower())
+	match = re.search(r'(\.|-|_)(\d+)b(\.|-|_)', model_file_name.lower())
 	if match:
 		size = match.group(2)
 	# match a period followed by "q" and a number, with optional groups of "_[a-z0-9]" after
