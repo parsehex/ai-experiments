@@ -27,7 +27,7 @@ import {
  */
 export function stringFromPromptParts(parts: PromptPart[]): string {
 	return parts.reduce((prompt, part) => {
-		if (part.val && (part.if === undefined || part.if)) {
+		if (part.val && (part.use === undefined || part.use)) {
 			const partStr = `${part.pre || ''}${part.val}${part.suf || ''}`;
 			return `${prompt}${partStr}`;
 		}

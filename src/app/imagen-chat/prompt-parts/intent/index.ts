@@ -36,7 +36,7 @@ export function pickAreaOfIntent({
 		(m) => m.role.toLowerCase() === 'user'
 	);
 	const user: PromptPart[] = [
-		{ if: !!summary, val: 'Chat Summary: ' + summary + '\n' },
+		{ use: !!summary, val: 'Chat Summary: ' + summary + '\n' },
 		{ val: `User INPUT: ${userMsg?.content}\n` },
 	];
 	const prefixResponse = 'INTENT:';

@@ -35,9 +35,9 @@ export function summarizeChat({
 		{
 			val: 'The following INPUT is a chat between a user and an assistant.\n',
 		},
-		{ if: !lastSummary.length, val: 'Your task is to summarize the chat.\n' },
+		{ use: !lastSummary.length, val: 'Your task is to summarize the chat.\n' },
 		{
-			if: lastSummary?.length > 0,
+			use: lastSummary?.length > 0,
 			val: 'Your task is to revise the previous summary based on the new chat. Retain the most important information from the previous summary.\n',
 			suf: `Previous Summary: ${lastSummary}\n`,
 		},
@@ -82,15 +82,15 @@ export function continueChat({
 		},
 		{ val: 'Respond with a string containing your response only.\n' },
 		{
-			if: messages.length > 0,
+			use: messages.length > 0,
 			val: `History (last ${chatHistory.length}):\n${chatHistory.join('\n')}\n`,
 		},
 		{
-			if: !!summary,
+			use: !!summary,
 			val: `Chat Summary: ${summary}\n`,
 		},
 		{
-			if: !!thoughts,
+			use: !!thoughts,
 			val: `Your Thoughts: ${thoughts}\n`,
 		},
 	];

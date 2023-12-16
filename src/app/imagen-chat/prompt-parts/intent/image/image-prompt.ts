@@ -21,9 +21,9 @@ Important: Do not reference the image in your response, simply describe it.
 You can only create 1 image at a time, do not describe multiple images.
 Respond with a string containing the description only.\n`,
 		},
-		{ if: !!summary, val: 'Chat Summary: ' + summary + '\n' },
+		{ use: !!summary, val: 'Chat Summary: ' + summary + '\n' },
 		{
-			if: !!prevMsg,
+			use: !!prevMsg,
 			val:
 				'Previous Message:\n<|im_start|>assistant\n' + prevMsg?.content + '\n',
 		},

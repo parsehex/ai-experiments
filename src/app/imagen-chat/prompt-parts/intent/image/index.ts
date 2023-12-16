@@ -45,11 +45,11 @@ export function pickImageIntent({
 			val: 'Respond with a string containing the key of the above Intent that you pick only.\n',
 		},
 		{
-			if: !!summary,
+			use: !!summary,
 			val: `Chat Summary: ${summary}\n`,
 		},
 		{
-			if: !!lastMsg,
+			use: !!lastMsg,
 			val: `Previous Message:\n<|im_start|>assistant\n${lastMsg?.content}\n`,
 			suf: !!lastMsg?.images?.length ? '(you generated an image)\n' : '',
 		},

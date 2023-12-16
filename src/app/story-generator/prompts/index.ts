@@ -24,12 +24,12 @@ export function genStoryDescription(
 	];
 	const user: PromptPart[] = [
 		{ val: 'STORY INFO:' },
-		{ if: !!plot.tone, val: toneStr },
+		{ use: !!plot.tone, val: toneStr },
 		{
-			if: !!(plot.location || plot.timePeriod),
+			use: !!(plot.location || plot.timePeriod),
 			val: settingStr,
 		},
-		{ if: chars.length > 0, val: charStr },
+		{ use: chars.length > 0, val: charStr },
 	];
 	const prefixResponse = 'DESCRIPTION:';
 	return { user, system, prefixResponse };
@@ -68,7 +68,7 @@ Return an array of objects, which should have the following keys:
 			pre: `STORY INFO:\n`,
 			val: `${PlotString(plot)}\n`,
 		},
-		{ if: chars.length > 0, val: `EXISTING CHARACTERS:\n${charStr}\n` },
+		{ use: chars.length > 0, val: `EXISTING CHARACTERS:\n${charStr}\n` },
 	];
 	const prefixResponse = 'CHARACTER:';
 	const grammar = CharacterObject();
@@ -90,17 +90,17 @@ export function genFillCharacterDetails(
 		},
 	];
 	const user: PromptPart[] = [
-		{ val: `${PlotString(plot)}\n`, if: hasPlot(plot) },
+		{ val: `${PlotString(plot)}\n`, use: hasPlot(plot) },
 		{
-			if: otherCharacters.length > 0,
+			use: otherCharacters.length > 0,
 			val: `OTHER CHARACTERS:\n${otherCharsStr}\n`,
 		},
 		{ val: `CHARACTER INFO:\n` },
-		{ val: `Name: ${character.name}\n`, if: !!character.name },
-		{ val: `DESCRIPTION: \n`, if: !!character.description },
-		{ val: `STATE: \n`, if: !!character.state },
-		{ val: `SHORT-TERM OBJECTIVE: \n`, if: !!character.objectives.shortTerm },
-		{ val: `LONG-TERM OBJECTIVE: \n`, if: !!character.objectives.longTerm },
+		{ val: `Name: ${character.name}\n`, use: !!character.name },
+		{ val: `DESCRIPTION: \n`, use: !!character.description },
+		{ val: `STATE: \n`, use: !!character.state },
+		{ val: `SHORT-TERM OBJECTIVE: \n`, use: !!character.objectives.shortTerm },
+		{ val: `LONG-TERM OBJECTIVE: \n`, use: !!character.objectives.longTerm },
 	];
 	const prefixResponse = 'CHARACTER:';
 	const grammar = CharacterObject();
@@ -121,10 +121,10 @@ Return an object with the following keys:
 	const user: PromptPart[] = [
 		{ val: `STORY INFO:\n` },
 		{
-			if: !!plot.storyDescription,
+			use: !!plot.storyDescription,
 			val: `DESCRIPTION: ${plot.storyDescription}\n`,
 		},
-		{ if: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
+		{ use: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
 	];
 	const prefixResponse = 'SETTING:';
 	return { user, system, prefixResponse };
@@ -140,14 +140,14 @@ A simple example would be "Dark and gritty but realistic."\n\n`,
 	const user: PromptPart[] = [
 		{ val: `STORY INFO:\n` },
 		{
-			if: !!plot.storyDescription,
+			use: !!plot.storyDescription,
 			val: `DESCRIPTION: ${plot.storyDescription}\n`,
 		},
 		{
-			if: !!(plot.location || plot.timePeriod),
+			use: !!(plot.location || plot.timePeriod),
 			val: `${SettingString(plot)}\n`,
 		},
-		{ if: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
+		{ use: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
 	];
 	const prefixResponse = 'RESPONSE:\n';
 	const grammar = Sentences(1);
@@ -162,7 +162,7 @@ export function genStarter(chars: Character[], plot: Plot): PromptPartResponse {
 	];
 	const user: PromptPart[] = [
 		{ pre: `STORY INFO:\n`, val: `${PlotString(plot)}\n` },
-		{ if: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
+		{ use: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
 	];
 	const prefixResponse = 'RESPONSE:\n';
 	const grammar = Sentences(1, false, 1, 3);
@@ -189,8 +189,8 @@ Return an object with the following keys:
 	];
 	const user: PromptPart[] = [
 		{ pre: `STORY INFO:\n`, val: `${PlotString(plot)}\n` },
-		{ if: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ if: actions.length > 0, val: `STORY:\n${ActionsString(actions)}\n` },
+		{ use: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
+		{ use: actions.length > 0, val: `STORY:\n${ActionsString(actions)}\n` },
 	];
 	let prefixResponse = '';
 	if (userRequest)
@@ -217,10 +217,10 @@ Your thoughts aren't part of the story, only you can see them.\n\n`,
 	const user: PromptPart[] = [
 		{ val: `STORY INFO:\n${PlotString(plot, false)}\n` },
 		{
-			if: chars.length > 0,
+			use: chars.length > 0,
 			val: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
 		},
-		{ if: actions.length > 0, val: `STORY:\n${ActionsString(actions)}\n` },
+		{ use: actions.length > 0, val: `STORY:\n${ActionsString(actions)}\n` },
 	];
 	let prefixResponse = '';
 	if (narrativeThought)
@@ -246,10 +246,10 @@ export function genDialogueAction(
 	const user: PromptPart[] = [
 		{ val: `STORY INFO:\n${PlotString(plot, false)}\n` },
 		{
-			if: chars.length > 0,
+			use: chars.length > 0,
 			val: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
 		},
-		{ if: actions.length > 0, val: `STORY:\n${ActionsString(actions)}\n` },
+		{ use: actions.length > 0, val: `STORY:\n${ActionsString(actions)}\n` },
 	];
 	let prefixResponse = '';
 	if (dialogueThought) prefixResponse += `YOUR THOUGHTS:\n${dialogueThought}\n`;

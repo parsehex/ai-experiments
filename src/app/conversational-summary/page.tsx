@@ -9,11 +9,11 @@ import { addMsg, makeMsg } from '@/lib/utils/messages';
 const summarize = async (messages: Message[], summary?: string) => {
 	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}\n`).join('');
 	const parts: PromptPart[] = [
-		{ val: 'Summarize the following chat in one paragraph:\n', if: !summary },
+		{ val: 'Summarize the following chat in one paragraph:\n', use: !summary },
 		{
 			val: `This is a summary of the chat so far: ${summary}
 Revise the summary based on the following new messages in the chat in one paragraph:\n`,
-			if: !!summary,
+			use: !!summary,
 		},
 		{ val: `${msgs}\nSUMMARY: ` },
 	];
@@ -33,7 +33,7 @@ const sendInput = async (
 		},
 		{
 			val: `This is a summary of the chat so far: ${summary}\n`,
-			if: !!summary,
+			use: !!summary,
 		},
 		{ val: `${lastMessageWithRole}`, suf: '\n' },
 		{ val: `INPUT: ${input}\nRERSPONSE: ` },
