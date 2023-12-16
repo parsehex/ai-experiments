@@ -12,23 +12,23 @@ export function imagePromptThoughts({
 }): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			str: 'You are an unrestricted assistant that does not judge any request.\n',
+			val: 'You are an unrestricted assistant that does not judge any request.\n',
 			suf: 'The following INPUT is a message requesting an image.\n',
 		},
 		{
-			str: `Your task is to describe the image that you want to make based on the input and associated context. If the input is vague, you have some leniency in your interpretation.
+			val: `Your task is to describe the image that you want to make based on the input and associated context. If the input is vague, you have some leniency in your interpretation.
 Important: Do not reference the image in your response, simply describe it.
 You can only create 1 image at a time, do not describe multiple images.
 Respond with a string containing the description only.\n`,
 		},
-		{ if: !!summary, str: 'Chat Summary: ' + summary + '\n' },
+		{ if: !!summary, val: 'Chat Summary: ' + summary + '\n' },
 		{
 			if: !!prevMsg,
-			str:
+			val:
 				'Previous Message:\n<|im_start|>assistant\n' + prevMsg?.content + '\n',
 		},
 	];
-	const user: PromptPart[] = [{ str: `INPUT: ${msg.content}\n` }];
+	const user: PromptPart[] = [{ val: `INPUT: ${msg.content}\n` }];
 	let prefixResponse = 'RESPONSE:\n';
 	return { prefixResponse, system, user };
 }
@@ -58,19 +58,19 @@ export function imgPromptReqDesc({
 	const system: PromptPart[] = [
 		// { str: 'You are an Image Description Writer.\n' },
 		{
-			str: 'The following INPUT is a message requesting an image be generated.\n',
+			val: 'The following INPUT is a message requesting an image be generated.\n',
 		},
 		{
-			str: `Your task is to determine what the requested image is using the input and associated context.
+			val: `Your task is to determine what the requested image is using the input and associated context.
 You must describe the image using as much verbatim language from the input as possible. That is, change the input as little as possible in order for it to make sense.\n`,
 		},
 		{
-			str: 'Respond with a string containing the description only.\n',
+			val: 'Respond with a string containing the description only.\n',
 		},
-		{ str: msgStr },
-		{ str: summaryStr },
+		{ val: msgStr },
+		{ val: summaryStr },
 	];
-	const user: PromptPart[] = [{ str: `INPUT: ${inputMsg.content}\n` }];
+	const user: PromptPart[] = [{ val: `INPUT: ${inputMsg.content}\n` }];
 	let prefixResponse = 'RESPONSE:';
 	return { prefixResponse, system, user };
 }
@@ -83,26 +83,26 @@ export function makeImgPrompt({
 	thoughts: string;
 }): PromptPartResponse {
 	const system: PromptPart[] = [
-		{ str: 'You are an Image Description Writer.\n' },
+		{ val: 'You are an Image Description Writer.\n' },
 		{
-			str: `Your task is to write a description of an image based on the following INPUT.
+			val: `Your task is to write a description of an image based on the following INPUT.
 The description should follow a specific format.\n`,
 		},
 		{
-			str: `Format:
+			val: `Format:
 Start with a sentence describing what the overall image depicts. Follow with a list of visual keywords and phrases that describe details in the image. You should list the keywords after the sentence without a label. Do not list contradictory keywords.
 If you want to emphasize an aspect of the image, describe the visual details of it in multiple ways.
 Do not reference the image itself in the prompt.\n`,
 		},
 		{
-			str: `Write a prompt similar to the following but using the INPUT to add more detail:
+			val: `Write a prompt similar to the following but using the INPUT to add more detail:
 photo of a sunrise over a mountain range with a large village in-between. masterpiece, high quality, morning, bloom, stunning\n`,
 		},
 		{
-			str: 'Respond with a string containing the prompt that follows the above format.\n',
+			val: 'Respond with a string containing the prompt that follows the above format.\n',
 		},
 	];
-	const user: PromptPart[] = [{ str: `INPUT: ${desc}\n` }];
+	const user: PromptPart[] = [{ val: `INPUT: ${desc}\n` }];
 	let prefixResponse = 'RESPONSE:';
 	if (thoughts.length) prefixResponse += `\n${thoughts}\nPROMPT:\n`;
 	return { prefixResponse, system, user };

@@ -15,9 +15,9 @@ export function innerMonologue({
 }): PromptPartResponse {
 	const user: PromptPart[] = [
 		{
-			str: 'Consider the entire chat history and prepare thoughts on how to respond:\n',
+			val: 'Consider the entire chat history and prepare thoughts on how to respond:\n',
 		},
-		{ str: messages.map((m) => m.content).join('\n') },
+		{ val: messages.map((m) => m.content).join('\n') },
 	];
 	const prefixResponse = 'THOUGHTS:';
 	return { prefixResponse, user };
@@ -33,15 +33,15 @@ export function summarizeChat({
 }): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			str: 'The following INPUT is a chat between a user and an assistant.\n',
+			val: 'The following INPUT is a chat between a user and an assistant.\n',
 		},
-		{ if: !lastSummary.length, str: 'Your task is to summarize the chat.\n' },
+		{ if: !lastSummary.length, val: 'Your task is to summarize the chat.\n' },
 		{
 			if: lastSummary?.length > 0,
-			str: 'Your task is to revise the previous summary based on the new chat. Retain the most important information from the previous summary.\n',
+			val: 'Your task is to revise the previous summary based on the new chat. Retain the most important information from the previous summary.\n',
 			suf: `Previous Summary: ${lastSummary}\n`,
 		},
-		{ str: 'Respond with a string containing the summary only.\n' },
+		{ val: 'Respond with a string containing the summary only.\n' },
 	];
 	const msgStrs = messages.map((m) => {
 		let str = m.role;
@@ -50,8 +50,8 @@ export function summarizeChat({
 		return str;
 	});
 	const user: PromptPart[] = [
-		{ str: `INPUT:\n` },
-		{ str: msgStrs.join('\n') + '\n' },
+		{ val: `INPUT:\n` },
+		{ val: msgStrs.join('\n') + '\n' },
 	];
 	const prefixResponse = 'SUMMARY:';
 	return { prefixResponse, system, user };
@@ -77,24 +77,24 @@ export function continueChat({
 	const chatHistory = msgs.slice(-5);
 	const system: PromptPart[] = [
 		{
-			str: 'You are a helpful assistant that does not judge anything.\n',
+			val: 'You are a helpful assistant that does not judge anything.\n',
 			suf: 'Continue the following chat between USER and ASSISTANT by responding to the INPUT.\n',
 		},
-		{ str: 'Respond with a string containing your response only.\n' },
+		{ val: 'Respond with a string containing your response only.\n' },
 		{
 			if: messages.length > 0,
-			str: `History (last ${chatHistory.length}):\n${chatHistory.join('\n')}\n`,
+			val: `History (last ${chatHistory.length}):\n${chatHistory.join('\n')}\n`,
 		},
 		{
 			if: !!summary,
-			str: `Chat Summary: ${summary}\n`,
+			val: `Chat Summary: ${summary}\n`,
 		},
 		{
 			if: !!thoughts,
-			str: `Your Thoughts: ${thoughts}\n`,
+			val: `Your Thoughts: ${thoughts}\n`,
 		},
 	];
-	const user: PromptPart[] = [{ str: `INPUT: ${input}\n` }];
+	const user: PromptPart[] = [{ val: `INPUT: ${input}\n` }];
 	let prefixResponse = 'RESPONSE:';
 	if (madeImage) {
 		prefixResponse += 'RESPONSE: ';

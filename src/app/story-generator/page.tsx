@@ -6,15 +6,8 @@ import Collapsible from '@/components/Collapsible';
 import TextInput from '@/components/TextInput';
 import HoverMenuButton from '@/components/HoverMenuButton';
 import LLMModelStatus from '@/components/LLMModelStatus';
-import {
-	Lines,
-	CharacterObject,
-	SettingObject,
-	ActionObject,
-	Sentences,
-} from '@/lib/llm/grammar';
 import { generate } from '@/lib/llm';
-import { PromptPart, PromptPartResponse } from '@/lib/types/llm';
+import { PromptPartResponse } from '@/lib/types/llm';
 import { addCharacterOptions } from './hover-menus';
 import * as parts from './prompts';
 import { makeCharacter } from './story';

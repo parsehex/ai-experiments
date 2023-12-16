@@ -9,13 +9,13 @@ import { addMsg, makeMsg } from '@/lib/utils/messages';
 const summarize = async (messages: Message[], summary?: string) => {
 	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}\n`).join('');
 	const parts: PromptPart[] = [
-		{ str: 'Summarize the following chat in one paragraph:\n', if: !summary },
+		{ val: 'Summarize the following chat in one paragraph:\n', if: !summary },
 		{
-			str: `This is a summary of the chat so far: ${summary}
+			val: `This is a summary of the chat so far: ${summary}
 Revise the summary based on the following new messages in the chat in one paragraph:\n`,
 			if: !!summary,
 		},
-		{ str: `${msgs}\nSUMMARY: ` },
+		{ val: `${msgs}\nSUMMARY: ` },
 	];
 	const result = await generate(parts, { cfg: 1.2 });
 	console.log('summary', prompt, result);
@@ -27,16 +27,16 @@ const sendInput = async (
 	lastMessageWithRole: string,
 	summary?: string
 ) => {
-	const parts = [
+	const parts: PromptPart[] = [
 		{
-			str: `Continue the following chat between USER and ASSISTANT by responding to the INPUT.\n`,
+			val: `Continue the following chat between USER and ASSISTANT by responding to the INPUT.\n`,
 		},
 		{
-			str: `This is a summary of the chat so far: ${summary}\n`,
+			val: `This is a summary of the chat so far: ${summary}\n`,
 			if: !!summary,
 		},
-		{ str: `${lastMessageWithRole}`, suf: '\n' },
-		{ str: `INPUT: ${input}\nRERSPONSE: ` },
+		{ val: `${lastMessageWithRole}`, suf: '\n' },
+		{ val: `INPUT: ${input}\nRERSPONSE: ` },
 	];
 	const result = await generate(parts, {
 		cfg: 1.5,

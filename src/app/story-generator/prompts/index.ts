@@ -19,17 +19,17 @@ export function genStoryDescription(
 	const settingStr = `${SettingString(plot)}\n`;
 	const system: PromptPart[] = [
 		{
-			str: 'Write a short story description based on the following info. The description should concisely explain what the story is mainly about. Make sure not to go into too much detail. It should be compelling and creative.',
+			val: 'Write a short story description based on the following info. The description should concisely explain what the story is mainly about. Make sure not to go into too much detail. It should be compelling and creative.',
 		},
 	];
 	const user: PromptPart[] = [
-		{ str: 'STORY INFO:' },
-		{ if: !!plot.tone, str: toneStr },
+		{ val: 'STORY INFO:' },
+		{ if: !!plot.tone, val: toneStr },
 		{
 			if: !!(plot.location || plot.timePeriod),
-			str: settingStr,
+			val: settingStr,
 		},
-		{ if: chars.length > 0, str: charStr },
+		{ if: chars.length > 0, val: charStr },
 	];
 	const prefixResponse = 'DESCRIPTION:';
 	return { user, system, prefixResponse };
@@ -54,7 +54,7 @@ export function genCharacters(
 		relevanceStr = relevancePrompt[relevance];
 	const system: PromptPart[] = [
 		{
-			str: `Write a character based on the following story info.${relevanceStr}
+			val: `Write a character based on the following story info.${relevanceStr}
 Return an array of objects, which should have the following keys:
 	"name": Give the character a first name.
 	"description": A short description of the character, describing who they are and what they're like.
@@ -66,9 +66,9 @@ Return an array of objects, which should have the following keys:
 	const user: PromptPart[] = [
 		{
 			pre: `STORY INFO:\n`,
-			str: `${PlotString(plot)}\n`,
+			val: `${PlotString(plot)}\n`,
 		},
-		{ if: chars.length > 0, str: `EXISTING CHARACTERS:\n${charStr}\n` },
+		{ if: chars.length > 0, val: `EXISTING CHARACTERS:\n${charStr}\n` },
 	];
 	const prefixResponse = 'CHARACTER:';
 	const grammar = CharacterObject();
@@ -86,21 +86,21 @@ export function genFillCharacterDetails(
 
 	const system: PromptPart[] = [
 		{
-			str: `Generate detailed information for the following character based on the provided plot and other characters. Provide missing information only. Return an object with the updated details.`,
+			val: `Generate detailed information for the following character based on the provided plot and other characters. Provide missing information only. Return an object with the updated details.`,
 		},
 	];
 	const user: PromptPart[] = [
-		{ str: `${PlotString(plot)}\n`, if: hasPlot(plot) },
+		{ val: `${PlotString(plot)}\n`, if: hasPlot(plot) },
 		{
 			if: otherCharacters.length > 0,
-			str: `OTHER CHARACTERS:\n${otherCharsStr}\n`,
+			val: `OTHER CHARACTERS:\n${otherCharsStr}\n`,
 		},
-		{ str: `CHARACTER INFO:\n` },
-		{ str: `Name: ${character.name}\n`, if: !!character.name },
-		{ str: `DESCRIPTION: \n`, if: !!character.description },
-		{ str: `STATE: \n`, if: !!character.state },
-		{ str: `SHORT-TERM OBJECTIVE: \n`, if: !!character.objectives.shortTerm },
-		{ str: `LONG-TERM OBJECTIVE: \n`, if: !!character.objectives.longTerm },
+		{ val: `CHARACTER INFO:\n` },
+		{ val: `Name: ${character.name}\n`, if: !!character.name },
+		{ val: `DESCRIPTION: \n`, if: !!character.description },
+		{ val: `STATE: \n`, if: !!character.state },
+		{ val: `SHORT-TERM OBJECTIVE: \n`, if: !!character.objectives.shortTerm },
+		{ val: `LONG-TERM OBJECTIVE: \n`, if: !!character.objectives.longTerm },
 	];
 	const prefixResponse = 'CHARACTER:';
 	const grammar = CharacterObject();
@@ -111,7 +111,7 @@ export function genFillCharacterDetails(
 export function genSetting(chars: Character[], plot: Plot): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			str: `Write a brief setting based on the following story info.
+			val: `Write a brief setting based on the following story info.
 Important: The setting should make sense with the following story info.
 Return an object with the following keys:
 "location": The location of the story.
@@ -119,12 +119,12 @@ Return an object with the following keys:
 		},
 	];
 	const user: PromptPart[] = [
-		{ str: `STORY INFO:\n` },
+		{ val: `STORY INFO:\n` },
 		{
 			if: !!plot.storyDescription,
-			str: `DESCRIPTION: ${plot.storyDescription}\n`,
+			val: `DESCRIPTION: ${plot.storyDescription}\n`,
 		},
-		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
+		{ if: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
 	];
 	const prefixResponse = 'SETTING:';
 	return { user, system, prefixResponse };
@@ -132,22 +132,22 @@ Return an object with the following keys:
 export function genTone(chars: Character[], plot: Plot): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			str: `Write a Tone to guide how the following story should be written.
+			val: `Write a Tone to guide how the following story should be written.
 The tone should be a brief sentence that provides guidance to write the story, but should not be specific to the story itself in any way. It should properly convey the tone in which the story will be written.
 A simple example would be "Dark and gritty but realistic."\n\n`,
 		},
 	];
 	const user: PromptPart[] = [
-		{ str: `STORY INFO:\n` },
+		{ val: `STORY INFO:\n` },
 		{
 			if: !!plot.storyDescription,
-			str: `DESCRIPTION: ${plot.storyDescription}\n`,
+			val: `DESCRIPTION: ${plot.storyDescription}\n`,
 		},
 		{
 			if: !!(plot.location || plot.timePeriod),
-			str: `${SettingString(plot)}\n`,
+			val: `${SettingString(plot)}\n`,
 		},
-		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
+		{ if: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
 	];
 	const prefixResponse = 'RESPONSE:\n';
 	const grammar = Sentences(1);
@@ -157,12 +157,12 @@ A simple example would be "Dark and gritty but realistic."\n\n`,
 export function genStarter(chars: Character[], plot: Plot): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			str: `Write an introduction to the story based on the following story info. It should set the stage for the story, introducing key elements and providing a clear point for the story to continue from.\n\n`,
+			val: `Write an introduction to the story based on the following story info. It should set the stage for the story, introducing key elements and providing a clear point for the story to continue from.\n\n`,
 		},
 	];
 	const user: PromptPart[] = [
-		{ pre: `STORY INFO:\n`, str: `${PlotString(plot)}\n` },
-		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
+		{ pre: `STORY INFO:\n`, val: `${PlotString(plot)}\n` },
+		{ if: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
 	];
 	const prefixResponse = 'RESPONSE:\n';
 	const grammar = Sentences(1, false, 1, 3);
@@ -180,7 +180,7 @@ export function genPickAction(
 	//   2) write thoughts on step 1's choice
 	const system: PromptPart[] = [
 		{
-			str: `Choose something to happen in order to influence the next few sentences of the following story. You can pick anything that makes sense with the story so far. It can be a narrative or dialogue. It should be relevant to the story and move the plot forward without going too far in one step. You should refer to characters by name.
+			val: `Choose something to happen in order to influence the next few sentences of the following story. You can pick anything that makes sense with the story so far. It can be a narrative or dialogue. It should be relevant to the story and move the plot forward without going too far in one step. You should refer to characters by name.
 Return an object with the following keys:
 "type": Either "Narrative" or "Dialogue". Narrative is a description of things happening in the story and Dialogue is a character speaking. What should the next line of the story be?
 "characterName"?: Name of the character that you choose to speak, if Dialogue.
@@ -188,9 +188,9 @@ Return an object with the following keys:
 		},
 	];
 	const user: PromptPart[] = [
-		{ pre: `STORY INFO:\n`, str: `${PlotString(plot)}\n` },
-		{ if: chars.length > 0, str: `CHARACTERS:\n${CharacterString(chars)}\n` },
-		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
+		{ pre: `STORY INFO:\n`, val: `${PlotString(plot)}\n` },
+		{ if: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
+		{ if: actions.length > 0, val: `STORY:\n${ActionsString(actions)}\n` },
 	];
 	let prefixResponse = '';
 	if (userRequest)
@@ -210,17 +210,17 @@ export function genNarrativeAction(
 ): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			str: `Write a narrative continuation based on the story's progression. Use descriptive language to depict the scene, actions, and emotions, drawing upon the previous story elements and your prior thoughts.
+			val: `Write a narrative continuation based on the story's progression. Use descriptive language to depict the scene, actions, and emotions, drawing upon the previous story elements and your prior thoughts.
 Your thoughts aren't part of the story, only you can see them.\n\n`,
 		},
 	];
 	const user: PromptPart[] = [
-		{ str: `STORY INFO:\n${PlotString(plot, false)}\n` },
+		{ val: `STORY INFO:\n${PlotString(plot, false)}\n` },
 		{
 			if: chars.length > 0,
-			str: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
+			val: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
 		},
-		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
+		{ if: actions.length > 0, val: `STORY:\n${ActionsString(actions)}\n` },
 	];
 	let prefixResponse = '';
 	if (narrativeThought)
@@ -239,17 +239,17 @@ export function genDialogueAction(
 ): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			str: `Write some dialogue that fits the following story's current context. Reflect the speaking character's personality, motivations, and the previous story elements. Use your thoughts to guide what the character says. Your thoughts aren't part of the story, only you can see them.
+			val: `Write some dialogue that fits the following story's current context. Reflect the speaking character's personality, motivations, and the previous story elements. Use your thoughts to guide what the character says. Your thoughts aren't part of the story, only you can see them.
 	Your response should be spoken dialogue only with no narrative directions, in no more than 5 sentences.\n\n`,
 		},
 	];
 	const user: PromptPart[] = [
-		{ str: `STORY INFO:\n${PlotString(plot, false)}\n` },
+		{ val: `STORY INFO:\n${PlotString(plot, false)}\n` },
 		{
 			if: chars.length > 0,
-			str: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
+			val: `CHARACTERS:\n${CharacterString(chars, false)}\n`,
 		},
-		{ if: actions.length > 0, str: `STORY:\n${ActionsString(actions)}\n` },
+		{ if: actions.length > 0, val: `STORY:\n${ActionsString(actions)}\n` },
 	];
 	let prefixResponse = '';
 	if (dialogueThought) prefixResponse += `YOUR THOUGHTS:\n${dialogueThought}\n`;

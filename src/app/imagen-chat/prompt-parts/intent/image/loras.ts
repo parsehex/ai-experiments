@@ -34,25 +34,25 @@ export function pickLoras({
 }): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			str: 'The following is a description of an image.\n',
+			val: 'The following is a description of an image.\n',
 		},
 		{
-			str: 'Your task is to pick enhancements that would be relevant to the INPUT.\n',
+			val: 'Your task is to pick enhancements that would be relevant to the INPUT.\n',
 		},
 		{
-			str: 'Describe the image that you want to create based on the input and chat summary.\n',
+			val: 'Describe the image that you want to create based on the input and chat summary.\n',
 		},
 		{
-			str:
+			val:
 				'The following is an object describing the enhancements you may choose:' +
 				JSON.stringify(loras, null, 2) +
 				'\n',
 		},
 		{
-			str: 'Respond with a JSON array of strings with up to 5 of the above keys.\n',
+			val: 'Respond with a JSON array of strings with up to 5 of the above keys.\n',
 		},
 	];
-	const user: PromptPart[] = [{ str: `INPUT: ${prompt}\n` }];
+	const user: PromptPart[] = [{ val: `INPUT: ${prompt}\n` }];
 	let prefixResponse = 'RESPONSE:';
 	return { prefixResponse, system, user };
 }

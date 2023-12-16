@@ -35,26 +35,26 @@ export function pickImageIntent({
 	const intentStr = JSON.stringify(Intents, null, '\t');
 	const system: PromptPart[] = [
 		{
-			str: 'The following INPUT is a message from the user related to image generation.\n',
+			val: 'The following INPUT is a message from the user related to image generation.\n',
 		},
 		{
-			str: `Your task is to figure out what the user wants to do based on what they said and prior chat context. You must pick one of the following Intents that describes what the user wants to do.\n`,
+			val: `Your task is to figure out what the user wants to do based on what they said and prior chat context. You must pick one of the following Intents that describes what the user wants to do.\n`,
 		},
-		{ str: intentStr + '\n' },
+		{ val: intentStr + '\n' },
 		{
-			str: 'Respond with a string containing the key of the above Intent that you pick only.\n',
+			val: 'Respond with a string containing the key of the above Intent that you pick only.\n',
 		},
 		{
 			if: !!summary,
-			str: `Chat Summary: ${summary}\n`,
+			val: `Chat Summary: ${summary}\n`,
 		},
 		{
 			if: !!lastMsg,
-			str: `Previous Message:\n<|im_start|>assistant\n${lastMsg?.content}\n`,
+			val: `Previous Message:\n<|im_start|>assistant\n${lastMsg?.content}\n`,
 			suf: !!lastMsg?.images?.length ? '(you generated an image)\n' : '',
 		},
 	];
-	const user: PromptPart[] = [{ str: `INPUT: ${userMsg.content}\n` }];
+	const user: PromptPart[] = [{ val: `INPUT: ${userMsg.content}\n` }];
 	const prefixResponse = 'RESPONSE:';
 	return { prefixResponse, system, user };
 }
