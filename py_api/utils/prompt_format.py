@@ -14,7 +14,7 @@
 
 # make Formatter class with methods like `flexible`, `Alpaca` and `ChatML`
 
-import fnmatch
+import fnmatch, os
 from py_api.models.llm_api import PromptPart, PromptParts
 
 class Formatter:
@@ -89,7 +89,7 @@ def parts_to_prompt(parts: PromptParts, model: str) -> str:
 	formatter = None
 	# is model a path? get just the model name
 	if '/' in model:
-		model = model.split('/')[-1]
+		model = os.path.basename(model)
 	for model_format in model_formats:
 		if fnmatch.fnmatch(model, model_format):
 			formatter = staticmethod(getattr(Formatter(), model_formats[model_format]))
