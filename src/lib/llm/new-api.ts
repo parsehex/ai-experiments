@@ -35,10 +35,6 @@ interface GenerateResponse {
 			index: number;
 			logprobs: {
 				// idk what this is
-				tokens: string[];
-				token_logprobs: number[];
-				top_logprobs: any[];
-				text_offset: number[];
 			} | null;
 			finish_reason: 'stop' | 'length';
 		}[];

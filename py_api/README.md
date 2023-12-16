@@ -11,3 +11,7 @@ This may be a learning experience but hopefully it grows into something standalo
 ## Background + IDK
 
 When I start `ai-experiments`, I also start up at least Oobabooga and possibly Automatic1111 or even XTTS too. Having all 3 together would be great, and I think there's a lot that could be done server- / api-side to make app-dev easier and make for a nicer experience.
+
+## Setup
+
+`../setup-api.sh`

@@ -1,4 +1,4 @@
-from typing import Generator, List
+from typing import Generator, List, Union
 import logging, os, time
 from py_api.args import Args
 from .llm_base import LLMClient_Base
@@ -8,18 +8,20 @@ import torch
 logger = logging.getLogger(__name__)
 
 def LlamaCppConfig(model_path):
+	model_file_name = os.path.basename(model_path)
 	return {
 		'model_path': model_path,
 		'n_threads': 8,
 		'n_gpu_layers': 35,
 		'n_ctx': 4096, # TODO: docs say 0 = from model -- does it work?
+		'verbose': False, # setting LLM_VERBOSE ?
 	}
 def LlamaCppCompletionConfig(
 		prompt: str,
 		max_tokens: int,
-		temperature: int,
+		temperature: Union[int, float],
 		top_p: int,
-		repetition_penalty: int,
+		repetition_penalty: Union[int, float],
 		seed: int,
 		grammar: str,
 		stop: list
@@ -35,7 +37,8 @@ def LlamaCppCompletionConfig(
 	}
 	if grammar != '' and grammar != None:
 		# TODO: LlamaGrammar.from_json_schema ???
-		config['grammar'] = LlamaGrammar.from_string(grammar)
+		# NOTE: from_string seems to fix grammar (like using "+" which leads to issues (i guess because recursion))
+		config['grammar'] = LlamaGrammar.from_string(grammar, False)
 	return config
 
 class LLMClient_LlamaCppPython(LLMClient_Base):
@@ -54,7 +57,7 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 		self.cache = LlamaCache()
 		self.config = LlamaCppConfig(self.model_abspath)
 
-		if self.model is not None:
+		if self.loaded or self.model is not None:
 			self.unload_model()
 
 		logger.info(f"Loading model {self.model_name}...")
@@ -63,27 +66,29 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 		self.model.set_cache(self.cache)
 		end = time.time()
 		logger.info(f"Loaded model {self.model_name} in {end - start}s")
+		self.loaded = True
 
 	def unload_model(self):
+		torch.cuda.empty_cache()
+		logger.info("Unloaded model.")
 		self.model = None
 		self.model_name = None
 		self.model_abspath = None
 		self.config = None
-		torch.cuda.empty_cache()
-		logger.info("Unloaded model.")
+		self.loaded = False
 
 	def complete(
 		self,
-		prompt: str,
-		max_tokens: int,
-		temperature: int,
-		top_p: int,
-		repetition_penalty: int,
-		seed: int,
-		grammar: str,
-		stop: list
+		prompt,
+		max_tokens,
+		temperature,
+		top_p,
+		repetition_penalty,
+		seed,
+		grammar,
+		stop
 	):
-		if self.model is None:
+		if not self.loaded or self.model is None:
 			raise Exception("No model loaded.")
 		config = LlamaCppCompletionConfig(
 			prompt,

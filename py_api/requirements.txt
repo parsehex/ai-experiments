@@ -6,6 +6,7 @@ gradio
 huggingface_hub
 numpy
 omegaconf
+pydantic
 simpleaudio
 torch
 torchaudio

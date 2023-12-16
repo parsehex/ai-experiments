@@ -1,9 +1,10 @@
-from typing import Generator, List, Dict
+from typing import Generator, List, Dict, Union
 
 class LLMClient_Base:
 	_instance = None
 	cache = None
 	config = None
+	loaded = False
 	model = None
 	model_name = None
 	model_abspath = None
@@ -25,23 +26,23 @@ class LLMClient_Base:
 		self,
 		prompt: str,
 		max_tokens: int,
-		temperature: int,
+		temperature: Union[int, float],
 		top_p: int,
-		repetition_penalty: int,
+		repetition_penalty: Union[int, float],
 		seed: int,
 		grammar: str,
 		stop: list
 	) -> Generator:
-		"""Generate text from a prompt. Returns a Generator."""
+		"""(TODO) Generate text from a prompt. Returns a Generator."""
 		raise NotImplementedError()
 
 	def complete(
 		self,
 		prompt: str,
 		max_tokens: int,
-		temperature: int,
+		temperature: Union[int, float],
 		top_p: int,
-		repetition_penalty: int,
+		repetition_penalty: Union[int, float],
 		seed: int,
 		grammar: str,
 		stop: list

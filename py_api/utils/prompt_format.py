@@ -15,6 +15,7 @@
 # make Formatter class with methods like `flexible`, `Alpaca` and `ChatML`
 
 import fnmatch
+from py_api.models.llm_api import PromptPart, PromptParts
 
 class Formatter:
 	# TODO: add `priorMsgs` arg
@@ -63,22 +64,22 @@ class Formatter:
 		prompt.append({'role': 'user', 'content': user.strip()})
 		return prompt
 
-def parts_to_str(parts):
+def parts_to_str(parts: list[PromptPart]):
 	s = ''
 	for part in parts:
-		hasStr = 'str' in part and part['str'] != None
-		hasIf = 'if' in part and part['if'] != None
-		pre = 'pre' in part and part['pre'] != None
-		suf = 'suf' in part and part['suf'] != None
-		if hasStr and (not hasIf or part['if']):
-			partStr = f"{pre or ''}{part['str']}{suf or ''}"
+		hasStr = part.val != None
+		shouldUse = part.use != None and part.use
+		pre = part.pre != None
+		suf = part.suf != None
+		if hasStr and shouldUse:
+			partStr = f"{pre or ''}{part.val}{suf or ''}"
 			s += partStr
 	return s
 
 model_formats = {
 	'*dolphin-2.2.1-mistral-7b*': 'ChatML',
 }
-def parts_to_prompt(parts, model) -> str:
+def parts_to_prompt(parts: PromptParts, model: str) -> str:
 	formatter = None
 	# is model a path? get just the model name
 	if '/' in model:
@@ -89,9 +90,9 @@ def parts_to_prompt(parts, model) -> str:
 			break
 	if formatter == None:
 		raise Exception(f"Model {model} not supported.")
-	user = parts_to_str(parts['user'])
-	if 'system' in parts and len(parts['system']) > 0:
-		system = parts_to_str(parts['system'])
+	user = parts_to_str(parts.user)
+	if hasattr(parts, 'system') and len(parts.system) > 0:
+		system = parts_to_str(parts.system)
 	else:
 		system = ''
 	return formatter(user, system)
