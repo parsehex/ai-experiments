@@ -8,7 +8,7 @@ from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config, ExLlamaV2Token
 from exllamav2.generator import ExLlamaV2StreamingGenerator, ExLlamaV2Sampler
 import torch
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('Exllamav2-client')
 
 def Exllamav2CompletionConfig(
 		prompt: str,
@@ -21,8 +21,8 @@ def Exllamav2CompletionConfig(
 class LLMClient_Exllamav2(LLMClient_Base):
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-	def load_model(self, model_name = Args['llm_model']):
-		model_name = Args['llm_model']
+	def load_model(self, model_name = ''):
+		model_name = model_name or Args['llm_model']
 		models_dir = Args['llm_models_dir']
 
 		# model_name should be name of directory in models_dir
@@ -57,13 +57,19 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		self.loaded = True
 
 	def unload_model(self):
-		torch.cuda.empty_cache()
+		if self.model is None:
+			return
+		self.model.unload()
 		logger.info("Unloaded model.")
 		self.model = None
 		self.model_name = None
 		self.model_abspath = None
+		self.cache = None
 		self.config = None
+		self.tokenizer = None
+		self.generator = None
 		self.loaded = False
+		torch.cuda.empty_cache()
 
 	def generate(
 		self,
@@ -76,8 +82,8 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		grammar, # not used
 		stop
 	):
-		if not self.loaded or self.model is None:
-			raise Exception("No model loaded.")
+		if not self.loaded or self.model is None or self.generator is None or self.tokenizer is None or self.cache is None:
+			raise Exception("Re-load model.")
 
 		settings = ExLlamaV2Sampler.Settings()
 		settings.temperature = temperature

@@ -9,8 +9,8 @@ class LLMClient_Base:
 	generator = None
 	loaded = False
 	model = None
-	model_name = None
-	model_abspath = None
+	model_name: Union[str, None] = None
+	model_abspath: Union[str, None] = None
 
 	@classmethod
 	@property

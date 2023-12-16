@@ -6,7 +6,7 @@ from .base import LLMClient_Base
 from llama_cpp import Llama, LlamaGrammar, LlamaCache
 import torch
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('LlamaCpp-client')
 
 def LlamaCppConfig(model_path):
 	model_file_name = os.path.basename(model_path)
@@ -47,8 +47,8 @@ def LlamaCppCompletionConfig(
 	return config
 
 class LLMClient_LlamaCppPython(LLMClient_Base):
-	def load_model(self, model_name = Args['llm_model']):
-		model_name = Args['llm_model']
+	def load_model(self, model_name: str):
+		model_name = model_name or Args['llm_model']
 		models_dir = Args['llm_models_dir']
 
 		# model_name should be name of file or directory in models_dir
