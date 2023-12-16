@@ -12,7 +12,21 @@ logger = logging.getLogger(__name__)
 EXTENSIONS = ['.gguf', '.ggml']
 
 def llm_api(app: FastAPI):
-	llm = LLM.LLMClient_LlamaCppPython.instance
+	is_exllamav2 = False
+	model_name = Args['llm_model']
+	models_dir = Args['llm_models_dir']
+	p = os.path.join(models_dir, model_name)
+	if os.path.isdir(p):
+		if 'gptq' in model_name or 'exl2' in model_name:
+			is_exllamav2 = True
+		else:
+			# not implemented
+			raise NotImplementedError()
+
+	if is_exllamav2:
+		llm = LLM.LLMClient_Exllamav2.instance
+	else:
+		llm = LLM.LLMClient_LlamaCppPython.instance
 
 	def modelName():
 		return llm.model_name or ''

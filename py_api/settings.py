@@ -8,7 +8,8 @@ PORT = 5000
 LLM_MODELS_DIR = "/media/user/AI Models/LLaMA"
 SD_MODELS_DIR = "/media/user/AI Models/Stable-Diffusion/ckpt"
 
-LLM_MODEL = "dolphin-2.2.1-mistral-7B.Q5_K_M/dolphin-2.2.1-mistral-7b.Q5_K_M.gguf"
+LLM_MODEL = "TheBloke_Luna-AI-Llama2-Uncensored-GPTQ_gptq-4bit-32g-actorder_True"
+# LLM_MODEL = "dolphin-2.2.1-mistral-7B.Q5_K_M/dolphin-2.2.1-mistral-7b.Q5_K_M.gguf"
 # LLM_MODEL = "hf:LoneStriker/dolphin-2.2.1-mistral-7b-4.0bpw-h6-exl2"
 TTS_MODEL = "hf:coqui/XTTS-v2"
 

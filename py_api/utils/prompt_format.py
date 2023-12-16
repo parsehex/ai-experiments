@@ -70,32 +70,42 @@ def parts_to_str(parts: list[PromptPart]):
 	for part in parts:
 		hasStr = part.val != None
 		shouldUse = part.use != None and part.use
-		pre = part.pre != None
-		suf = part.suf != None
+		hasPre = part.pre != None
+		pre = part.pre if hasPre else ''
+		hasSuf = part.suf != None
+		suf = part.suf if hasSuf else ''
 		if hasStr and shouldUse:
-			partStr = f"{pre or ''}{part.val}{suf or ''}"
+			partStr = f"{pre}{part.val}{suf}"
 			s += partStr
 	return s
 
 model_formats = {
 	'*dolphin-2.*-mistral-7b*': 'ChatML',
-	'*emerhyst-20b*': 'UserAssistant',
+	'*emerhyst-20b*': 'Alpaca',
+	'*luna-ai-llama2*': 'UserAssistant',
 	'*mythalion-13b*': 'Alpaca',
 	'*mythomax-l2-13b*': 'Alpaca',
 	'*openhermes-2.*-mistral-7b*': 'ChatML',
 	'*platypus-30b*': 'Alpaca',
 }
+def get_model_format(model: str) -> str:
+	fmt = None
+	model = model.lower()
+	for model_format in model_formats:
+		if fnmatch.fnmatch(model, model_format):
+			fmt = model_formats[model_format]
+			break
+	if fmt == None:
+		raise Exception(f"Model {model} not supported.")
+	return fmt
+
 def parts_to_prompt(parts: PromptParts, model: str) -> str:
 	formatter = None
 	# is model a path? get just the model name
 	if '/' in model:
 		model = os.path.basename(model)
-	for model_format in model_formats:
-		if fnmatch.fnmatch(model, model_format):
-			formatter = staticmethod(getattr(Formatter(), model_formats[model_format]))
-			break
-	if formatter == None:
-		raise Exception(f"Model {model} not supported.")
+	fmt = get_model_format(model)
+	formatter = staticmethod(getattr(Formatter(), fmt))
 	user = parts_to_str(parts.user)
 	if hasattr(parts, 'system') and len(parts.system) > 0:
 		system = parts_to_str(parts.system)

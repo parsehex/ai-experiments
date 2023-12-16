@@ -4,6 +4,9 @@ class LLMClient_Base:
 	_instance = None
 	cache = None
 	config = None
+	device = None
+	tokenizer = None
+	generator = None
 	loaded = False
 	model = None
 	model_name = None

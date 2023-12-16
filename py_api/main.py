@@ -1,13 +1,14 @@
 import torch
 torch.cuda.empty_cache()
 
-import argparse, logging
+import argparse, logging, os
 import uvicorn, fastapi
 
 from py_api.api.llm_api import llm_api
 from py_api.args import Args
 from py_api.client import llm as LLM
 from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL
+from py_api.utils import prompt_format
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description="Starts the API server.")
@@ -41,7 +42,25 @@ if __name__ == "__main__":
 	if freemem < 1:
 		raise RuntimeError("Not enough GPU memory to run LLM.")
 
-	llm = LLM.LLMClient_LlamaCppPython.instance
+	model_name = Args['llm_model']
+	models_dir = Args['llm_models_dir']
+	if model_name is not None:
+		fmt = prompt_format.get_model_format(model_name)
+		logger.info(f"Detected model prompt format: {fmt}")
+
+	is_exllamav2 = False
+	p = os.path.join(models_dir, model_name)
+	if os.path.isdir(p):
+		if 'gptq' in model_name or 'exl2' in model_name:
+			is_exllamav2 = True
+		else:
+			# not implemented
+			raise NotImplementedError()
+
+	if is_exllamav2:
+		llm = LLM.LLMClient_Exllamav2.instance
+	else:
+		llm = LLM.LLMClient_LlamaCppPython.instance
 	llm.load_model()
 
 	app = fastapi.FastAPI()
