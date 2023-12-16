@@ -34,6 +34,7 @@ class Formatter:
 		prompt += '### Response:\n'
 		return prompt
 	def Alpaca_Input(self, user: str, system:str=''):
+		"""Alpaca variation with the system prompt as the instructions."""
 		prompt = ''
 		if system != '':
 			prompt += '### Instruction:\n' + system.strip() + '\n\n'
@@ -77,7 +78,12 @@ def parts_to_str(parts: list[PromptPart]):
 	return s
 
 model_formats = {
-	'*dolphin-2.2.1-mistral-7b*': 'ChatML',
+	'*dolphin-2.*-mistral-7b*': 'ChatML',
+	'*emerhyst-20b*': 'UserAssistant',
+	'*mythalion-13b*': 'Alpaca',
+	'*mythomax-l2-13b*': 'Alpaca',
+	'*openhermes-2.*-mistral-7b*': 'ChatML',
+	'*platypus-30b*': 'Alpaca',
 }
 def parts_to_prompt(parts: PromptParts, model: str) -> str:
 	formatter = None
