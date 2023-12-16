@@ -4,9 +4,9 @@ torch.cuda.empty_cache()
 import argparse, logging
 import uvicorn, fastapi
 
-import py_api.api as api
+from py_api.api.llm_api import llm_api
 from py_api.args import Args
-from py_api.client import LLMClient_LlamaCppPython
+from py_api.client import llm as LLM
 from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL
 
 if __name__ == "__main__":
@@ -32,11 +32,11 @@ if __name__ == "__main__":
 	logging.basicConfig(level=args.log_level)
 	logger = logging.getLogger(__name__)
 
-	llm = LLMClient_LlamaCppPython.instance
+	llm = LLM.LLMClient_LlamaCppPython.instance
 	llm.load_model()
 
 	app = fastapi.FastAPI()
-	api.llm(app)
+	llm_api(app)
 
 	uvicorn.run(app, host=args.host, port=args.port)
 	logger.info(f"API server started on {args.host}:{args.port}.")

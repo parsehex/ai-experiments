@@ -2,8 +2,8 @@ import logging, os
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from py_api.args import Args
-from py_api.client import LLMClient_LlamaCppPython
-from py_api.models.llm_api import CompletionRequest, CompletionResponse
+from py_api.client import llm as LLM
+from py_api.models.llm import CompletionRequest, CompletionResponse
 from py_api.utils import prompt_format
 
 logger = logging.getLogger(__name__)
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 EXTENSIONS = ['.gguf', '.ggml']
 
 def llm_api(app: FastAPI):
-	llm = LLMClient_LlamaCppPython.instance
+	llm = LLM.LLMClient_LlamaCppPython.instance
 
 	def modelName():
 		return llm.model_name or ''

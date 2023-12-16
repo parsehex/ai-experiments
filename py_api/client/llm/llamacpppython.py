@@ -1,7 +1,7 @@
 from typing import Generator, List, Union
 import logging, os, re, time
 from py_api.args import Args
-from .llm_base import LLMClient_Base
+from .base import LLMClient_Base
 from llama_cpp import Llama, LlamaGrammar, LlamaCache
 import torch
 

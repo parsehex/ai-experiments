@@ -16,6 +16,7 @@ class LLMClient_Base:
 			cls._instance = cls()
 		return cls._instance
 
+
 	def load_model(self, model_name: str):
 		raise NotImplementedError()
 
