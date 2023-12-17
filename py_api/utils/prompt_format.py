@@ -15,7 +15,7 @@
 # make Formatter class with methods like `flexible`, `Alpaca` and `ChatML`
 
 import fnmatch, os
-from py_api.models.llm import PromptPart, PromptParts
+from py_api.models.llm_api import PromptPart, PromptParts
 
 class Formatter:
 	# TODO: add `priorMsgs` arg

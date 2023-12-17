@@ -1,6 +1,7 @@
-from typing import Generator, List, Union
+from typing import Any, Generator, List, Union
 import logging, os, re, time
 from py_api.args import Args
+from py_api.models.llm_client import CompletionOptions, CompletionOptions_LlamaCppPython
 from py_api.utils.llm_models import parse_size_and_quant
 from .base import LLMClient_Base
 from llama_cpp import Llama, LlamaGrammar, LlamaCache
@@ -47,6 +48,21 @@ def LlamaCppCompletionConfig(
 	return config
 
 class LLMClient_LlamaCppPython(LLMClient_Base):
+	OPTIONS_MAP = {
+		'temp': 'temperature',
+		'typical': 'typical_p',
+		'tfs': 'tfs_z',
+		'repeat_pen': 'repeat_penalty',
+	}
+	def convert_options(self, options: CompletionOptions) -> CompletionOptions_LlamaCppPython:
+		new_options = self.map_options_from_moodel(options, CompletionOptions_LlamaCppPython)
+		assert isinstance(new_options, CompletionOptions_LlamaCppPython)
+		if options.mirostat:
+			new_options.mirostat_mode = 1
+		if options.grammar:
+			new_options.grammar = LlamaGrammar.from_string(options.grammar, False)
+		return new_options
+
 	def load_model(self, model_name: str):
 		model_name = model_name or Args['llm_model']
 		models_dir = Args['llm_models_dir']
@@ -84,29 +100,16 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 
 	def complete(
 		self,
-		prompt,
-		max_tokens,
-		temperature,
-		top_p,
-		repetition_penalty,
-		seed,
-		grammar,
-		stop
+		options: CompletionOptions_LlamaCppPython
 	):
 		if not self.loaded or self.model is None:
 			raise Exception('No model loaded.')
-		config = LlamaCppCompletionConfig(
-			prompt,
-			max_tokens,
-			temperature,
-			top_p,
-			repetition_penalty,
-			seed,
-			grammar,
-			stop
-		)
+		assert isinstance(options, CompletionOptions_LlamaCppPython)
 		start = time.time()
-		result = self.model.create_completion(**config)
+		o = options.model_dump()
+		o = {k: v for k, v in o.items() if v is not None}
+
+		result = self.model.create_completion(**o)
 		end = time.time()
 		logger.debug(f'Generated text in {end - start}s')
 		return result

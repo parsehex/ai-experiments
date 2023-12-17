@@ -1,4 +1,7 @@
-from typing import Generator, List, Dict, Union
+from typing import Generator, List, Dict, Union, Any
+from pydantic import BaseModel
+from py_api.models.llm_api import CompletionChoice, CompletionResponse, CompletionRequest, CompletionResult, CompletionUsage, PromptPart, PromptParts
+from py_api.models.llm_client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2
 
 class LLMClient_Base:
 	_instance = None
@@ -12,6 +15,8 @@ class LLMClient_Base:
 	model_name: Union[str, None] = None
 	model_abspath: Union[str, None] = None
 
+	OPTIONS_MAP: dict[str, str] = {}
+
 	@classmethod
 	@property
 	def instance(cls):
@@ -19,6 +24,34 @@ class LLMClient_Base:
 			cls._instance = cls()
 		return cls._instance
 
+	def map_options_from_moodel(self, options: CompletionOptions, model: Any) -> Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]:
+		if options is None or options.prompt is None:
+			raise Exception('No prompt provided.')
+		new_options = model.model_validate({'prompt': options.prompt})
+		newOptions = {}
+		keys = list(options.model_fields.keys())
+		newkeys = list(new_options.model_fields.keys())
+
+		optObj = options.model_dump()
+		for key in keys:
+			if key in self.OPTIONS_MAP:
+				remappedkey = self.OPTIONS_MAP[key]
+				if remappedkey in newkeys:
+					value = optObj[key]
+					newOptions[remappedkey] = value
+
+			elif key in newkeys:
+				# common option
+				newOptions[key] = optObj[key]
+				# print(f'setting {key} to {opt[key]}')
+
+		new_options = model.model_validate(newOptions)
+
+		return new_options
+
+	def convert_options(self, options: CompletionOptions) -> Any:
+		"""Convert options from common names to model-specific names and values."""
+		raise NotImplementedError()
 
 	def load_model(self, model_name: str):
 		raise NotImplementedError()
@@ -28,41 +61,22 @@ class LLMClient_Base:
 
 	def generate(
 		self,
-		prompt: str,
-		max_tokens: int,
-		temperature: Union[int, float],
-		top_p: int,
-		repetition_penalty: Union[int, float],
-		seed: int,
-		grammar: str,
-		stop: list
+		options: Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]
 	) -> Generator:
 		"""(TODO) Generate text from a prompt. Returns a Generator."""
 		raise NotImplementedError()
 
 	def complete(
 		self,
-		prompt: str,
-		max_tokens: int,
-		temperature: Union[int, float],
-		top_p: int,
-		repetition_penalty: Union[int, float],
-		seed: int,
-		grammar: str,
-		stop: list
-	) -> str:
+		options: Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]
+	) -> CompletionResult:
 		"""Generate text from a prompt. Returns a string."""
 		raise NotImplementedError()
 
 	def chat(
 		self,
 		messages: List[Dict],
-		max_tokens: int,
-		temperature: int,
-		top_p: int,
-		repetition_penalty: int,
-		seed: int,
-		grammar: str,
-		stop: list
+		options: Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]
 	):
+		# not implemented anywhere
 		raise NotImplementedError()

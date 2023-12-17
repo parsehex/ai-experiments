@@ -6,7 +6,7 @@ import uvicorn, fastapi
 
 from py_api.api.llm_api import llm_api
 from py_api.args import Args
-from py_api.client import llm as LLM
+from py_api.client import llm_client_manager
 from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL
 from py_api.utils import prompt_format
 
@@ -48,23 +48,8 @@ if __name__ == '__main__':
 		fmt = prompt_format.get_model_format(model_name)
 		logger.info(f'Detected model prompt format: {fmt}')
 
-	is_exllamav2 = False
-	p = os.path.join(models_dir, model_name)
-	if os.path.isdir(p):
-		if 'gptq' in model_name or 'exl2' in model_name:
-			is_exllamav2 = True
-		else:
-			# not implemented
-			raise NotImplementedError()
-
-	# TODO completely redo picking the right loader
-	#   and look in directories for .gguf or related files to better determine the models (loader) type
-
-	if is_exllamav2:
-		llm = LLM.LLMClient_Exllamav2.instance
-	else:
-		llm = LLM.LLMClient_LlamaCppPython.instance
-	llm.load_model()
+	llmManager = llm_client_manager.LLMManager.instance
+	llmManager.load_model(model_name)
 
 	app = fastapi.FastAPI()
 	llm_api(app)

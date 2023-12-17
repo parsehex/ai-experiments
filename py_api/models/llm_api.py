@@ -1,5 +1,6 @@
 from typing import Union
 from pydantic import BaseModel, Field
+from py_api.models.llm_client import CompletionOptions
 
 class PromptPart(BaseModel):
 	use: bool = Field(True, description='Whether to use prompt part.')
@@ -11,19 +12,11 @@ class PromptParts(BaseModel):
 	user: list[PromptPart] = Field(..., description='User prompt parts.')
 	system: list[PromptPart] = Field([], description='System prompt parts.')
 
-class CompletionRequest(BaseModel):
+class CompletionRequest(CompletionOptions):
 	prompt: str = Field('', description='Prompt to feed to model.')
 	parts: PromptParts = Field(None, description='Prompt parts to construct prompt from.')
 	prefixResponse: str = Field('', description='Prefix to add to prompt.')
 	return_prompt: bool = Field(False, description='Return prompt with response.')
-
-	max_tokens: int = Field(128, description='Maximum number of tokens to generate.')
-	temperature: float = Field(0.7, description='Temperature for sampling.')
-	top_p: int = Field(0.9, description='Top-p (nucleus) sampling cutoff.')
-	repetition_penalty: float = Field(1.05, description='Repetition penalty.')
-	seed: int = Field(-1, description='Random seed.')
-	grammar: str = Field('', description='Grammar to use.')
-	stop: list = Field([], description='Stop tokens.')
 
 class CompletionUsage(BaseModel):
 	prompt_tokens: int = Field(0, description='Number of tokens in prompt.')

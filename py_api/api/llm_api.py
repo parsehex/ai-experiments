@@ -1,10 +1,10 @@
 import logging, os, time
-from typing import Union
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from py_api.args import Args
-from py_api.client import llm as LLM
-from py_api.models import llm
+from py_api.client import llm_client_manager
+from py_api.models.llm_api import CompletionRequest, CompletionResponse
+from py_api.models.llm_client import CompletionOptions
 from py_api.utils import prompt_format
 from py_api.utils.llm_models import exllamav2_or_llamacpp
 
@@ -13,31 +13,21 @@ logger = logging.getLogger(__name__)
 # supported extensions
 EXTENSIONS = ['.gguf', '.ggml']
 
-model: Union[LLM.LLMClient_Exllamav2, LLM.LLMClient_LlamaCppPython, None] = None
+manager = llm_client_manager.LLMManager.instance
 def llm_api(app: FastAPI):
-	llamacpp = LLM.LLMClient_LlamaCppPython.instance
-	exllamav2 = LLM.LLMClient_Exllamav2.instance
-
 	def modelName():
-		if model is not None and model.model_name is not None:
-			return model.model_name
+		if manager.model_name is not None:
+			return manager.model_name
 		else:
 			return 'None'
 
-	def pick_from_name(model_name = ''):
-		name = model_name or Args['llm_model']
-		if exllamav2_or_llamacpp(name) == 'exllamav2':
-			return exllamav2
-		else:
-			return llamacpp
-
-	@app.post('/llm/v1/complete', response_model=llm.CompletionResponse)
-	async def llm_complete(req: llm.CompletionRequest):
+	@app.post('/llm/v1/complete', response_model=CompletionResponse)
+	async def llm_complete(req: CompletionRequest):
 		"""Generate text from a prompt, or an array of PromptParts. Prompt should be in proper format (unless using `parts`), it's fed directly to the model. If both are provided then `prompt` is overwritten by constructing prompt from `parts`."""
-		global model
-		if model is None:
-			pick_from_name()
-			if model is None:
+		global manager
+		if manager.model_name is None:
+			manager.load_model(None)
+			if manager.model_name is None:
 				raise HTTPException(status_code=500, detail='Model not loaded.')
 
 		prompt = req.prompt
@@ -56,21 +46,15 @@ def llm_api(app: FastAPI):
 		if prefixResponse != '':
 			prompt = prompt.strip() + '\n' + str(prefixResponse)
 
-		result = model.complete(
-			prompt,
-			req.max_tokens,
-			req.temperature,
-			req.top_p,
-			req.repetition_penalty,
-			req.seed,
-			req.grammar,
-			req.stop
-		)
+		req.prompt = prompt
+		options = CompletionOptions.model_validate(req.model_dump())
+
+		result = manager.complete(options)
 
 		res: dict = {'result': result}
 		if return_prompt:
 			res['prompt'] = prompt
-		return llm.CompletionResponse(**res)
+		return CompletionResponse(**res)
 
 	@app.get('/llm/v1/model')
 	async def get_model():
@@ -97,7 +81,7 @@ def llm_api(app: FastAPI):
 	@app.get('/llm/v1/model/load')
 	async def load_model(model_name: str):
 		"""Load a model by filename from llm_models_dir"""
-		global model
+		global manager
 		# TODO: instead of model name, accept 'features' dict:
 		#   grammar (bool): model supports grammar
 		#   model_type ('instruct' or 'chat'): the preferred model type
@@ -107,25 +91,22 @@ def llm_api(app: FastAPI):
 			raise HTTPException(status_code=400, detail='model_name is required')
 
 		start = time.time()
-		if model is not None:
-			if model.model_name == model_name:
+		if manager.model_name is not None:
+			if manager.model_name == model_name:
 				return JSONResponse(content={'status': 'Loaded', 'model_name': modelName(), 'time': time.time() - start})
-			model.unload_model()
+			manager.unload_model()
 
 		logger.debug(model_name)
-		model = pick_from_name(model_name)
-		if model is None:
-			raise HTTPException(status_code=500, detail='Model cannot be loaded.')
-		model.load_model(model_name)
+		manager.load_model(model_name)
 
 		return JSONResponse(content={'status': 'Loaded', 'model_name': modelName(), 'time': time.time() - start})
 
 	@app.get('/llm/v1/model/unload')
 	async def unload_model():
 		"""Unload currently-loaded model"""
-		global model
+		global manager
 		start = time.time()
-		if model is None:
+		if manager.model_name is None:
 			return JSONResponse(content={'status': 'Unloaded', 'model_name': modelName(), 'time': time.time() - start})
-		model.unload_model()
+		manager.unload_model()
 		return JSONResponse(content={'status': 'Unloaded', 'model_name': modelName(), 'time': time.time() - start})
