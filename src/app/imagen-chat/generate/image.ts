@@ -15,7 +15,7 @@ export const imgPromptFromInput = async (
 	//
 	// first,
 	const p = parts.imgPromptReqDesc({ inputMsg, messages, summary });
-	const { prefixResponse, user, system } = p;
+	const { prefix_response: prefixResponse, user, system } = p;
 	let result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({

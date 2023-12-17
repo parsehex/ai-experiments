@@ -30,7 +30,7 @@ Respond with a string containing the description only.\n`,
 	];
 	const user: PromptPart[] = [{ val: `INPUT: ${msg.content}\n` }];
 	let prefixResponse = 'RESPONSE:\n';
-	return { prefixResponse, system, user };
+	return { prefix_response: prefixResponse, system, user };
 }
 
 export function imgPromptReqDesc({
@@ -72,7 +72,7 @@ You must describe the image using as much verbatim language from the input as po
 	];
 	const user: PromptPart[] = [{ val: `INPUT: ${inputMsg.content}\n` }];
 	let prefixResponse = 'RESPONSE:';
-	return { prefixResponse, system, user };
+	return { prefix_response: prefixResponse, system, user };
 }
 
 export function makeImgPrompt({
@@ -105,5 +105,5 @@ photo of a sunrise over a mountain range with a large village in-between. master
 	const user: PromptPart[] = [{ val: `INPUT: ${desc}\n` }];
 	let prefixResponse = 'RESPONSE:';
 	if (thoughts.length) prefixResponse += `\n${thoughts}\nPROMPT:\n`;
-	return { prefixResponse, system, user };
+	return { prefix_response: prefixResponse, system, user };
 }

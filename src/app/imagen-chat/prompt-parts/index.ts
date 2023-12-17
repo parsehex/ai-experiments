@@ -20,7 +20,7 @@ export function innerMonologue({
 		{ val: messages.map((m) => m.content).join('\n') },
 	];
 	const prefixResponse = 'THOUGHTS:';
-	return { prefixResponse, user };
+	return { prefix_response: prefixResponse, user };
 }
 
 // summarize or revise a summary of a chat
@@ -54,7 +54,7 @@ export function summarizeChat({
 		{ val: msgStrs.join('\n') + '\n' },
 	];
 	const prefixResponse = 'SUMMARY:';
-	return { prefixResponse, system, user };
+	return { prefix_response: prefixResponse, system, user };
 }
 
 export function continueChat({
@@ -109,5 +109,5 @@ export function continueChat({
 		prefixResponse += ')\n';
 		prefixResponse += 'ASSISTANT:\n';
 	}
-	return { prefixResponse, system, user };
+	return { prefix_response: prefixResponse, system, user };
 }

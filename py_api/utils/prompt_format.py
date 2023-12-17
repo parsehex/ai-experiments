@@ -5,8 +5,8 @@
 
 # parts is a list of objects
 #   each object is a prompt part
-# each prompt part has at least a `str` propertyn and optionally:
-#   - `if`: boolean indicating whether to include this part in the prompt
+# each prompt part has at least a `val` propertyn and optionally:
+#   - `use`: boolean indicating whether to include this part in the prompt
 #   - `pre`: string to add before the part
 #   - `suf`: string to add after the part
 

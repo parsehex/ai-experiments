@@ -1,8 +1,5 @@
 import { PromptPart } from '../types/llm';
 import {
-	// ModelInfo,
-	// GenerateParams,
-	// GenerateResponse,
 	ChatParams,
 	ChatResponse,
 	StopStreamResponse,
@@ -11,19 +8,10 @@ import {
 	ListModelsResponse,
 	ModelInfoResponse,
 	NewModelInfo,
-} from '../types/ooba.new';
+	GenerateParams,
+} from '../types/new-api';
 import { addCorsIfNot } from '../utils';
 
-interface GenerateParams {
-	prompt?: string;
-	parts?: PromptPart[];
-	return_prompt?: boolean;
-	temperature?: number;
-	max_tokens?: number;
-	prefixResponse?: string;
-	grammar?: string;
-	stop?: string[];
-}
 interface GenerateResponse {
 	result: {
 		id: string;
@@ -49,12 +37,13 @@ interface GenerateResponse {
 
 interface ModelInfo {
 	model_name: string;
+	loader: 'llamacpp' | 'exllamav2';
 }
 
 // raw completion endpoint: POST /llm/v1/complete
 // chat-style: POST /llm/v1/chat
 
-let BASE_URL = 'http://localhost:5000';
+let BASE_URL = 'http://localhost:5000/llm';
 let adjusted = false;
 
 function fixUrl() {
@@ -65,7 +54,7 @@ function fixUrl() {
 
 export async function getModel(): Promise<ModelInfo> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/llm/v1/model`);
+	const response = await fetch(`${BASE_URL}/v1/model`);
 	return response.json();
 }
 
@@ -73,7 +62,7 @@ export async function generateText(
 	params: GenerateParams
 ): Promise<GenerateResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/llm/v1/complete`, {
+	const response = await fetch(`${BASE_URL}/v1/complete`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -85,7 +74,8 @@ export async function generateText(
 
 export async function chat(params: any): Promise<ChatResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/llm/v1/chat`, {
+	// endpoint doesnt exist yet
+	const response = await fetch(`${BASE_URL}/v1/chat`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -106,35 +96,31 @@ export async function chat(params: any): Promise<ChatResponse> {
 // 	});
 // 	return response.json();
 // }
-// interface CurrentModelResponse {
-// 	model_name: string;
-// 	lora_names: string[];
-// }
-// export async function getCurrentModel(): Promise<CurrentModelResponse> {
-// 	if (!adjusted) fixUrl();
-// 	const response = await fetch(`${BASE_URL}/v1/internal/model/info`);
-// 	return response.json();
-// }
+interface CurrentModelResponse {
+	model_name: string;
+	loader: 'llamacpp' | 'exllamav2';
+}
+export async function getCurrentModel(): Promise<CurrentModelResponse> {
+	return getModel();
+}
 
 /** List models or get info on a specific model */
-// export async function listModels(name = ''): Promise<ListModelsResponse> {
-// 	if (!adjusted) fixUrl();
-// 	let url = `${BASE_URL}/v1/models`;
-// 	if (name) url += `/${name}`;
-// 	const response = await fetch(url);
-// 	return response.json();
-// }
-// export async function loadModel(modelName: string): Promise<ModelInfoResponse> {
-// 	if (!adjusted) fixUrl();
-// 	const response = await fetch(`${BASE_URL}/v1/internal/model/load`, {
-// 		method: 'POST',
-// 		headers: {
-// 			'Content-Type': 'application/json',
-// 		},
-// 		body: JSON.stringify({ model_name: modelName }),
-// 	});
-// 	return response.json();
-// }
+export async function listModels(): Promise<ListModelsResponse> {
+	if (!adjusted) fixUrl();
+	let url = `${BASE_URL}/v1/list-models`;
+	const response = await fetch(url);
+	return response.json();
+}
+export async function loadModel(modelName: string): Promise<ModelInfoResponse> {
+	if (!adjusted) fixUrl();
+	const response = await fetch(`${BASE_URL}/v1/model/load`, {
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ model_name: modelName }),
+	});
+	return response.json();
+}
 
 // export async function countTokens(str: string): Promise<number> {
 // 	if (!adjusted) fixUrl();

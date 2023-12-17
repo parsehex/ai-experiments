@@ -2,6 +2,7 @@ import * as ooba from './ooba-api.new';
 import * as newapi from './new-api';
 import * as openai from './openai-api';
 import { GenerateParams } from '../types/ooba.new';
+import { GenerateParams as NewGenerateParams } from '../types/new-api';
 import {
 	PromptPart,
 	PromptFormatResponse,
@@ -97,7 +98,7 @@ export async function generate(
 	promptParts: PromptPart[] | (Message | RawMessage)[] | string,
 	options?: GenerateOptions
 ): Promise<string> {
-	let modelType: 'ooba' | 'OpenAI' | 'new' | '' = '';
+	let modelType: 'ooba' | 'OpenAI' | '' = '';
 	let model = '';
 	let promptFormat = 'flexible';
 	let prompt: PromptFormatResponse = '';
@@ -115,10 +116,10 @@ export async function generate(
 				);
 			}
 		} else {
-			modelType = 'new';
+			modelType = 'ooba';
 		}
 	} else {
-		modelType = 'new';
+		modelType = 'ooba';
 	}
 	if (Array.isArray(promptParts)) {
 		// look at first part to determine type
@@ -163,7 +164,7 @@ export async function generate(
 		delete params.prefixResponse;
 	}
 	let res = '';
-	if (modelType === 'new') {
+	if (modelType === 'ooba') {
 		const resp = await newapi.generateText(params);
 		res = resp.result.choices[0].text;
 	} else if (modelType === 'OpenAI') {
@@ -182,6 +183,22 @@ export async function generate(
 		console.log(options.log.response, res);
 	}
 	return res;
+}
+
+// a simpler generate function using our new api
+export async function complete(opt?: NewGenerateParams): Promise<string> {
+	if (!opt?.prompt && !opt?.parts) {
+		throw new Error('Must provide prompt or parts');
+	}
+	const params: NewGenerateParams = {};
+	const entries = Object.entries(opt || {});
+	if (opt) {
+		for (const [key, value] of entries) {
+			params[key as keyof NewGenerateParams] = value;
+		}
+	}
+	const resp = await newapi.generateText(params);
+	return resp.result.choices[0].text;
 }
 
 export async function getModel(model: string): Promise<string> {

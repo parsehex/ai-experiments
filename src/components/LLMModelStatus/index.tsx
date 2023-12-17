@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useOobaServerStatus } from '@/hooks/useOobaServerStatus';
-import { ServerStatus } from '@/lib/types/ooba.new';
-import { loadModel, listModels } from '@/lib/llm/ooba-api.new';
+import { useServerStatus } from '@/hooks/useOobaServerStatus';
+import { ServerStatus } from '@/lib/types/new-api';
+import { loadModel, listModels } from '@/lib/llm/new-api';
 
 const defaultModels = ['gpt-3.5-turbo', 'text-embedding-ada-002'];
 
 const LLMModelStatus: React.FC = () => {
-	const { status, modelInfo } = useOobaServerStatus();
+	const { status, modelInfo } = useServerStatus();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [models, setModels] = useState([] as string[]);
 	const [selectedModel, setSelectedModel] = useState('');

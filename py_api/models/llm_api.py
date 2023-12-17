@@ -15,7 +15,7 @@ class PromptParts(BaseModel):
 class CompletionRequest(CompletionOptions):
 	prompt: str = Field('', description='Prompt to feed to model.')
 	parts: PromptParts = Field(None, description='Prompt parts to construct prompt from.')
-	prefixResponse: str = Field('', description='Prefix to add to prompt.')
+	prefix_response: str = Field('', description='Prefix to add to prompt.')
 	return_prompt: bool = Field(False, description='Return prompt with response.')
 
 class CompletionUsage(BaseModel):

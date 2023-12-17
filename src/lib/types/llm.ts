@@ -7,7 +7,7 @@ export type PromptPart = {
 export interface PromptPartResponse {
 	user: PromptPart[];
 	system?: PromptPart[];
-	prefixResponse?: string;
+	prefix_response?: string;
 	grammar?: string;
 }
 

@@ -7,7 +7,12 @@ import {
 	SettingString,
 	hasPlot,
 } from './utils';
-import { ActionObject, CharacterObject, Sentences } from '@/lib/llm/grammar';
+import {
+	ActionObject,
+	CharacterObject,
+	Lines,
+	Sentences,
+} from '@/lib/llm/grammar';
 
 export function genStoryDescription(
 	chars: Character[],
@@ -32,7 +37,7 @@ export function genStoryDescription(
 		{ use: chars.length > 0, val: charStr },
 	];
 	const prefixResponse = 'DESCRIPTION:';
-	return { user, system, prefixResponse };
+	return { user, system, prefix_response: prefixResponse };
 }
 
 const relevancePrompt: Record<string, string> = {
@@ -72,7 +77,7 @@ Return an array of objects, which should have the following keys:
 	];
 	const prefixResponse = 'CHARACTER:';
 	const grammar = CharacterObject();
-	return { user, system, prefixResponse, grammar };
+	return { user, system, prefix_response: prefixResponse, grammar };
 }
 
 export function genFillCharacterDetails(
@@ -105,7 +110,7 @@ export function genFillCharacterDetails(
 	const prefixResponse = 'CHARACTER:';
 	const grammar = CharacterObject();
 
-	return { user, system, prefixResponse, grammar };
+	return { user, system, prefix_response: prefixResponse, grammar };
 }
 
 export function genSetting(chars: Character[], plot: Plot): PromptPartResponse {
@@ -127,14 +132,14 @@ Return an object with the following keys:
 		{ use: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
 	];
 	const prefixResponse = 'SETTING:';
-	return { user, system, prefixResponse };
+	return { user, system, prefix_response: prefixResponse };
 }
 export function genTone(chars: Character[], plot: Plot): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
 			val: `Write a Tone to guide how the following story should be written.
-The tone should be a brief sentence that provides guidance to write the story, but should not be specific to the story itself in any way. It should properly convey the tone in which the story will be written.
-A simple example would be "Dark and gritty but realistic."\n\n`,
+			The tone should be a brief sentence that provides guidance to write the story, but should not be specific to the story itself in any way. It should properly convey the tone in which the story will be written.
+			A simple example would be "Dark and gritty but realistic."\n\n`,
 		},
 	];
 	const user: PromptPart[] = [
@@ -149,9 +154,13 @@ A simple example would be "Dark and gritty but realistic."\n\n`,
 		},
 		{ use: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
 	];
-	const prefixResponse = 'RESPONSE:\n';
+	// TODO IDEA: return an optional formatting function from these functions
+	//   (this one would truncate after the first quote)
+	// could also accept a response formatter in the complete function (or even just use presets)
+	const prefixResponse =
+		'RESPONSE:\nOh, I know! The tone for this story should be "';
 	const grammar = Sentences(1);
-	return { user, system, prefixResponse, grammar };
+	return { user, system, prefix_response: prefixResponse, grammar };
 }
 
 export function genStarter(chars: Character[], plot: Plot): PromptPartResponse {
@@ -166,7 +175,7 @@ export function genStarter(chars: Character[], plot: Plot): PromptPartResponse {
 	];
 	const prefixResponse = 'RESPONSE:\n';
 	const grammar = Sentences(1, false, 1, 3);
-	return { user, system, prefixResponse, grammar };
+	return { user, system, prefix_response: prefixResponse, grammar };
 }
 
 export function genPickAction(
@@ -197,7 +206,7 @@ Return an object with the following keys:
 		prefixResponse += `USER INFLUENCE:\n(These are the user's thoughts on what should happen next in the story, you should not reference these in your answer.)\n${userRequest}\n`;
 	prefixResponse += `RESPONSE:\n`;
 	const grammar = ActionObject();
-	return { user, system, prefixResponse, grammar };
+	return { user, system, prefix_response: prefixResponse, grammar };
 }
 
 // When actually writing the next line, include less info in the prompt
@@ -226,8 +235,9 @@ Your thoughts aren't part of the story, only you can see them.\n\n`,
 	if (narrativeThought)
 		prefixResponse += `YOUR THOUGHTS:\n${narrativeThought}\n`;
 	prefixResponse += `RESPONSE:\n`;
-	const grammar = Sentences(1, false, 1, 3);
-	return { user, system, prefixResponse, grammar };
+	// const grammar = Sentences(1, false, 1, 3);
+	const grammar = Lines({ n: 2 });
+	return { user, system, prefix_response: prefixResponse, grammar };
 }
 
 export function genDialogueAction(
@@ -255,5 +265,5 @@ export function genDialogueAction(
 	if (dialogueThought) prefixResponse += `YOUR THOUGHTS:\n${dialogueThought}\n`;
 	if (speakingCharacter) prefixResponse += `CHARACTER: ${speakingCharacter}\n`;
 	prefixResponse += `RESPONSE:\n`;
-	return { user, system, prefixResponse };
+	return { user, system, prefix_response: prefixResponse };
 }

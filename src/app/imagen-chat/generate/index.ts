@@ -11,7 +11,7 @@ export * from './image';
 export const innerMonologue = async (messages: Message[]) => {
 	messages = messages.filter((msg) => msg.type !== 'thought');
 	const promptParts = parts.innerMonologue({ messages });
-	const { prefixResponse, user, system } = promptParts;
+	const { prefix_response: prefixResponse, user, system } = promptParts;
 	const result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
@@ -26,7 +26,7 @@ export const innerMonologue = async (messages: Message[]) => {
 export const summarizeChat = async (messages: Message[], lastSummary = '') => {
 	messages = messages.filter((msg) => msg.type !== 'thought');
 	const promptParts = parts.summarizeChat({ messages, lastSummary });
-	const { prefixResponse, user, system } = promptParts;
+	const { prefix_response: prefixResponse, user, system } = promptParts;
 	const result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
@@ -44,7 +44,7 @@ export const imgPromptThoughts = async (
 	summary = ''
 ) => {
 	const promptParts = parts.imagePromptThoughts({ msg, prevMsg, summary });
-	const { prefixResponse, user, system } = promptParts;
+	const { prefix_response: prefixResponse, user, system } = promptParts;
 	let result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
@@ -60,7 +60,7 @@ export const imgPromptThoughts = async (
 };
 export const imgPrompt = async (desc: string, thoughts = '') => {
 	const promptParts = parts.makeImgPrompt({ desc, thoughts });
-	const { prefixResponse, user, system } = promptParts;
+	const { prefix_response: prefixResponse, user, system } = promptParts;
 	let result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
@@ -81,7 +81,7 @@ export const imgPrompt = async (desc: string, thoughts = '') => {
 export async function addLorasToPrompt(prompt: string) {
 	// const loras = await getLoras();
 	const pickLorasParts = parts.pickLoras({ prompt });
-	const { prefixResponse, user, system } = pickLorasParts;
+	const { prefix_response: prefixResponse, user, system } = pickLorasParts;
 	const result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
@@ -113,7 +113,7 @@ export const continueChat = async (
 		imagePrompt,
 		summary,
 	});
-	const { prefixResponse, user, system } = promptParts;
+	const { prefix_response: prefixResponse, user, system } = promptParts;
 	const result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
@@ -136,7 +136,7 @@ export const pickIntentArea = async (
 		messages,
 		summary,
 	});
-	const { prefixResponse, user, system } = promptParts;
+	const { prefix_response: prefixResponse, user, system } = promptParts;
 	const result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({
@@ -157,7 +157,7 @@ export const pickImageIntent = async (
 		messages,
 		summary,
 	});
-	const { prefixResponse, user, system } = promptParts;
+	const { prefix_response: prefixResponse, user, system } = promptParts;
 	const result = await generate(
 		makePrompt(user, system, 'ChatML'),
 		Params({

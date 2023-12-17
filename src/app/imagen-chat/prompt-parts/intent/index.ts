@@ -40,5 +40,5 @@ export function pickAreaOfIntent({
 		{ val: `User INPUT: ${userMsg?.content}\n` },
 	];
 	const prefixResponse = 'INTENT:';
-	return { prefixResponse, system, user };
+	return { prefix_response: prefixResponse, system, user };
 }

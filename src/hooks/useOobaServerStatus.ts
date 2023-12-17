@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { ModelInfo, ServerStatus } from '@/lib/types/ooba.new';
+import { ModelInfo, ServerStatus } from '@/lib/types/new-api';
 import { getModel } from '@/lib/llm/new-api';
 
-export function useOobaServerStatus() {
+export function useServerStatus() {
 	const [status, setStatus] = useState<ServerStatus>(ServerStatus.OFF);
 	const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
 

@@ -19,16 +19,16 @@ class CompletionOptions(BaseModel):
 	stop: list[str] = Field([], description='Stop strings.')
 
 	# LlamaCppPython options
-	frequency_penalty: Optional[float] = Field(None, description='Frequency penalty.')
-	presence_penalty: Optional[float] = Field(None, description='Presence penalty.')
-	seed: Optional[int] = Field(None, description='Seed.')
-	grammar: Optional[str] = Field(None, description='Grammar to use for constrained sampling.')
+	frequency_penalty: Optional[float] = Field(None, description='Frequency penalty. LlamaCpp only.')
+	presence_penalty: Optional[float] = Field(None, description='Presence penalty. LlamaCpp only.')
+	seed: Optional[int] = Field(None, description='Seed. LlamaCpp only.')
+	grammar: Optional[str] = Field(None, description='Grammar to use for constrained sampling. LlamaCpp only.')
 
 	# Exllamav2 options
-	token_repetition_range: Optional[int] = Field(-1, description='Token repetition range.')
-	token_repetition_decay: Optional[float] = Field(0.0, description='Token repetition decay.')
-	temperature_last: Optional[bool] = Field(False, description='Whether to use temperature last.')
-	mirostat_mu: Optional[Any] = Field(None, description='Mirostat mu.')
+	token_repetition_range: Optional[int] = Field(-1, description='Token repetition range. Exllamav2 only.')
+	token_repetition_decay: Optional[float] = Field(0.0, description='Token repetition decay. Exllamav2 only.')
+	temperature_last: Optional[bool] = Field(False, description='Whether to use temperature last. Exllamav2 only.')
+	mirostat_mu: Optional[Any] = Field(None, description='Mirostat mu. Exllamav2 only.')
 
 class CompletionOptions_LlamaCppPython(BaseModel):
 	prompt: str = Field(..., description='Prompt to feed to model.')

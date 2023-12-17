@@ -56,7 +56,7 @@ export function pickImageIntent({
 	];
 	const user: PromptPart[] = [{ val: `INPUT: ${userMsg.content}\n` }];
 	const prefixResponse = 'RESPONSE:';
-	return { prefixResponse, system, user };
+	return { prefix_response: prefixResponse, system, user };
 }
 
 // what do each of the intents mean?

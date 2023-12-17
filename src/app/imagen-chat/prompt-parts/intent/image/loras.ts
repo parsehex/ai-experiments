@@ -54,5 +54,5 @@ export function pickLoras({
 	];
 	const user: PromptPart[] = [{ val: `INPUT: ${prompt}\n` }];
 	let prefixResponse = 'RESPONSE:';
-	return { prefixResponse, system, user };
+	return { prefix_response: prefixResponse, system, user };
 }

@@ -32,7 +32,7 @@ def llm_api(app: FastAPI):
 
 		prompt = req.prompt
 		parts = req.parts
-		prefixResponse = req.prefixResponse # AKA "suffixPrompt"
+		prefix_response = req.prefix_response # AKA "suffix_prompt"
 		return_prompt = req.return_prompt
 
 		if prompt is None and parts is None:
@@ -43,8 +43,8 @@ def llm_api(app: FastAPI):
 			# prompt should already be a string but just in case
 			prompt = str(prompt)
 
-		if prefixResponse != '':
-			prompt = prompt.strip() + '\n' + str(prefixResponse)
+		if prefix_response != '':
+			prompt = prompt.strip() + '\n' + str(prefix_response)
 
 		req.prompt = prompt
 		options = CompletionOptions.model_validate(req.model_dump())
