@@ -75,7 +75,7 @@ def parts_to_str(parts: list[PromptPart]):
 		hasSuf = part.suf != None
 		suf = part.suf if hasSuf else ''
 		if hasStr and shouldUse:
-			partStr = f"{pre}{part.val}{suf}"
+			partStr = f'{pre}{part.val}{suf}'
 			s += partStr
 	return s
 
@@ -96,7 +96,7 @@ def get_model_format(model: str) -> str:
 			fmt = model_formats[model_format]
 			break
 	if fmt == None:
-		raise Exception(f"Model {model} not supported.")
+		raise Exception(f'Model {model} not supported.')
 	return fmt
 
 def parts_to_prompt(parts: PromptParts, model: str) -> str:

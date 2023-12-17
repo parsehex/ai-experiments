@@ -10,19 +10,19 @@ from py_api.client import llm as LLM
 from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL
 from py_api.utils import prompt_format
 
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description="Starts the API server.")
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='Starts the API server.')
 
 	# --host | --port
-	parser.add_argument("--host", type=str, default=HOST, help="The host to bind to.")
-	parser.add_argument("--port", type=int, default=PORT, help="The port to bind to.")
+	parser.add_argument('--host', type=str, default=HOST, help='The host to bind to.')
+	parser.add_argument('--port', type=int, default=PORT, help='The port to bind to.')
 
 	# --llm-models-dir | --llm-model
-	parser.add_argument("--llm-models-dir", type=str, default=LLM_MODELS_DIR, help="The directory to load LLM models from.")
-	parser.add_argument("--llm-model", type=str, default=LLM_MODEL, help="The LLM model to load.")
+	parser.add_argument('--llm-models-dir', type=str, default=LLM_MODELS_DIR, help='The directory to load LLM models from.')
+	parser.add_argument('--llm-model', type=str, default=LLM_MODEL, help='The LLM model to load.')
 
 	# --log-level
-	parser.add_argument("--log-level", type=str, default="INFO", help="The log level to use.")
+	parser.add_argument('--log-level', type=str, default='INFO', help='The log level to use.')
 
 	args = parser.parse_args()
 	Args['host'] = args.host
@@ -38,15 +38,15 @@ if __name__ == "__main__":
 	usedmem = torch.cuda.memory_allocated(0)
 	usedmem /= 1024**3
 	freemem = totalmem - usedmem
-	logger.debug(f"Total GPU memory: {totalmem:.2f} GB")
+	logger.debug(f'Total GPU memory: {totalmem:.2f} GB')
 	if freemem < 1:
-		raise RuntimeError("Not enough GPU memory to run LLM.")
+		raise RuntimeError('Not enough GPU memory to run LLM.')
 
 	model_name = Args['llm_model']
 	models_dir = Args['llm_models_dir']
 	if model_name is not None:
 		fmt = prompt_format.get_model_format(model_name)
-		logger.info(f"Detected model prompt format: {fmt}")
+		logger.info(f'Detected model prompt format: {fmt}')
 
 	is_exllamav2 = False
 	p = os.path.join(models_dir, model_name)
@@ -56,6 +56,9 @@ if __name__ == "__main__":
 		else:
 			# not implemented
 			raise NotImplementedError()
+
+	# TODO completely redo picking the right loader
+	#   and look in directories for .gguf or related files to better determine the models (loader) type
 
 	if is_exllamav2:
 		llm = LLM.LLMClient_Exllamav2.instance
@@ -67,4 +70,4 @@ if __name__ == "__main__":
 	llm_api(app)
 
 	uvicorn.run(app, host=args.host, port=args.port)
-	logger.info(f"API server started on {args.host}:{args.port}.")
+	logger.info(f'API server started on {args.host}:{args.port}.')

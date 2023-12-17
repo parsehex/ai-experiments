@@ -13,7 +13,7 @@ def LlamaCppConfig(model_path):
 	size, quant = parse_size_and_quant(model_file_name)
 
 	if size != '' and quant != '':
-		print(f"Model Size: {size} | Quant: {quant}")
+		logger.debug(f'Model Size: {size} | Quant: {quant}')
 	return {
 		'model_path': model_path,
 		'n_threads': 8,
@@ -42,7 +42,7 @@ def LlamaCppCompletionConfig(
 	}
 	if grammar != '' and grammar != None:
 		# TODO: LlamaGrammar.from_json_schema ???
-		# NOTE: from_string seems to fix grammar (like using "+" which leads to issues (i guess because recursion))
+		# NOTE: from_string seems to fix grammar (like using '+' which leads to issues (i guess because recursion))
 		config['grammar'] = LlamaGrammar.from_string(grammar, False)
 	return config
 
@@ -52,11 +52,11 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 		models_dir = Args['llm_models_dir']
 
 		# model_name should be name of file or directory in models_dir
-		# TODO: model name can also start with "hf:" to download from HuggingFace
+		# TODO: model name can also start with 'hf:' to download from HuggingFace
 		is_dir = os.path.isdir(os.path.join(models_dir, model_name))
 		is_file = os.path.isfile(os.path.join(models_dir, model_name))
 		if not is_dir and not is_file:
-			raise Exception(f"Model {model_name} not found in {models_dir}.")
+			raise Exception(f'Model {model_name} not found in {models_dir}.')
 		self.model_abspath = os.path.join(models_dir, model_name)
 		self.model_name = model_name
 		self.cache = LlamaCache()
@@ -65,17 +65,17 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 		if self.loaded or self.model is not None:
 			self.unload_model()
 
-		logger.info(f"Loading model {self.model_name}...")
+		logger.debug(f'Loading model {self.model_name}...')
 		start = time.time()
 		self.model = Llama(**self.config)
 		self.model.set_cache(self.cache)
 		end = time.time()
-		logger.info(f"Loaded model {self.model_name} in {end - start}s")
+		logger.debug(f'Loaded model {self.model_name} in {end - start}s')
 		self.loaded = True
 
 	def unload_model(self):
 		torch.cuda.empty_cache()
-		logger.info("Unloaded model.")
+		logger.debug('Unloaded model.')
 		self.model = None
 		self.model_name = None
 		self.model_abspath = None
@@ -94,7 +94,7 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 		stop
 	):
 		if not self.loaded or self.model is None:
-			raise Exception("No model loaded.")
+			raise Exception('No model loaded.')
 		config = LlamaCppCompletionConfig(
 			prompt,
 			max_tokens,
@@ -108,5 +108,5 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 		start = time.time()
 		result = self.model.create_completion(**config)
 		end = time.time()
-		logger.info(f"Generated text in {end - start}s")
+		logger.debug(f'Generated text in {end - start}s')
 		return result

@@ -26,10 +26,10 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		models_dir = Args['llm_models_dir']
 
 		# model_name should be name of directory in models_dir
-		# TODO: model name can also start with "hf:" to download from HuggingFace
+		# TODO: model name can also start with 'hf:' to download from HuggingFace
 		is_dir = os.path.isdir(os.path.join(models_dir, model_name))
 		if not is_dir:
-			raise Exception(f"Model {model_name} not found in {models_dir}.")
+			raise Exception(f'Model {model_name} not found in {models_dir}.')
 		self.model_abspath = os.path.join(models_dir, model_name)
 		self.model_name = model_name
 
@@ -42,7 +42,7 @@ class LLMClient_Exllamav2(LLMClient_Base):
 			cfg.prepare()
 			self.config = cfg
 
-		logger.info(f"Loading model {self.model_name}...")
+		logger.info(f'Loading model {self.model_name}...')
 		start = time.time()
 		self.model = ExLlamaV2(self.config, lazy_load=True)
 		self.cache = ExLlamaV2Cache(self.model, lazy=True)
@@ -53,14 +53,14 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		self.generator.warmup()
 
 		end = time.time()
-		logger.info(f"Loaded model {self.model_name} in {end - start}s")
+		logger.info(f'Loaded model {self.model_name} in {end - start}s')
 		self.loaded = True
 
 	def unload_model(self):
 		if self.model is None:
 			return
 		self.model.unload()
-		logger.info("Unloaded model.")
+		logger.info('Unloaded model.')
 		self.model = None
 		self.model_name = None
 		self.model_abspath = None
@@ -83,7 +83,7 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		stop
 	):
 		if not self.loaded or self.model is None or self.generator is None or self.tokenizer is None or self.cache is None:
-			raise Exception("Re-load model.")
+			raise Exception('Re-load model.')
 
 		settings = ExLlamaV2Sampler.Settings()
 		settings.temperature = temperature
@@ -108,7 +108,7 @@ class LLMClient_Exllamav2(LLMClient_Base):
 			yield chunk
 
 		end = time.time()
-		logger.info(f"Generated text in {end - start}s")
+		logger.info(f'Generated text in {end - start}s')
 
 	def complete(
 		self,
