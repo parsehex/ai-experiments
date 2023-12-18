@@ -1,13 +1,8 @@
 import { PromptPart } from '../types/llm';
 import {
-	ChatParams,
 	ChatResponse,
-	StopStreamResponse,
-	ModelOptions,
-	ModelActionResponse,
 	ListModelsResponse,
-	ModelInfoResponse,
-	NewModelInfo,
+	LoadModelResponse,
 	GenerateParams,
 } from '../types/new-api';
 import { addCorsIfNot } from '../utils';
@@ -37,7 +32,7 @@ interface GenerateResponse {
 
 interface ModelInfo {
 	model_name: string;
-	loader: 'llamacpp' | 'exllamav2';
+	loader_name: 'llamacpp' | 'exllamav2' | 'transformers';
 }
 
 // raw completion endpoint: POST /llm/v1/complete
@@ -62,6 +57,7 @@ export async function generateText(
 	params: GenerateParams
 ): Promise<GenerateResponse> {
 	if (!adjusted) fixUrl();
+	params.return_prompt = true;
 	const response = await fetch(`${BASE_URL}/v1/complete`, {
 		method: 'POST',
 		headers: {
@@ -98,7 +94,7 @@ export async function chat(params: any): Promise<ChatResponse> {
 // }
 interface CurrentModelResponse {
 	model_name: string;
-	loader: 'llamacpp' | 'exllamav2';
+	loader_name: 'llamacpp' | 'exllamav2' | 'transformers';
 }
 export async function getCurrentModel(): Promise<CurrentModelResponse> {
 	return getModel();
@@ -111,14 +107,11 @@ export async function listModels(): Promise<ListModelsResponse> {
 	const response = await fetch(url);
 	return response.json();
 }
-export async function loadModel(modelName: string): Promise<ModelInfoResponse> {
+export async function loadModel(modelName: string): Promise<LoadModelResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(`${BASE_URL}/v1/model/load`, {
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({ model_name: modelName }),
-	});
+	const response = await fetch(
+		`${BASE_URL}/v1/model/load?model_name=${modelName}`
+	);
 	return response.json();
 }
 

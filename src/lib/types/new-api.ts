@@ -1,13 +1,5 @@
 import { PromptPart } from './llm';
 
-// types for ooba's openai api
-export type ModelInfo = {
-	model_name: string | null;
-	lora_names: string[];
-	'shared.settings': Record<string, any>;
-	'shared.args': Record<string, any>;
-};
-
 export type GenerateParams = {
 	/** Prompt to generate from. Must provide either `prompt` or `parts` */
 	prompt?: string;
@@ -80,19 +72,18 @@ export type ModelActionResponse = {
 	result: any;
 };
 
-export interface NewModelInfo {
-	/** Model name */
-	id: string;
-	object: 'model';
-	owned_by: 'user';
-	created: 0;
+export interface ModelInfo {
+	model_name: string;
+	loader_name: 'llamacpp' | 'exllamav2' | 'transformers';
 }
 export type ListModelsResponse = {
-	object: 'list';
-	data: NewModelInfo[];
+	models: string[];
 };
-export type ModelInfoResponse = {
-	models: ModelInfo;
+export type LoadModelResponse = {
+	status: 'Loaded' | 'Error';
+	model_name: string;
+	loader_name?: string;
+	error?: string;
 };
 // export interface TokenCountOptions {
 // 	prompt: string;

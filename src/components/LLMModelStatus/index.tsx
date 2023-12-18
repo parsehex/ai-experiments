@@ -3,8 +3,6 @@ import { useServerStatus } from '@/hooks/useOobaServerStatus';
 import { ServerStatus } from '@/lib/types/new-api';
 import { loadModel, listModels } from '@/lib/llm/new-api';
 
-const defaultModels = ['gpt-3.5-turbo', 'text-embedding-ada-002'];
-
 const LLMModelStatus: React.FC = () => {
 	const { status, modelInfo } = useServerStatus();
 	const [isExpanded, setIsExpanded] = useState(false);
@@ -17,17 +15,8 @@ const LLMModelStatus: React.FC = () => {
 			status === ServerStatus.ON_MODEL_LOADED
 		) {
 			listModels().then((models) => {
-				if (!models || !models?.data?.length) return;
-				const modelList = models.data
-					.filter((model) => !defaultModels.includes(model.id))
-					.map((model) => model.id);
-				if (modelList.length === 0) return;
-				setModels(modelList);
-				// is first model "None"?
-				if (models.data[0].id === 'None') {
-					// no model loaded
-					setSelectedModel('');
-				}
+				if (!models || !models?.models.length) return;
+				setModels(models.models);
 			});
 		}
 	}, [status]);
@@ -69,8 +58,17 @@ const LLMModelStatus: React.FC = () => {
 			/>
 			{isExpanded && (
 				<div className="mt-2 p-2 border rounded shadow-lg bg-white">
-					{status === ServerStatus.ON_NO_MODEL && (
+					{(status === ServerStatus.ON_NO_MODEL ||
+						status === ServerStatus.ON_MODEL_LOADED) && (
 						<>
+							{modelInfo && (
+								<div className="mb-2 flex">
+									<div className="font-bold">Current Model:</div>
+									<div>
+										{`${modelInfo.model_name} (${modelInfo.loader_name})`}
+									</div>
+								</div>
+							)}
 							<div>Load a model:</div>
 							<select onChange={handleModelSelect} value={selectedModel}>
 								<option value="">Select a Model</option>
@@ -88,12 +86,6 @@ const LLMModelStatus: React.FC = () => {
 									Load
 								</button>
 							)}
-						</>
-					)}
-					{status === ServerStatus.ON_MODEL_LOADED && (
-						<>
-							<div>Model: {modelInfo?.model_name}</div>
-							{/* Placeholder for Unload/Reload controls */}
 						</>
 					)}
 				</div>

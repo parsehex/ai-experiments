@@ -1,23 +1,12 @@
-from typing import Generator, List, Union
 import logging, os, re, time
 from py_api.args import Args
 from py_api.models.llm_client import CompletionOptions, CompletionOptions_Exllamav2
-from py_api.utils.llm_models import parse_size_and_quant
 from .base import LLMClient_Base
-from llama_cpp import Llama, LlamaGrammar, LlamaCache
 from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config, ExLlamaV2Tokenizer
 from exllamav2.generator import ExLlamaV2StreamingGenerator, ExLlamaV2Sampler
 import torch
 
 logger = logging.getLogger('Exllamav2-client')
-
-def Exllamav2CompletionConfig(
-		prompt: str,
-	):
-	config = {
-		'prompt': prompt,
-	}
-	return config
 
 class LLMClient_Exllamav2(LLMClient_Base):
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

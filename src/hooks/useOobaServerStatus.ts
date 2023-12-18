@@ -9,15 +9,13 @@ export function useServerStatus() {
 	useEffect(() => {
 		const checkStatus = async () => {
 			try {
-				const currentModelName = await getModel();
-				if (currentModelName.model_name === 'None' || !currentModelName) {
+				const currentModel = await getModel();
+				if (currentModel.model_name === 'None' || !currentModel) {
 					setStatus(ServerStatus.ON_NO_MODEL);
 				} else {
 					setModelInfo({
-						model_name: currentModelName.model_name,
-						lora_names: [],
-						'shared.settings': {}, // Default to empty, update as needed
-						'shared.args': {}, // Default to empty, update as needed
+						model_name: currentModel.model_name,
+						loader_name: currentModel.loader_name,
 					});
 					setStatus(ServerStatus.ON_MODEL_LOADED);
 				}

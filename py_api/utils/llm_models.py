@@ -18,14 +18,13 @@ def parse_size_and_quant(model_file_name):
 		logger.error(f'WARNING: Could not determine quant from model name {model_file_name}.')
 	return size, quant
 
-def exllamav2_or_llamacpp(model_name: str, models_dir = ''):
-	is_exllamav2 = False
+def detect_loader_name(model_name: str, models_dir = ''):
 	models_dir = models_dir or Args['llm_models_dir']
 	p = os.path.join(models_dir, model_name)
+	model_name = model_name.lower()
 	if os.path.isdir(p):
 		if 'gptq' in model_name or 'exl2' in model_name:
-			is_exllamav2 = True
-	if is_exllamav2 == True:
-		return 'exllamav2'
-	else:
-		return 'llamacpp'
+			return 'exllamav2'
+		if 'awq' in model_name:
+			return 'transformers'
+	return 'llamacpp'

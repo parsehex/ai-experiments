@@ -138,8 +138,8 @@ export function genTone(chars: Character[], plot: Plot): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
 			val: `Write a Tone to guide how the following story should be written.
-			The tone should be a brief sentence that provides guidance to write the story, but should not be specific to the story itself in any way. It should properly convey the tone in which the story will be written.
-			A simple example would be "Dark and gritty but realistic."\n\n`,
+The tone should be a brief sentence that provides guidance to write the story, but should not be specific to the story itself in any way. It should properly convey the tone in which the story will be written.
+A simple example would be "Dark and gritty but realistic."\n\n`,
 		},
 	];
 	const user: PromptPart[] = [

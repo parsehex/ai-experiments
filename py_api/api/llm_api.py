@@ -6,12 +6,12 @@ from py_api.client import llm_client_manager
 from py_api.models.llm_api import CompletionRequest, CompletionResponse
 from py_api.models.llm_client import CompletionOptions
 from py_api.utils import prompt_format
-from py_api.utils.llm_models import exllamav2_or_llamacpp
+from py_api.utils.llm_models import detect_loader_name
 
 logger = logging.getLogger(__name__)
 
 # supported extensions
-EXTENSIONS = ['.gguf', '.ggml']
+EXTENSIONS = ['.gguf', '.ggml', '.safetensor']
 
 manager = llm_client_manager.LLMManager.instance
 def llm_api(app: FastAPI):
@@ -59,8 +59,8 @@ def llm_api(app: FastAPI):
 	@app.get('/llm/v1/model')
 	async def get_model():
 		"""Get currently-loaded model_name"""
-		loader = exllamav2_or_llamacpp(modelName())
-		return JSONResponse(content={'model_name': modelName(), 'loader': loader})
+		loader = detect_loader_name(modelName())
+		return JSONResponse(content={'model_name': modelName(), 'loader_name': loader})
 
 	@app.get('/llm/v1/list-models')
 	async def list_models():
@@ -72,10 +72,15 @@ def llm_api(app: FastAPI):
 			if os.path.isfile(path) and os.path.splitext(filename)[1] in EXTENSIONS:
 				model_names.append(filename)
 			if os.path.isdir(path):
+				f = filename.lower()
+				if 'awq' in f or 'gptq' in f or 'exl2' in f:
+					model_names.append(filename)
+					continue
 				for subfilename in os.listdir(os.path.join(models_dir, filename)):
 					path = os.path.join(models_dir, filename, subfilename)
 					if os.path.isfile(path) and os.path.splitext(subfilename)[1] in EXTENSIONS:
 						model_names.append(os.path.join(filename, subfilename))
+
 		return JSONResponse(content={'models': model_names})
 
 	@app.get('/llm/v1/model/load')
@@ -92,14 +97,17 @@ def llm_api(app: FastAPI):
 
 		start = time.time()
 		if manager.model_name is not None:
-			if manager.model_name == model_name:
-				return JSONResponse(content={'status': 'Loaded', 'model_name': modelName(), 'time': time.time() - start})
+			if manager.model_name == model_name: # already loaded
+				return JSONResponse(content={'status': 'Loaded', 'model_name': modelName(), 'loader_name': manager.loader_name, 'time': time.time() - start})
 			manager.unload_model()
 
 		logger.debug(model_name)
-		manager.load_model(model_name)
+		try:
+			manager.load_model(model_name)
+		except Exception as e:
+			return JSONResponse(content={'status': 'Error', 'model_name': modelName(), 'time': time.time() - start, 'error': str(e)})
 
-		return JSONResponse(content={'status': 'Loaded', 'model_name': modelName(), 'time': time.time() - start})
+		return JSONResponse(content={'status': 'Loaded', 'model_name': modelName(), 'loader_name': manager.loader_name, 'time': time.time() - start})
 
 	@app.get('/llm/v1/model/unload')
 	async def unload_model():
