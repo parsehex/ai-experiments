@@ -67,8 +67,6 @@ class LLMClient_Transformers(LLMClient_Base):
 	def unload_model(self):
 		if self.model is None:
 			return
-		self.model.unload()
-		logger.debug('Unloaded model.')
 		self.model = None
 		self.model_name = None
 		self.model_abspath = None
@@ -78,6 +76,7 @@ class LLMClient_Transformers(LLMClient_Base):
 		self.generator = None
 		self.loaded = False
 		torch.cuda.empty_cache()
+		logger.debug('Unloaded model.')
 
 	# def generate(
 	# 	self,

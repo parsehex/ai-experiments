@@ -38,7 +38,10 @@ def llm_api(app: FastAPI):
 		if prompt is None and parts is None:
 			raise HTTPException(status_code=400, detail='Prompt or parts is required.')
 		if parts is not None:
-			prompt = prompt_format.parts_to_prompt(parts, modelName())
+			try:
+				prompt = prompt_format.parts_to_prompt(parts, modelName())
+			except Exception as e:
+				raise HTTPException(status_code=400, detail='Internal server error: Unknown model when detecting format: ' + modelName())
 		else:
 			# prompt should already be a string but just in case
 			prompt = str(prompt)

@@ -31,5 +31,5 @@ export function useServerStatus() {
 		return () => clearInterval(intervalId);
 	}, []);
 
-	return { status, modelInfo };
+	return { status, setStatus, modelInfo, setModelInfo };
 }

@@ -114,6 +114,11 @@ export async function loadModel(modelName: string): Promise<LoadModelResponse> {
 	);
 	return response.json();
 }
+export async function unloadModel(): Promise<LoadModelResponse> {
+	if (!adjusted) fixUrl();
+	const response = await fetch(`${BASE_URL}/v1/model/unload`);
+	return response.json();
+}
 
 // export async function countTokens(str: string): Promise<number> {
 // 	if (!adjusted) fixUrl();

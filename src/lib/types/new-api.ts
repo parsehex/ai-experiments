@@ -74,7 +74,7 @@ export type ModelActionResponse = {
 
 export interface ModelInfo {
 	model_name: string;
-	loader_name: 'llamacpp' | 'exllamav2' | 'transformers';
+	loader_name: 'llamacpp' | 'exllamav2' | 'transformers' | '';
 }
 export type ListModelsResponse = {
 	models: string[];
@@ -82,7 +82,7 @@ export type ListModelsResponse = {
 export type LoadModelResponse = {
 	status: 'Loaded' | 'Error';
 	model_name: string;
-	loader_name?: string;
+	loader_name?: 'llamacpp' | 'exllamav2' | 'transformers' | '';
 	error?: string;
 };
 // export interface TokenCountOptions {

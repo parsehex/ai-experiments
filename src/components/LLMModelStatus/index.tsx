@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useServerStatus } from '@/hooks/useOobaServerStatus';
-import { ServerStatus } from '@/lib/types/new-api';
-import { loadModel, listModels } from '@/lib/llm/new-api';
+import { LoadModelResponse, ServerStatus } from '@/lib/types/new-api';
+import { loadModel, unloadModel, listModels } from '@/lib/llm/new-api';
 
 const LLMModelStatus: React.FC = () => {
-	const { status, modelInfo } = useServerStatus();
+	const { status, setStatus, modelInfo, setModelInfo } = useServerStatus();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [models, setModels] = useState([] as string[]);
 	const [selectedModel, setSelectedModel] = useState('');
@@ -46,8 +46,23 @@ const LLMModelStatus: React.FC = () => {
 		setSelectedModel(selected);
 	};
 
-	const handleLoadModel = (model = selectedModel) => {
-		if (model) loadModel(model);
+	const handleLoadModel = async (model = selectedModel) => {
+		let res: LoadModelResponse | undefined;
+		if (model) res = await loadModel(model);
+		if (res) {
+			setModelInfo({
+				model_name: res.model_name,
+				loader_name: res.loader_name || '',
+			});
+			setSelectedModel('');
+			setStatus(ServerStatus.ON_MODEL_LOADED);
+		}
+	};
+
+	const handleUnloadModel = async () => {
+		await unloadModel();
+		setModelInfo(null);
+		setStatus(ServerStatus.ON_NO_MODEL);
 	};
 
 	return (
@@ -57,7 +72,7 @@ const LLMModelStatus: React.FC = () => {
 				onClick={handleToggleExpand}
 			/>
 			{isExpanded && (
-				<div className="mt-2 p-2 border rounded shadow-lg bg-white">
+				<div className="mb-3 p-2 border rounded shadow-lg bg-white">
 					{(status === ServerStatus.ON_NO_MODEL ||
 						status === ServerStatus.ON_MODEL_LOADED) && (
 						<>
@@ -65,27 +80,37 @@ const LLMModelStatus: React.FC = () => {
 								<div className="mb-2 flex">
 									<div className="font-bold">Current Model:</div>
 									<div>
-										{`${modelInfo.model_name} (${modelInfo.loader_name})`}
+										{modelInfo.model_name} (<i>{modelInfo.loader_name}</i>{' '}
+										loader)
 									</div>
+									<button className="ml-2 basic" onClick={handleUnloadModel}>
+										Unload
+									</button>
 								</div>
 							)}
-							<div>Load a model:</div>
-							<select onChange={handleModelSelect} value={selectedModel}>
-								<option value="">Select a Model</option>
-								{models.map((model) => (
-									<option key={model} value={model}>
-										{model}
-									</option>
-								))}
-							</select>
-							{!!selectedModel && (
-								<button
-									className="basic"
-									onClick={() => handleLoadModel(selectedModel)}
+							<div>
+								Load Model:
+								<select
+									className="mx-1"
+									onChange={handleModelSelect}
+									value={selectedModel}
 								>
-									Load
-								</button>
-							)}
+									<option value="">Select a Model</option>
+									{models.map((model) => (
+										<option key={model} value={model}>
+											{model}
+										</option>
+									))}
+								</select>
+								{!!selectedModel && (
+									<button
+										className="basic"
+										onClick={() => handleLoadModel(selectedModel)}
+									>
+										Load
+									</button>
+								)}
+							</div>
 						</>
 					)}
 				</div>
