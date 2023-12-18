@@ -55,6 +55,14 @@ class Formatter:
 		prompt += 'USER:\n' + user.strip() + '\n'
 		prompt += 'ASSISTANT:\n'
 		return prompt
+	def UserAssistantNewlines(self, user: str, system:str=''):
+		# this one's not supposed to have system
+		prompt = ''
+		if system != '':
+			prompt += system.strip() + '\n\n'
+		prompt += '### User:\n' + user.strip() + '\n\n'
+		prompt += '### Assistant:\n'
+		return prompt
 
 	# this one returns a list of messages instead
 	# not sure what to do with this exactly
@@ -87,6 +95,7 @@ model_formats = {
 	'*mythomax-l2-13b*': 'Alpaca',
 	'*openhermes-2.*-mistral-7b*': 'ChatML',
 	'*platypus-30b*': 'Alpaca',
+	'*solar-10.7b-instruct*': 'UserAssistantNewlines',
 }
 def get_model_format(model: str) -> str:
 	fmt = None
