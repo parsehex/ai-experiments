@@ -48,6 +48,13 @@ class Formatter:
 		prompt += '<|im_start|>user\n' + user.strip() + '<|im_end|>\n'
 		prompt += '<|im_start|>assistant\n'
 		return prompt
+	def MistralInstruct(self, user: str, system:str=''):
+		# <s>[INST] {prompt} [/INST]
+		prompt = '<s>'
+		if system != '':
+			prompt += '[INST] ' + system.strip() + '\n\n'
+		prompt += user.strip() + ' [/INST]'
+		return prompt
 	def UserAssistant(self, user: str, system:str=''):
 		prompt = ''
 		if system != '':
@@ -91,6 +98,7 @@ model_formats = {
 	'*dolphin-2.*-mistral-7b*': 'ChatML',
 	'*emerhyst-20b*': 'Alpaca',
 	'*luna-ai-llama2*': 'UserAssistant',
+	'*mistral-7b-instruct*': 'Alpaca',
 	'*mythalion-13b*': 'Alpaca',
 	'*mythomax-l2-13b*': 'Alpaca',
 	'*openhermes-2.*-mistral-7b*': 'ChatML',

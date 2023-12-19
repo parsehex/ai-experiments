@@ -1,25 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useServerStatus } from '@/hooks/useOobaServerStatus';
+import { useServerStatus } from '@/hooks/useServerStatus';
 import { LoadModelResponse, ServerStatus } from '@/lib/types/new-api';
-import { loadModel, unloadModel, listModels } from '@/lib/llm/new-api';
+import { loadModel, unloadModel } from '@/lib/llm/new-api';
 
 const LLMModelStatus: React.FC = () => {
-	const { status, setStatus, modelInfo, setModelInfo } = useServerStatus();
+	const { status, setStatus, modelInfo, setModelInfo, models } =
+		useServerStatus();
 	const [isExpanded, setIsExpanded] = useState(false);
-	const [models, setModels] = useState([] as string[]);
 	const [selectedModel, setSelectedModel] = useState('');
-
-	useEffect(() => {
-		if (
-			status === ServerStatus.ON_NO_MODEL ||
-			status === ServerStatus.ON_MODEL_LOADED
-		) {
-			listModels().then((models) => {
-				if (!models || !models?.models.length) return;
-				setModels(models.models);
-			});
-		}
-	}, [status]);
 
 	const getStatusColor = () => {
 		switch (status) {
@@ -31,6 +19,7 @@ const LLMModelStatus: React.FC = () => {
 				return 'bg-green-500';
 			case ServerStatus.LOADING_MODEL:
 				return 'bg-yellow-500';
+			// TODO new status: haven't checked yet (gray)
 			default:
 				return 'bg-gray-500';
 		}
