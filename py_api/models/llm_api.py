@@ -40,3 +40,6 @@ class CompletionResult(BaseModel):
 class CompletionResponse(BaseModel):
 	result: CompletionResult = Field(..., description='Completion result.')
 	prompt: str = Field('', description='Prompt used to generate result, if passed `return_prompt` was True.')
+
+class DownloadModelRequest(BaseModel):
+	model: str = Field(..., description='Model to download.', examples=['username/model_name[:branch]'])

@@ -1,9 +1,10 @@
 import logging, os, time
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Path
 from fastapi.responses import JSONResponse
+from huggingface_hub import snapshot_download
 from py_api.args import Args
 from py_api.client import llm_client_manager
-from py_api.models.llm_api import CompletionRequest, CompletionResponse
+from py_api.models.llm_api import CompletionRequest, CompletionResponse, DownloadModelRequest
 from py_api.models.llm_client import CompletionOptions
 from py_api.utils import prompt_format
 from py_api.utils.llm_models import detect_loader_name
@@ -121,3 +122,32 @@ def llm_api(app: FastAPI):
 			return JSONResponse(content={'status': 'Unloaded', 'model_name': modelName(), 'time': time.time() - start})
 		manager.unload_model()
 		return JSONResponse(content={'status': 'Unloaded', 'model_name': modelName(), 'time': time.time() - start})
+
+	@app.post('/llm/v1/download-model')
+	async def download_model(body: DownloadModelRequest):
+		# TODO: Convert to websocket
+		"""Download a model from the HuggingFace Hub"""
+		model_name = body.model
+		model = None
+		branch = 'main'
+		is_right_format = False
+		# check that model name is format like 'username/model_name[:branch]'
+		if '/' in model_name:
+			split = model_name.split('/')
+			model = split[1]
+			if ':' in model:
+				split = model.split(':')
+				model = split[0]
+				branch = split[1]
+			is_right_format = True
+		if not is_right_format:
+			raise HTTPException(status_code=400, detail='model_name must be in format like "username/model_name[:branch]"')
+
+		dir_name = model_name.replace('/', '_')
+		dir_name = dir_name.replace(':', '--')
+		start = time.time()
+		try:
+			snapshot_download(repo_id=model_name, revision=branch, cache_dir=Args['llm_models_dir'])
+		except Exception as e:
+			return JSONResponse(content={'status': 'Error', 'model_name': dir_name, 'time': time.time() - start, 'error': str(e)})
+		return JSONResponse(content={'status': 'Downloaded', 'model_name': dir_name, 'time': time.time() - start})
