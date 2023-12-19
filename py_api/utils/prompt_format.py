@@ -19,61 +19,78 @@ from py_api.models.llm_api import PromptPart, PromptParts
 
 class Formatter:
 	# TODO: add `priorMsgs` arg
-	def flexible(self, user, system:str=''):
+	# TODO maybe move prefix_response here?
+	def flexible(self, user, system:str='', prefix_response=''):
 		prompt = ''
 		if system != '':
 			prompt += system.strip() + '\n'
 		prompt += user.strip() + '\n'
-		prompt += 'RESPONSE:\n'
+		if prefix_response == '':
+			prompt += 'RESPONSE:\n'
+		else:
+			prompt += prefix_response
 		return prompt
-	def Alpaca(self, user: str, system:str=''):
+	def Alpaca(self, user: str, system:str='', prefix_response=''):
 		prompt = ''
 		if system != '':
 			prompt += system.strip() + '\n\n'
 		prompt += '### Instruction:\n' + user.strip() + '\n'
 		prompt += '### Response:\n'
+		if prefix_response != '':
+			prompt += prefix_response
 		return prompt
-	def Alpaca_Input(self, user: str, system:str=''):
+	def Alpaca_Input(self, user: str, system:str='', prefix_response=''):
 		"""Alpaca variation with the system prompt as the instructions."""
 		prompt = ''
 		if system != '':
 			prompt += '### Instruction:\n' + system.strip() + '\n\n'
 		prompt += '### Input:\n' + user.strip() + '\n'
 		prompt += '### Response:\n'
+		if prefix_response != '':
+			prompt += prefix_response
 		return prompt
-	def ChatML(self, user: str, system:str=''):
+	def ChatML(self, user: str, system:str='', prefix_response=''):
 		prompt = ''
 		if system != '':
 			prompt += '<|im_start|>system\n' + system.strip() + '<|im_end|>\n'
 		prompt += '<|im_start|>user\n' + user.strip() + '<|im_end|>\n'
 		prompt += '<|im_start|>assistant\n'
+		if prefix_response != '':
+			prompt += prefix_response
 		return prompt
-	def MistralInstruct(self, user: str, system:str=''):
+	def MistralInstruct(self, user: str, system:str='', prefix_response=''):
 		# <s>[INST] {prompt} [/INST]
 		prompt = '<s>'
 		if system != '':
 			prompt += '[INST] ' + system.strip() + '\n\n'
 		prompt += user.strip() + ' [/INST]'
+		if prefix_response != '':
+			prompt += '\n' + prefix_response
 		return prompt
-	def UserAssistant(self, user: str, system:str=''):
+	def UserAssistant(self, user: str, system:str='', prefix_response=''):
 		prompt = ''
 		if system != '':
 			prompt += system.strip() + '\n'
 		prompt += 'USER:\n' + user.strip() + '\n'
 		prompt += 'ASSISTANT:\n'
+		if prefix_response != '':
+			prompt += prefix_response
 		return prompt
-	def UserAssistantNewlines(self, user: str, system:str=''):
+	def UserAssistantNewlines(self, user: str, system:str='', prefix_response=''):
 		# this one's not supposed to have system
 		prompt = ''
 		if system != '':
 			prompt += system.strip() + '\n\n'
 		prompt += '### User:\n' + user.strip() + '\n\n'
 		prompt += '### Assistant:\n'
+		if prefix_response != '':
+			prompt += prefix_response
 		return prompt
 
 	# this one returns a list of messages instead
 	# not sure what to do with this exactly
-	def OpenAI(self, user: str, system:str=''):
+	def OpenAI(self, user: str, system:str='', prefix_response=''):
+		# not sure how to implement prefix_response
 		prompt = []
 		if system != '':
 			prompt.append({'role': 'system', 'content': system.strip()})
@@ -116,7 +133,7 @@ def get_model_format(model: str) -> str:
 		raise Exception(f'Model {model} not supported.')
 	return fmt
 
-def parts_to_prompt(parts: PromptParts, model: str) -> str:
+def parts_to_prompt(parts: PromptParts, model: str, prefix_response = '') -> str:
 	formatter = None
 	# is model a path? get just the model name
 	if '/' in model:
@@ -128,4 +145,4 @@ def parts_to_prompt(parts: PromptParts, model: str) -> str:
 		system = parts_to_str(parts.system)
 	else:
 		system = ''
-	return formatter(user, system)
+	return formatter(user, system, prefix_response)

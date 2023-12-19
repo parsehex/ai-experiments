@@ -99,13 +99,11 @@ def llm_api(app: FastAPI):
 			raise Exception('Prompt or parts is required.')
 		if parts is not None:
 			try:
-				prompt = prompt_format.parts_to_prompt(parts, modelName())
+				prompt = prompt_format.parts_to_prompt(parts, modelName(), prefix_response)
 			except Exception as e:
 				raise Exception('Internal server error: Unknown model when detecting format: ' + modelName())
 		else:
 			prompt = str(prompt)
-		if prefix_response != '':
-			prompt = prompt.strip() + '\n' + str(prefix_response)
 		req.prompt = prompt
 		options = CompletionOptions.model_validate(req.model_dump())
 		result = manager.complete(options)
