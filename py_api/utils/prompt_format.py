@@ -98,7 +98,7 @@ model_formats = {
 	'*dolphin-2.*-mistral-7b*': 'ChatML',
 	'*emerhyst-20b*': 'Alpaca',
 	'*luna-ai-llama2*': 'UserAssistant',
-	'*mistral-7b-instruct*': 'Alpaca',
+	'*mistral-7b-instruct*': 'MistralInstruct',
 	'*mythalion-13b*': 'Alpaca',
 	'*mythomax-l2-13b*': 'Alpaca',
 	'*openhermes-2.*-mistral-7b*': 'ChatML',
