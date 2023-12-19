@@ -6,6 +6,7 @@ import { GenerateParams as NewGenerateParams } from '../types/new-api';
 import {
 	PromptPart,
 	PromptFormatResponse,
+	PromptPartResponse,
 	Message,
 	RawMessage,
 } from '../types/llm';
@@ -186,19 +187,36 @@ export async function generate(
 }
 
 // a simpler generate function using our new api
-export async function complete(opt?: NewGenerateParams): Promise<string> {
+export async function complete(
+	promptFmt: PromptPartResponse,
+	opt?: Omit<
+		NewGenerateParams,
+		'prompt' | 'parts' | 'prefix_response' | 'grammar'
+	>
+): Promise<string> {
 	if (!opt?.prompt && !opt?.parts) {
 		throw new Error('Must provide prompt or parts');
 	}
-	const params: NewGenerateParams = {};
+	const params: Record<string, any> = {};
 	const entries = Object.entries(opt || {});
 	if (opt) {
 		for (const [key, value] of entries) {
-			params[key as keyof NewGenerateParams] = value;
+			params[key] = value;
 		}
 	}
+	if (opt?.prompt) {
+		params.prompt = opt.prompt;
+	} else if (opt?.parts) {
+		params.parts = {
+			user: opt.parts.user,
+			system: opt.parts.system,
+		};
+	}
+	if (opt?.prefix_response) params.prefix_response = opt.prefix_response;
+	if (opt?.grammar) params.grammar = opt.grammar;
 	const resp = await newapi.generateText(params);
-	return resp.result.choices[0].text;
+	const res = resp.result.choices[0].text;
+	return promptFmt.response_formatter ? promptFmt.response_formatter(res) : res;
 }
 
 export async function getModel(model: string): Promise<string> {

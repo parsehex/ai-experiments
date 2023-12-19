@@ -137,9 +137,9 @@ Return an object with the following keys:
 export function genTone(chars: Character[], plot: Plot): PromptPartResponse {
 	const system: PromptPart[] = [
 		{
-			val: `Write a Tone to guide how the following story should be written.
-The tone should be a brief sentence that provides guidance to write the story, but should not be specific to the story itself in any way. It should properly convey the tone in which the story will be written.
-A simple example would be "Dark and gritty but realistic."\n\n`,
+			val: `Write a Tone to influence how the following story should be written.
+The tone should be a brief sentence that conveys the tone in which the story will be written.
+A simple example could be "Dark and gritty but realistic."\n\n`,
 		},
 	];
 	const user: PromptPart[] = [
@@ -154,13 +154,21 @@ A simple example would be "Dark and gritty but realistic."\n\n`,
 		},
 		{ use: chars.length > 0, val: `CHARACTERS:\n${CharacterString(chars)}\n` },
 	];
-	// TODO IDEA: return an optional formatting function from these functions
-	//   (this one would truncate after the first quote)
-	// could also accept a response formatter in the complete function (or even just use presets)
 	const prefixResponse =
 		'RESPONSE:\nOh, I know! The tone for this story should be "';
 	const grammar = Sentences(1);
-	return { user, system, prefix_response: prefixResponse, grammar };
+	return {
+		user,
+		system,
+		prefix_response: prefixResponse,
+		grammar,
+		response_formatter: (response: string) => {
+			// truncate after the first quote
+			const quoteIndex = response.indexOf('"');
+			if (quoteIndex === -1) return response;
+			return response.substring(0, quoteIndex + 1);
+		},
+	};
 }
 
 export function genStarter(chars: Character[], plot: Plot): PromptPartResponse {

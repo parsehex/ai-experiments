@@ -9,6 +9,7 @@ export interface PromptPartResponse {
 	system?: PromptPart[];
 	prefix_response?: string;
 	grammar?: string;
+	response_formatter?: (response: string) => string;
 }
 
 /** The format that chat LLMs/ChatGPT expect. */

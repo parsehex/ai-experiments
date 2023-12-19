@@ -106,22 +106,10 @@ const StoryGenerator = () => {
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
-		const { user, system, prefix_response, grammar } =
-			parts.genStoryDescription(c, p);
-		// const generatedDescription = await generate(
-		// 	makePrompt(user, system, 'ChatML'),
-		// 	{
-		// 		max: 128,
-		// 		prefixResponse,
-		// 		grammar,
-		// 	}
-		// );
-		const generatedDescription = await complete({
-			parts: { user, system },
-			prefix_response,
-			grammar,
-			max_tokens: 128,
-		});
+		const generatedDescription = await complete(
+			parts.genStoryDescription(c, p),
+			{ max_tokens: 128 }
+		);
 
 		setPlot((prevPlot) => ({
 			...prevPlot,
@@ -139,24 +127,9 @@ const StoryGenerator = () => {
 		if (!num) num = Math.floor(Math.random() * 5) + 1;
 
 		for (let i = 0; i < num; i++) {
-			const { user, system, prefix_response, grammar } = parts.genCharacters(
-				[...chars],
-				p,
-				relevance
-			);
-			// const result = await generate(makePrompt(user, system, 'ChatML'), {
-			// 	temp: 0.75,
-			// 	// cfg: 1.15,
-			// 	max: 512,
-			// 	prefixResponse,
-			// 	grammar,
-			// 	// log: { response: 'Character:' },
-			// });
-			const result = await complete({
-				parts: { user, system },
+			const fmt = parts.genCharacters([...chars], p, relevance);
+			const result = await complete(fmt, {
 				temp: 0.75,
-				prefix_response,
-				grammar,
 				max_tokens: 512,
 			});
 			const char = JSON.parse(result) as Character;
@@ -179,21 +152,9 @@ const StoryGenerator = () => {
 	const fillCharacterDetails = async (character: Character) => {
 		if (character.isComplete()) return;
 
-		const { user, system, prefix_response, grammar } =
-			parts.genFillCharacterDetails(character, characters, plot);
-		// const result = await generate(makePrompt(user, system, 'ChatML'), {
-		// 	temp: 0.75,
-		// 	// cfg: 1.5,
-		// 	grammar,
-		// 	prefixResponse,
-		// 	max: 512,
-		// 	// log: { response: 'Character:' },
-		// });
-		const result = await complete({
-			parts: { user, system },
+		const fmt = parts.genFillCharacterDetails(character, characters, plot);
+		const result = await complete(fmt, {
 			temp: 0.75,
-			prefix_response,
-			grammar,
 			max_tokens: 512,
 		});
 		const updatedCharacter = JSON.parse(result) as Character;
@@ -212,18 +173,9 @@ const StoryGenerator = () => {
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
-		const { user, system, prefix_response, grammar } = parts.genSetting(c, p);
+		const fmt = parts.genSetting(c, p);
 		const result = JSON.parse(
-			// await generate(makePrompt(user, system, 'ChatML'), {
-			// 	prefixResponse,
-			// 	grammar,
-			// 	max: 256,
-			// 	log: { response: 'Setting:' },
-			// })
-			await complete({
-				parts: { user, system },
-				prefix_response,
-				grammar,
+			await complete(fmt, {
 				max_tokens: 256,
 			})
 		);
@@ -238,20 +190,9 @@ const StoryGenerator = () => {
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
-		const { user, system, prefix_response, grammar } = parts.genTone(c, p);
-		// const result = await generate(makePrompt(user, system, 'ChatML'), {
-		// 	temp: 0.25,
-		// 	cfg: 1.15,
-		// 	grammar,
-		// 	prefixResponse,
-		// 	max: 100,
-		// 	log: { response: 'Tone:' },
-		// });
-		const result = await complete({
-			parts: { user, system },
+		const fmt = parts.genTone(c, p);
+		const result = await complete(fmt, {
 			temp: 0.25,
-			prefix_response,
-			grammar,
 			max_tokens: 100,
 		});
 		handlePlotChange('tone', result.trim());
@@ -261,20 +202,9 @@ const StoryGenerator = () => {
 		c: Character[] = characters,
 		p: Plot = plot
 	) => {
-		const { user, system, prefix_response, grammar } = parts.genStarter(c, p);
-		// const result = await generate(makePrompt(user, system, 'ChatML'), {
-		// 	// cfg: 1.25,
-		// 	temp: 0.25,
-		// 	grammar,
-		// 	prefixResponse,
-		// 	max: 256,
-		// 	log: { response: 'Intro:', prompt: 'Intro Prompt:' },
-		// });
-		const result = await complete({
-			parts: { user, system },
+		const fmt = parts.genStarter(c, p);
+		const result = await complete(fmt, {
 			temp: 0.25,
-			prefix_response,
-			grammar,
 			max_tokens: 256,
 		});
 		setStoryIntro(result.trim());
@@ -307,35 +237,19 @@ const StoryGenerator = () => {
 				},
 			];
 		}
-		let { user, system, prefix_response, grammar } = parts.genPickAction(
-			c,
-			p,
-			a,
-			userRequest
-		);
-		// const actionStr = await generate(makePrompt(user, system, 'ChatML'), {
-		// 	temp: 0.25,
-		// 	cfg: 1.25,
-		// 	grammar,
-		// 	prefixResponse,
-		// 	max: 384,
-		// 	log: { response: 'Thought:', prompt: 'Thought Prompt:' },
-		// });
-		const actionStr = await complete({
-			parts: { user, system },
+		let pickActionFmt = parts.genPickAction(c, p, a, userRequest);
+		const actionStr = await complete(pickActionFmt, {
 			temp: 0.25,
-			prefix_response,
-			grammar,
 			max_tokens: 384,
 		});
 		const actionThoughts: Omit<Action, 'aiThoughts'> = JSON.parse(actionStr);
 		actionThoughts.id = v4();
 
-		let actionParts2: PromptPartResponse;
+		let actionThoughtsFmt: PromptPartResponse;
 		if (actionThoughts.type === 'Narrative') {
-			actionParts2 = parts.genNarrativeAction(c, p, a, actionThoughts.str);
+			actionThoughtsFmt = parts.genNarrativeAction(c, p, a, actionThoughts.str);
 		} else {
-			actionParts2 = parts.genDialogueAction(
+			actionThoughtsFmt = parts.genDialogueAction(
 				c,
 				p,
 				a,
@@ -343,24 +257,8 @@ const StoryGenerator = () => {
 				actionThoughts.characterName || ''
 			);
 		}
-		user = actionParts2.user;
-		system = actionParts2.system;
-		prefix_response = actionParts2.prefix_response;
-		grammar = actionParts2.grammar;
-		// const result = await generate(makePrompt(user, system, 'ChatML'), {
-		// 	temp: actionThoughts.type === 'Dialogue' ? 0.25 : 0.01,
-		// 	cfg: 1.1,
-		// 	grammar,
-		// 	prefixResponse,
-		// 	max: 512,
-		// 	log: { response: 'Action:', prompt: 'Action Prompt:' },
-		// 	stop: ['\n'],
-		// });
-		const result = await complete({
-			parts: { user, system },
+		const result = await complete(actionThoughtsFmt, {
 			temp: actionThoughts.type === 'Dialogue' ? 0.25 : 0.01,
-			prefix_response,
-			grammar,
 			max_tokens: 512,
 			stop: ['\n'],
 		});
