@@ -1,7 +1,7 @@
 from typing import Generator, List, Dict, Union, Any
 from pydantic import BaseModel
-from py_api.models.llm_api import CompletionChoice, CompletionResponse, CompletionRequest, CompletionResult, CompletionUsage, PromptPart, PromptParts
-from py_api.models.llm_client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2
+from py_api.models.llm.llm_api import CompletionChoice, CompletionResponse, CompletionRequest, CompletionResult, CompletionUsage, PromptPart, PromptParts
+from py_api.models.llm.llm_client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2
 
 class LLMClient_Base:
 	_instance = None

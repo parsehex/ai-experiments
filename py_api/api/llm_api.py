@@ -4,8 +4,8 @@ from fastapi.responses import JSONResponse
 from huggingface_hub import snapshot_download
 from py_api.args import Args
 from py_api.client import llm_client_manager
-from py_api.models.llm_api import CompletionRequest, CompletionResponse, DownloadModelRequest
-from py_api.models.llm_client import CompletionOptions
+from py_api.models.llm.llm_api import CompletionRequest, CompletionResponse, DownloadModelRequest
+from py_api.models.llm.llm_client import CompletionOptions
 from py_api.utils import prompt_format
 from py_api.utils.llm_models import detect_loader_name
 

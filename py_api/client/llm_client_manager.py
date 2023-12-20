@@ -2,7 +2,7 @@ from typing import Union
 from py_api.args import Args
 from py_api.client.llm import LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLMClient_Transformers
 from py_api.utils.llm_models import detect_loader_name
-from py_api.models import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_Transformers
+from py_api.models.llm.llm_client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_Transformers
 
 class LLMManager:
 	_instance = None

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import TextInput from '@/components/TextInput';
-import { getSpeakers, generateTTS } from '@/lib/tts';
+import { getSpeakers, generateTTS, getVoices, speak } from '@/lib/tts';
 import { Provider, Speaker } from '@/app/api/tts/types';
 
 const TtsDemo: React.FC = () => {
 	const [text, setText] = useState<string>('');
-	const [voices, setVoices] = useState<Speaker[]>([]);
-	const [selectedVoice, setSelectedVoice] = useState<Speaker | null>(null);
+	const [voices, setVoices] = useState<string[]>([]);
+	const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
 	const [provider, setProvider] = useState<Provider>('XTTS');
 
 	const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -15,10 +15,10 @@ const TtsDemo: React.FC = () => {
 
 	const refreshSpeakers = async () => {
 		try {
-			const speakers = await getSpeakers(provider);
+			const voices = await getVoices();
 			setIsOnline(true);
-			setVoices(speakers);
-			setSelectedVoice(speakers[0]);
+			setVoices(voices);
+			setSelectedVoice(voices[0]);
 		} catch (error) {
 			setIsOnline(false);
 		}
@@ -36,7 +36,7 @@ const TtsDemo: React.FC = () => {
 		try {
 			if (!selectedVoice) throw new Error('No voice selected');
 			const start = Date.now();
-			const audioData = await generateTTS(text, provider, selectedVoice.name);
+			const audioData = await speak(text, selectedVoice);
 			const audioUrl = URL.createObjectURL(audioData);
 			setAudioUrl(audioUrl);
 			const end = Date.now();
@@ -77,17 +77,15 @@ const TtsDemo: React.FC = () => {
 						Voice:
 						<select
 							id="tts-voice"
-							value={selectedVoice?.name}
+							value={selectedVoice || ''}
 							onChange={(e) => {
-								const i = voices.findIndex(
-									(voice) => voice.name === e.target.value
-								);
+								const i = voices.findIndex((voice) => voice === e.target.value);
 								setSelectedVoice(voices[i]);
 							}}
 						>
 							{voices.map((voice) => (
-								<option key={voice.name} value={voice.name}>
-									{voice.name}
+								<option key={voice} value={voice}>
+									{voice}
 								</option>
 							))}
 						</select>

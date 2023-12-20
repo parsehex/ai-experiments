@@ -1,6 +1,6 @@
 from typing import Union
 from pydantic import BaseModel, Field
-from py_api.models.llm_client import CompletionOptions
+from py_api.models.llm.llm_client import CompletionOptions
 
 class PromptPart(BaseModel):
 	use: bool = Field(True, description='Whether to use prompt part.')

@@ -4,7 +4,7 @@
 from typing import Generator, List, Union
 import logging, os, re, time
 from py_api.args import Args
-from py_api.models.llm_client import CompletionOptions, CompletionOptions_Transformers
+from py_api.models.llm.llm_client import CompletionOptions, CompletionOptions_Transformers
 from .base import LLMClient_Base
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextStreamer, pipeline
 import torch

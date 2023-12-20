@@ -1,7 +1,7 @@
 from typing import Any, Generator, List, Union
 import logging, os, re, time
 from py_api.args import Args
-from py_api.models.llm_client import CompletionOptions, CompletionOptions_LlamaCppPython
+from py_api.models.llm.llm_client import CompletionOptions, CompletionOptions_LlamaCppPython
 from py_api.utils.llm_models import parse_size_and_quant
 from .base import LLMClient_Base
 from llama_cpp import Llama, LlamaGrammar, LlamaCache

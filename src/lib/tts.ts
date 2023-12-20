@@ -8,6 +8,53 @@ import axios from 'axios';
 // this file will have a function that has the proper return types
 // will also need speakers route
 
+interface SpeakOptions {
+	text: string;
+	split_sentences?: boolean; // unused (true)
+	language?: string; // (en)
+	voice?: string; // (default)
+}
+interface SpeakResponse {
+	/** Base64 WAV */
+	audio: string;
+	time: number;
+}
+interface SpeakToFileOptions extends SpeakOptions {
+	file: string;
+}
+interface SpeakToFileResponse {
+	file_name: string;
+	time: number;
+}
+
+// new api:
+// still figuring out switching models, can use different voices (and eventually add voices)
+// GET /tts/v1/list-voices : { voices: string[] }
+// POST /tts/v1/speak : SpeakOptions => SpeakResponse
+// POST /tts/v1/speak-to-file : SpeakToFileOptions => SpeakToFileResponse
+
+const BASE = 'http://localhost:5000';
+
+function base64ToBlob(base64: string): Blob {
+	const byteString = atob(base64);
+	const ab = new ArrayBuffer(byteString.length);
+	const ia = new Uint8Array(ab);
+	for (let i = 0; i < byteString.length; i++) {
+		ia[i] = byteString.charCodeAt(i);
+	}
+	return new Blob([ab], { type: 'audio/wav' });
+}
+
+export async function speak(text: string, voice: string): Promise<Blob> {
+	const url = `${BASE}/tts/v1/speak`;
+	const body: SpeakOptions = {
+		text,
+		voice,
+	};
+	const res = await axios.post<SpeakResponse>(url, body);
+	return base64ToBlob(res.data.audio);
+}
+
 export async function generateTTS(
 	text: string,
 	provider: Provider,
@@ -35,4 +82,10 @@ export async function getSpeakers(provider: Provider): Promise<Speaker[]> {
 	const url = `/api/tts/speakers?provider=${provider}`;
 	const response = await axios.get(url);
 	return response.data;
+}
+
+export async function getVoices(): Promise<string[]> {
+	const url = `${BASE}/tts/v1/list-voices`;
+	const res = await axios.get<{ voices: string[] }>(url);
+	return res.data.voices;
 }
