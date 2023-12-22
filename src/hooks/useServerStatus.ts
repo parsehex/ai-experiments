@@ -32,7 +32,7 @@ function initWS({ setStatus, setModelInfo, setModels, wsSend }: InitWSOptions) {
 			case 'get_model':
 			case 'load_model':
 				setModelInfo({
-					model_name: data.model_name,
+					model: data.model_name,
 					loader_name: data.loader_name,
 				});
 				setStatus(ServerStatus.ON_MODEL_LOADED);

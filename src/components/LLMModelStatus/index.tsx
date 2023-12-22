@@ -40,7 +40,7 @@ const LLMModelStatus: React.FC = () => {
 		if (model) res = await loadModel(model);
 		if (res) {
 			setModelInfo({
-				model_name: res.model_name,
+				model: res.model,
 				loader_name: res.loader_name || '',
 			});
 			setSelectedModel('');
@@ -69,8 +69,7 @@ const LLMModelStatus: React.FC = () => {
 								<div className="mb-2 flex">
 									<div className="font-bold">Current Model:</div>
 									<div>
-										{modelInfo.model_name} (<i>{modelInfo.loader_name}</i>{' '}
-										loader)
+										{modelInfo.model} (<i>{modelInfo.loader_name}</i> loader)
 									</div>
 									<button className="ml-2 basic" onClick={handleUnloadModel}>
 										Unload

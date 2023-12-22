@@ -26,7 +26,6 @@ export type GenerateParams = {
 	seed?: number;
 	// not implemented yet
 	// custom_token_bans?: string;
-	// not implemented yet
 	// ban_eos_token?: boolean;
 	stop?: string[];
 	[key: string]: any;
@@ -47,7 +46,7 @@ export type ChatParams = {
 
 export type ModelOptions = {
 	action: 'load' | 'unload' | 'list' | 'info';
-	model_name?: string;
+	model?: string;
 	args?: Record<string, any>;
 };
 
@@ -73,7 +72,7 @@ export type ModelActionResponse = {
 };
 
 export interface ModelInfo {
-	model_name: string;
+	model: string;
 	loader_name: 'llamacpp' | 'exllamav2' | 'transformers' | '';
 }
 export type ListModelsResponse = {
@@ -81,7 +80,7 @@ export type ListModelsResponse = {
 };
 export type LoadModelResponse = {
 	status: 'Loaded' | 'Error';
-	model_name: string;
+	model: string;
 	loader_name?: 'llamacpp' | 'exllamav2' | 'transformers' | '';
 	error?: string;
 };
