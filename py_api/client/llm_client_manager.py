@@ -2,17 +2,20 @@ from typing import Union
 from py_api.args import Args
 from py_api.client.llm import LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLMClient_Transformers
 from py_api.utils.llm_models import detect_loader_name
-from py_api.models.llm.llm_client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_Transformers
+from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_Transformers
+
 
 class LLMManager:
 	_instance = None
-	clients: dict[str, Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLMClient_Transformers]] = {
-		'llamacpp': LLMClient_LlamaCppPython.instance,
-		'exllamav2': LLMClient_Exllamav2.instance,
-		'transformers': LLMClient_Transformers.instance,
-	}
+	clients: dict[str, Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2,
+	                         LLMClient_Transformers]] = {
+	                             'llamacpp': LLMClient_LlamaCppPython.instance,
+	                             'exllamav2': LLMClient_Exllamav2.instance,
+	                             'transformers': LLMClient_Transformers.instance,
+	                         }
 	model_name: Union[str, None] = None
-	loader: Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLMClient_Transformers, None] = None
+	loader: Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2,
+	              LLMClient_Transformers, None] = None
 	loader_name: Union[str, None] = None
 
 	def get_loader_model(self):
@@ -32,9 +35,9 @@ class LLMManager:
 
 	def __init__(self):
 		self.clients = {
-			'llamacpp': LLMClient_LlamaCppPython.instance,
-			'exllamav2': LLMClient_Exllamav2.instance,
-			'transformers': LLMClient_Transformers.instance,
+		    'llamacpp': LLMClient_LlamaCppPython.instance,
+		    'exllamav2': LLMClient_Exllamav2.instance,
+		    'transformers': LLMClient_Transformers.instance,
 		}
 
 	def load_model(self, model_name: Union[str, None]):
@@ -65,7 +68,7 @@ class LLMManager:
 		loader_model = self.get_loader_model()
 		assert loader_model is not None
 		assert isinstance(options, loader_model)
-		return self.loader.generate(options) # type: ignore
+		return self.loader.generate(options)  # type: ignore
 
 	def complete(self, gen_options: CompletionOptions):
 		if not self.loader:
@@ -76,4 +79,4 @@ class LLMManager:
 		loader_model = self.get_loader_model()
 		assert loader_model is not None
 		assert isinstance(options, loader_model)
-		return self.loader.complete(options) # type: ignore
+		return self.loader.complete(options)  # type: ignore

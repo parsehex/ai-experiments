@@ -4,27 +4,31 @@
 from typing import Generator, List, Union
 import logging, os, re, time
 from py_api.args import Args
-from py_api.models.llm.llm_client import CompletionOptions, CompletionOptions_Transformers
+from py_api.models.llm.client import CompletionOptions, CompletionOptions_Transformers
 from .base import LLMClient_Base
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextStreamer, pipeline
 import torch
 
 logger = logging.getLogger('Transformers-client')
 
+
 class LLMClient_Transformers(LLMClient_Base):
 	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 	OPTIONS_MAP = {
-		'temp': 'temperature',
-		'max_tokens': 'max_new_tokens',
-		'typical': 'typical_p',
-		'repeat_pen': 'repetition_penalty',
+	    'temp': 'temperature',
+	    'max_tokens': 'max_new_tokens',
+	    'typical': 'typical_p',
+	    'repeat_pen': 'repetition_penalty',
 	}
-	def convert_options(self, options: CompletionOptions) -> CompletionOptions_Transformers:
-		new_options = self.map_options_from_moodel(options, CompletionOptions_Transformers)
+
+	def convert_options(
+	    self, options: CompletionOptions) -> CompletionOptions_Transformers:
+		new_options = self.map_options_from_moodel(options,
+		                                           CompletionOptions_Transformers)
 		assert isinstance(new_options, CompletionOptions_Transformers)
 		return new_options
 
-	def load_model(self, model_name = ''):
+	def load_model(self, model_name=''):
 		model_name = model_name or Args['llm_model']
 		models_dir = Args['llm_models_dir']
 
@@ -40,18 +44,18 @@ class LLMClient_Transformers(LLMClient_Base):
 		self.tokenizer = AutoTokenizer.from_pretrained(self.model_abspath)
 		if self.config is None:
 			cfg = {
-				'model_name_or_path': self.model_abspath,
-				'low_cpu_mem_usage': True,
-				'device_map': self.device,
+			    'model_name_or_path': self.model_abspath,
+			    'low_cpu_mem_usage': True,
+			    'device_map': self.device,
 			}
 			self.config = cfg
 
 		logger.debug(f'Loading model {self.model_name}...')
 		start = time.time()
 		self.model = AutoModelForCausalLM.from_pretrained(
-			self.model_abspath,
-			low_cpu_mem_usage = True,
-			device_map = self.device,
+		    self.model_abspath,
+		    low_cpu_mem_usage=True,
+		    device_map=self.device,
 		)
 
 		# self.generator = TextStreamer(
@@ -107,10 +111,7 @@ class LLMClient_Transformers(LLMClient_Base):
 	# 	end = time.time()
 	# 	logger.debug(f'Generated text in {end - start}s')
 
-	def complete(
-		self,
-		options: CompletionOptions_Transformers
-	):
+	def complete(self, options: CompletionOptions_Transformers):
 		if not self.loaded or self.model is None:
 			self.load_model()
 		assert isinstance(options, CompletionOptions_Transformers)
@@ -123,27 +124,30 @@ class LLMClient_Transformers(LLMClient_Base):
 		# 	result += chunk
 		opt = options.model_dump()
 		del opt['prompt']
-		pipe = pipeline('text-generation', model=self.model, tokenizer=self.tokenizer, **opt)
+		pipe = pipeline('text-generation',
+		                model=self.model,
+		                tokenizer=self.tokenizer,
+		                **opt)
 
 		result = pipe(options.prompt)
-		result = result[0]['generated_text'] # type: ignore
+		result = result[0]['generated_text']  # type: ignore
 		# remove prompt from result
 		result = result[len(options.prompt):]
 
 		obj = {
-			'id': '',
-			'object': 'text_completion',
-			'created': int(time.time()),
-			'model': self.model_name,
-			'choices': [{
-				'text': result,
-				'index': 0,
-				'finish_reason': 'length',
-			}],
-			'usage': {
-				'prompt_tokens': 0,
-				'completion_tokens': 0,
-				'total_tokens': 0,
-			}
+		    'id': '',
+		    'object': 'text_completion',
+		    'created': int(time.time()),
+		    'model': self.model_name,
+		    'choices': [{
+		        'text': result,
+		        'index': 0,
+		        'finish_reason': 'length',
+		    }],
+		    'usage': {
+		        'prompt_tokens': 0,
+		        'completion_tokens': 0,
+		        'total_tokens': 0,
+		    }
 		}
 		return obj

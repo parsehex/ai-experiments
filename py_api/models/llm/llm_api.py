@@ -1,6 +1,6 @@
 from typing import Union
 from pydantic import BaseModel, Field
-from py_api.models.llm.llm_client import CompletionOptions
+from py_api.models.llm.client import CompletionOptions
 
 
 class PromptPart(BaseModel):

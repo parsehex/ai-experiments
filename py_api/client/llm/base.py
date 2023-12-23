@@ -1,7 +1,8 @@
 from typing import Generator, List, Dict, Union, Any
 from pydantic import BaseModel
 from py_api.models.llm.llm_api import CompletionChoice, CompletionResponse, CompletionRequest, CompletionResult, CompletionUsage, PromptPart, PromptParts
-from py_api.models.llm.llm_client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2
+from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2
+
 
 class LLMClient_Base:
 	_instance = None
@@ -24,7 +25,9 @@ class LLMClient_Base:
 			cls._instance = cls()
 		return cls._instance
 
-	def map_options_from_moodel(self, options: CompletionOptions, model: Any) -> Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]:
+	def map_options_from_moodel(
+	    self, options: CompletionOptions, model: Any
+	) -> Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]:
 		if options is None or options.prompt is None:
 			raise Exception('No prompt provided.')
 		new_options = model.model_validate({'prompt': options.prompt})
@@ -60,23 +63,21 @@ class LLMClient_Base:
 		raise NotImplementedError()
 
 	def generate(
-		self,
-		options: Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]
+	    self, options: Union[CompletionOptions_LlamaCppPython,
+	                         CompletionOptions_Exllamav2]
 	) -> Generator:
 		"""(TODO) Generate text from a prompt. Returns a Generator."""
 		raise NotImplementedError()
 
 	def complete(
-		self,
-		options: Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]
+	    self, options: Union[CompletionOptions_LlamaCppPython,
+	                         CompletionOptions_Exllamav2]
 	) -> CompletionResult:
 		"""Generate text from a prompt. Returns a string."""
 		raise NotImplementedError()
 
-	def chat(
-		self,
-		messages: List[Dict],
-		options: Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]
-	):
+	def chat(self, messages: List[Dict],
+	         options: Union[CompletionOptions_LlamaCppPython,
+	                        CompletionOptions_Exllamav2]):
 		# not implemented anywhere
 		raise NotImplementedError()

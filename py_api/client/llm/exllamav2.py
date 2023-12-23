@@ -1,6 +1,6 @@
 import logging, os, re, time
 from py_api.args import Args
-from py_api.models.llm.llm_client import CompletionOptions, CompletionOptions_Exllamav2
+from py_api.models.llm.client import CompletionOptions, CompletionOptions_Exllamav2
 from .base import LLMClient_Base
 from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config, ExLlamaV2Tokenizer
 from exllamav2.generator import ExLlamaV2StreamingGenerator, ExLlamaV2Sampler
@@ -8,18 +8,22 @@ import torch
 
 logger = logging.getLogger('Exllamav2-client')
 
+
 class LLMClient_Exllamav2(LLMClient_Base):
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	OPTIONS_MAP = {
-		'temp': 'temperature',
-		'repeat_pen': 'token_repetition_penalty',
+	    'temp': 'temperature',
+	    'repeat_pen': 'token_repetition_penalty',
 	}
-	def convert_options(self, options: CompletionOptions) -> CompletionOptions_Exllamav2:
-		new_options = self.map_options_from_moodel(options, CompletionOptions_Exllamav2)
+
+	def convert_options(
+	    self, options: CompletionOptions) -> CompletionOptions_Exllamav2:
+		new_options = self.map_options_from_moodel(options,
+		                                           CompletionOptions_Exllamav2)
 		assert isinstance(new_options, CompletionOptions_Exllamav2)
 		return new_options
 
-	def load_model(self, model_name = ''):
+	def load_model(self, model_name=''):
 		model_name = model_name or Args['llm_model']
 		models_dir = Args['llm_models_dir']
 
@@ -47,7 +51,8 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		self.model.load_autosplit(self.cache)
 
 		self.tokenizer = ExLlamaV2Tokenizer(self.config)
-		self.generator = ExLlamaV2StreamingGenerator(self.model, self.cache, self.tokenizer)
+		self.generator = ExLlamaV2StreamingGenerator(self.model, self.cache,
+		                                             self.tokenizer)
 		self.generator.warmup()
 
 		end = time.time()
@@ -69,10 +74,7 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		self.loaded = False
 		torch.cuda.empty_cache()
 
-	def generate(
-		self,
-		options: CompletionOptions_Exllamav2
-	):
+	def generate(self, options: CompletionOptions_Exllamav2):
 		if not self.loaded or self.model is None or self.generator is None or self.tokenizer is None or self.cache is None:
 			raise Exception('Re-load model.')
 
@@ -82,7 +84,7 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		settings.token_repetition_penalty = options.token_repetition_penalty
 		settings.token_repetition_range = options.token_repetition_range
 		settings.token_repetition_decay = options.token_repetition_decay
-		settings.disallow_tokens(self.tokenizer, []) # would ban eos token here?
+		settings.disallow_tokens(self.tokenizer, [])  # would ban eos token here?
 
 		start = time.time()
 
@@ -103,35 +105,37 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		end = time.time()
 		logger.debug(f'Generated text in {end - start}s')
 
-	def complete(
-		self,
-		options: CompletionOptions_Exllamav2
-	):
+	def complete(self, options: CompletionOptions_Exllamav2):
 		if not self.loaded or self.model is None:
 			self.load_model()
 		assert isinstance(options, CompletionOptions_Exllamav2)
 		result = ''
 		tokens = 0
-		for chunk in self.generate(
-			options
-		):
+		for chunk in self.generate(options):
 			tokens += len(chunk)
 			result += chunk
 
 		obj = {
-			'id': '',
-			'object': 'text_completion',
-			'created': int(time.time()),
-			'model': self.model_name,
-			'choices': [{
-				'text': result,
-				'index': 0,
-				'finish_reason': 'length' if tokens >= options.max_tokens else 'stop',
-			}],
-			'usage': {
-				'prompt_tokens': 0,
-				'completion_tokens': 0,
-				'total_tokens': 0,
-			}
+		    'id':
+		    '',
+		    'object':
+		    'text_completion',
+		    'created':
+		    int(time.time()),
+		    'model':
+		    self.model_name,
+		    'choices': [{
+		        'text':
+		        result,
+		        'index':
+		        0,
+		        'finish_reason':
+		        'length' if tokens >= options.max_tokens else 'stop',
+		    }],
+		    'usage': {
+		        'prompt_tokens': 0,
+		        'completion_tokens': 0,
+		        'total_tokens': 0,
+		    }
 		}
 		return obj
