@@ -39,5 +39,5 @@ next-env.d.ts
 **/__pycache__/**/*
 
 src/app/story-generator/starters.ts
-py/settings.py
+py_api/settings.py
 scripts/**/logs/*.txt
