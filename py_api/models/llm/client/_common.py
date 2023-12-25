@@ -5,7 +5,14 @@ from pydantic import BaseModel, Field
 class CompletionOptions(BaseModel):
 	"""Generic model, to be passed to manager, which will convert to model-specific options."""
 	# Common options
+	model: str = Field(
+	    '',
+	    description=
+	    'Model to use. If local, model will be loaded (current model will be unloaded). If blank, current (local) model will be used.'
+	)
 	prompt: str = Field(..., description='Prompt to feed to model.')
+	messages: list[Any] = Field(
+	    [], description='Messages to feed to (openai) model.')
 	temp: float = Field(0.7, description='Temperature for sampling.')
 	max_tokens: int = Field(128,
 	                        description='Maximum number of tokens to generate.')

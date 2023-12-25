@@ -1,16 +1,19 @@
 from typing import Union
 from py_api.args import Args
-from py_api.client.llm import LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLMClient_Transformers
+from py_api.client.llm import LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLMClient_OpenAI, LLMClient_Transformers
 from py_api.utils.llm_models import detect_loader_name
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_Transformers
 
 
+# TODO probaby need to put list_models in here
+#   (still crawl models dir, also call .list_models() on each client that has it (add prefix to those))
 class LLMManager:
 	_instance = None
 	clients: dict[str, Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2,
-	                         LLMClient_Transformers]] = {
+	                         LLMClient_OpenAI, LLMClient_Transformers]] = {
 	                             'llamacpp': LLMClient_LlamaCppPython.instance,
 	                             'exllamav2': LLMClient_Exllamav2.instance,
+	                             'openai': LLMClient_OpenAI.instance,
 	                             'transformers': LLMClient_Transformers.instance,
 	                         }
 	model_name: Union[str, None] = None
@@ -37,6 +40,7 @@ class LLMManager:
 		self.clients = {
 		    'llamacpp': LLMClient_LlamaCppPython.instance,
 		    'exllamav2': LLMClient_Exllamav2.instance,
+		    'openai': LLMClient_OpenAI.instance,
 		    'transformers': LLMClient_Transformers.instance,
 		}
 
@@ -45,8 +49,12 @@ class LLMManager:
 			model_name = Args['llm_model']
 		if model_name == self.model_name:
 			return
+		if 'openai:' in model_name:
+			return
 		client = detect_loader_name(model_name)
-		client_instance = self.clients[client]
+		client_instance: Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2,
+		                       LLMClient_Transformers] = self.clients[
+		                           client]  # type: ignore
 		self.loader_name = client
 		self.loader = client_instance
 		self.loader.load_model(model_name)
@@ -71,10 +79,15 @@ class LLMManager:
 		return self.loader.generate(options)  # type: ignore
 
 	def complete(self, gen_options: CompletionOptions):
+		model = gen_options.model
 		if not self.loader:
-			self.load_model(None)
+			self.load_model(model or None)
 			if not self.loader:
 				raise Exception('Model not loaded.')
+		if 'openai:' in model:
+			OpenAI = LLMClient_OpenAI.instance
+			opt = OpenAI.convert_options(gen_options)
+			return LLMClient_OpenAI.instance.complete(opt)
 		options = self.loader.convert_options(gen_options)
 		loader_model = self.get_loader_model()
 		assert loader_model is not None

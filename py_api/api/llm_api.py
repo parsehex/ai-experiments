@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from huggingface_hub import snapshot_download
 from py_api.args import Args
 from py_api.client import llm_client_manager
+from py_api.client.llm import LLMClient_OpenAI
 from py_api.models.llm.llm_api import CompletionRequest, CompletionResponse, DownloadModelRequest, DownloadModelResponse, ListModelsResponse, GetModelResponse, LoadModelResponse, UnloadModelRequest
 from py_api.models.llm.client import CompletionOptions
 from py_api.utils import prompt_format
@@ -18,6 +19,7 @@ manager = llm_client_manager.LLMManager.instance
 
 
 def llm_api(app: FastAPI):
+	openai = LLMClient_OpenAI.instance
 
 	def modelName():
 		if manager.model_name is not None:
@@ -98,6 +100,12 @@ def llm_api(app: FastAPI):
 					if os.path.isfile(path) and os.path.splitext(
 					    subfilename)[1] in EXTENSIONS:
 						model_names.append(os.path.join(filename, subfilename))
+		if openai.hasKey():
+			models = openai.list_models()
+			# add "openai:" prefix to each model
+			for i in range(len(models)):
+				models[i] = 'openai:' + models[i]
+			model_names.extend(models)
 		return ListModelsResponse.model_validate({'models': model_names})
 
 	def download_model(model_name: str) -> DownloadModelResponse:
@@ -146,10 +154,13 @@ def llm_api(app: FastAPI):
 		# this option takes precedence over grammar and will override it
 		prompt = req.prompt
 		parts = req.parts
+		messages = req.messages
 		prefix_response = req.prefix_response
 		return_prompt = req.return_prompt
-		if prompt is None and parts is None:
-			raise Exception('Prompt or parts is required.')
+
+		# TODO wrapper for hanndling prompt/parts/messages
+		if prompt is None and parts is None and len(messages) == 0:
+			raise Exception('Prompt or parts or messages is required.')
 		if parts is not None:
 			try:
 				prompt = prompt_format.parts_to_prompt(parts, modelName(),
@@ -172,8 +183,14 @@ def llm_api(app: FastAPI):
 	async def llm_ws(websocket: WebSocket):
 		await websocket.accept()
 
-		await websocket.send_json({'type': 'list_models', 'data': list_models()})
-		await websocket.send_json({'type': 'get_model', 'data': get_model()})
+		await websocket.send_json({
+		    'type': 'list_models',
+		    'data': list_models().model_dump_json()
+		})
+		await websocket.send_json({
+		    'type': 'get_model',
+		    'data': get_model().model_dump_json()
+		})
 		while True:
 			try:
 				data = await websocket.receive_json()
@@ -184,33 +201,36 @@ def llm_api(app: FastAPI):
 			if data['type'] == 'complete':
 				req = CompletionRequest(**data['data'])
 				try:
-					res = complete(req).model_dump(mode='json')
+					res = complete(req).model_dump_json()
 				except Exception as e:
 					res = {'error': str(e)}
 				await websocket.send_json(res)
 			elif data['type'] == 'load_model':
 				req = data['data']
 				try:
-					res = load_model(req.model_name)
+					res = load_model(req.model_name).model_dump_json()
 				except Exception as e:
 					res = {'error': str(e)}
 				await websocket.send_json({'type': 'load_model', 'data': res})
 			elif data['type'] == 'unload_model':
 				await websocket.send_json({
 				    'type': 'unload_model',
-				    'data': unload_model()
+				    'data': unload_model().model_dump_json()
 				})
 			elif data['type'] == 'get_model':
-				await websocket.send_json({'type': 'get_model', 'data': get_model()})
+				await websocket.send_json({
+				    'type': 'get_model',
+				    'data': get_model().model_dump_json()
+				})
 			elif data['type'] == 'list_models':
 				await websocket.send_json({
 				    'type': 'list_models',
-				    'data': list_models()
+				    'data': list_models().model_dump_json()
 				})
 			elif data['type'] == 'download_model':
 				req = DownloadModelRequest(**data['data'])
 				try:
-					res = download_model(req.model)
+					res = download_model(req.model).model_dump_json()
 				except Exception as e:
 					res = {'error': str(e)}
 				await websocket.send_json({'type': 'download_model', 'data': res})
@@ -221,8 +241,9 @@ def llm_api(app: FastAPI):
 	async def llm_complete(req: CompletionRequest):
 		"""Generate text from a prompt, or an array of PromptParts. Prompt should be in proper format (unless using `parts`), it's fed directly to the model. If both are provided then `prompt` is overwritten by constructing prompt from `parts`."""
 		global manager
-		if manager.model_name is None:
+		if manager.model_name is None and req.model is None:
 			raise HTTPException(status_code=500, detail='Model not loaded.')
+		# TODO add 'messages' prop for openai (converted to prompt if not using openai)
 		if req.prompt is None and req.parts is None:
 			raise HTTPException(status_code=400,
 			                    detail='Prompt or parts is required.')
@@ -231,14 +252,14 @@ def llm_api(app: FastAPI):
 	@app.get('/llm/v1/model', response_model=GetModelResponse, tags=['llm'])
 	async def llm_get_model():
 		"""Get currently-loaded model"""
-		return JSONResponse(content=get_model())
+		return JSONResponse(content=get_model().model_dump())
 
 	@app.get('/llm/v1/list-models',
 	         response_model=ListModelsResponse,
 	         tags=['llm'])
 	async def llm_list_models():
 		"""Get list of models (using relative filenames) in llm_models_dir"""
-		return JSONResponse(content=list_models())
+		return JSONResponse(content=list_models().model_dump())
 
 	@app.get('/llm/v1/model/load',
 	         response_model=LoadModelResponse,
@@ -246,18 +267,18 @@ def llm_api(app: FastAPI):
 	async def llm_load_model(model_name: str = Path(
 	    ..., description='Model name (from **GET** `/llm/v1/list-models`)')):
 		"""Load a model by filename from llm_models_dir"""
-		return JSONResponse(content=load_model(model_name))
+		return JSONResponse(content=load_model(model_name).model_dump())
 
 	@app.get('/llm/v1/model/unload',
 	         response_model=UnloadModelRequest,
 	         tags=['llm'])
 	async def llm_unload_model():
 		"""Unload currently-loaded model"""
-		return JSONResponse(content=unload_model())
+		return JSONResponse(content=unload_model().model_dump())
 
 	@app.post('/llm/v1/download-model',
 	          response_model=DownloadModelResponse,
 	          tags=['llm'])
 	async def llm_download_model(body: DownloadModelRequest):
 		"""Download a model from the HuggingFace Hub"""
-		return JSONResponse(content=download_model(body.model))
+		return JSONResponse(content=download_model(body.model).model_dump())

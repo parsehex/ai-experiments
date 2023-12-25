@@ -8,6 +8,7 @@ huggingface_hub
 numpy
 omegaconf
 pydantic
+python-dotenv
 simpleaudio
 torch
 torchaudio

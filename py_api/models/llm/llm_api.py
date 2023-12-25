@@ -1,6 +1,6 @@
-from typing import Union
+from typing import Union, Any
 from pydantic import BaseModel, Field
-from py_api.models.llm.client import CompletionOptions
+from py_api.models.llm.client import CompletionOptions, MessageObject
 
 
 class PromptPart(BaseModel):
@@ -19,8 +19,15 @@ class CompletionRequest(CompletionOptions):
 	prompt: str = Field('', description='Prompt to feed to model.')
 	parts: PromptParts = Field(
 	    None, description='Prompt parts to construct prompt from.')
+	messages: list[MessageObject] = Field(
+	    [], description='Messages to feed to model.')
 	prefix_response: str = Field('', description='Prefix to add to prompt.')
 	return_prompt: bool = Field(True, description='Return prompt with response.')
+	model: str = Field(
+	    '',
+	    description=
+	    'Model to use. If local, model will be loaded (current model will be unloaded). If blank, current (local) model will be used.',
+	    examples=['mistral-7b.Q4.gguf', 'openai:gpt-3.5-turbo'])
 
 
 class CompletionUsage(BaseModel):
@@ -31,11 +38,14 @@ class CompletionUsage(BaseModel):
 
 
 class CompletionChoice(BaseModel):
-	text: str = Field(..., description='Completion text.')
+	text: str = Field('', description='Completion text.')
+	message: MessageObject = Field({}, description='Completion message.')
 	index: int = Field(..., description='Completion index.')
 	# logprobs: Union[dict, None] = Field(..., description='Completion logprobs.')
-	finish_reason: str = Field(
-	    ..., description='Completion finish reason (e.g. `stop` or `length`).')
+	finish_reason: str = Field(...,
+	                           description='Completion finish reason.',
+	                           examples=['stop', 'length'])
+	tool_calls: list[Any] = Field([], description='Completion tool calls.')
 
 
 class CompletionResult(BaseModel):

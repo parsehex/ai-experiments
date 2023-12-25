@@ -28,14 +28,25 @@ class LLMClient_Base:
 	def map_options_from_moodel(
 	    self, options: CompletionOptions, model: Any
 	) -> Union[CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2]:
-		if options is None or options.prompt is None:
+		if options is None or (options.prompt is None
+		                       and len(options.messages) == 0):
 			raise Exception('No prompt provided.')
-		new_options = model.model_validate({'prompt': options.prompt})
+		obj = {}
+		if options.prompt is not None:
+			obj['prompt'] = options.prompt
+			obj['messages'] = []
+		if options.messages is not None:
+			obj['messages'] = options.messages
+			obj['prompt'] = ''
+			obj['model'] = options.model
+		new_options = model.model_validate(obj)
 		newOptions = {}
 		keys = list(options.model_fields.keys())
 		newkeys = list(new_options.model_fields.keys())
 
-		optObj = options.model_dump()
+		optObj = options.model_dump(exclude_unset=True)
+		optObj = {k: v for k, v in optObj.items() if v is not None}
+		schema = model.schema()
 		for key in keys:
 			if key in self.OPTIONS_MAP:
 				remappedkey = self.OPTIONS_MAP[key]
@@ -45,7 +56,11 @@ class LLMClient_Base:
 
 			elif key in newkeys:
 				# common option
-				newOptions[key] = optObj[key]
+				if key in optObj:
+					newOptions[key] = optObj[key]
+				else:
+					newOptions[key] = schema['properties'][key]['default']
+				# newOptions[key] = optObj[key]
 				# print(f'setting {key} to {opt[key]}')
 
 		new_options = model.model_validate(newOptions)
