@@ -1,6 +1,6 @@
 from typing import Generator, List, Dict, Union, Any
 from pydantic import BaseModel
-import requests
+import requests, time
 from py_api.models.llm.llm_api import CompletionChoice, CompletionResponse, CompletionRequest, CompletionResult, CompletionUsage, PromptPart, PromptParts
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_OpenAI
 from .base import LLMClient_Base
@@ -61,6 +61,8 @@ class LLMClient_OpenAI(LLMClient_Base):
 		                                           CompletionOptions_OpenAI)
 		if 'openai:' in options.model:
 			new_options.model = options.model.split('openai:')[1]
+		else:
+			new_options.model = options.model
 		assert isinstance(new_options, CompletionOptions_OpenAI)
 		return new_options
 
@@ -95,7 +97,25 @@ class LLMClient_OpenAI(LLMClient_Base):
 		    "stop": options.stop,
 		}
 		res = self._api_post(url, body)
-		return CompletionResult.model_validate(res)
+		choice = res['choices'][0]
+		obj = {
+		    'id':
+		    res['id'],
+		    'object':
+		    'text_completion',
+		    'created':
+		    res['created'],
+		    'model':
+		    res['model'],
+		    'choices': [{
+		        'text': choice['message']['content'],
+		        'index': 0,
+		        'finish_reason': choice['finish_reason'],
+		    }],
+		    'usage':
+		    res['usage'],
+		}
+		return CompletionResult.model_validate(obj)
 
 	def chat(self, messages: List[Dict],
 	         options: Union[CompletionOptions_LlamaCppPython,

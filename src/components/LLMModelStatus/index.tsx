@@ -9,6 +9,38 @@ const LLMModelStatus: React.FC = () => {
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [selectedModel, setSelectedModel] = useState('');
 
+	// (some) model names have prefixes like "openai:" (local has no prefix)
+	const [sources, setSources] = useState({ local: [] } as Record<
+		string,
+		string[]
+	>);
+	const [selectedSource, setSelectedSource] = useState('');
+
+	useEffect(() => {
+		if (models.length > 0) {
+			const s: Record<string, string[]> = { local: [] };
+			for (const model of models) {
+				if (!model.includes(':')) {
+					s.local.push(model);
+					continue;
+				}
+				const source = model.split(':')[0];
+				if (!s[source]) s[source] = [];
+				s[source].push(model);
+			}
+			setSources(s);
+		}
+	}, [models]);
+
+	useEffect(() => {
+		setSelectedSource('local');
+	}, []);
+
+	const handleSourceSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+		const selected = event.target.value;
+		setSelectedSource(selected);
+	};
+
 	const getStatusColor = () => {
 		switch (status) {
 			case ServerStatus.OFF:
@@ -54,6 +86,46 @@ const LLMModelStatus: React.FC = () => {
 		setStatus(ServerStatus.ON_NO_MODEL);
 	};
 
+	const LoadModelControls = () => {
+		return (
+			<div>
+				Source:
+				<select
+					className="mx-1"
+					onChange={handleSourceSelect}
+					value={selectedSource}
+				>
+					{Object.keys(sources).map((source) => (
+						<option key={source} value={source}>
+							{source}
+						</option>
+					))}
+				</select>
+				Load Model:
+				<select
+					className="mx-1"
+					onChange={handleModelSelect}
+					value={selectedModel}
+				>
+					<option value="">Select a Model</option>
+					{sources[selectedSource].map((model) => (
+						<option key={model} value={model}>
+							{model}
+						</option>
+					))}
+				</select>
+				{!!selectedModel && (
+					<button
+						className="basic"
+						onClick={() => handleLoadModel(selectedModel)}
+					>
+						Load
+					</button>
+				)}
+			</div>
+		);
+	};
+
 	return (
 		<div className="flex flex-col">
 			<div
@@ -61,7 +133,7 @@ const LLMModelStatus: React.FC = () => {
 				onClick={handleToggleExpand}
 			/>
 			{isExpanded && (
-				<div className="mb-3 p-2 border rounded shadow-lg bg-white">
+				<div className="mb-3 p-2 border rounded shadow-lg bg-white dark:bg-gray-800">
 					{(status === ServerStatus.ON_NO_MODEL ||
 						status === ServerStatus.ON_MODEL_LOADED) && (
 						<>
@@ -76,29 +148,7 @@ const LLMModelStatus: React.FC = () => {
 									</button>
 								</div>
 							)}
-							<div>
-								Load Model:
-								<select
-									className="mx-1"
-									onChange={handleModelSelect}
-									value={selectedModel}
-								>
-									<option value="">Select a Model</option>
-									{models.map((model) => (
-										<option key={model} value={model}>
-											{model}
-										</option>
-									))}
-								</select>
-								{!!selectedModel && (
-									<button
-										className="basic"
-										onClick={() => handleLoadModel(selectedModel)}
-									>
-										Load
-									</button>
-								)}
-							</div>
+							{models.length > 0 && LoadModelControls()}
 						</>
 					)}
 				</div>

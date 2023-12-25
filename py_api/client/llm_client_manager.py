@@ -50,6 +50,8 @@ class LLMManager:
 		if model_name == self.model_name:
 			return
 		if 'openai:' in model_name:
+			self.model_name = model_name
+			self.loader_name = 'openai'
 			return
 		client = detect_loader_name(model_name)
 		client_instance: Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2,
@@ -80,14 +82,17 @@ class LLMManager:
 
 	def complete(self, gen_options: CompletionOptions):
 		model = gen_options.model
-		if not self.loader:
-			self.load_model(model or None)
-			if not self.loader:
-				raise Exception('Model not loaded.')
+		if model is None or model == '':
+			model = self.model_name or Args['llm_model']
+			gen_options.model = model
 		if 'openai:' in model:
 			OpenAI = LLMClient_OpenAI.instance
 			opt = OpenAI.convert_options(gen_options)
 			return LLMClient_OpenAI.instance.complete(opt)
+		if not self.loader:
+			self.load_model(model or None)
+			if not self.loader:
+				raise Exception('Model not loaded.')
 		options = self.loader.convert_options(gen_options)
 		loader_model = self.get_loader_model()
 		assert loader_model is not None

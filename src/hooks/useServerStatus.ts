@@ -20,6 +20,7 @@ function initWS({ setStatus, setModelInfo, setModels, wsSend }: InitWSOptions) {
 		setStatus(ServerStatus.ON_NO_MODEL);
 		try {
 			wsSend({ type: 'get_model' });
+			wsSend({ type: 'list_models' });
 		} catch (error) {
 			console.error('Failed to send message:', error);
 		}
@@ -27,12 +28,12 @@ function initWS({ setStatus, setModelInfo, setModels, wsSend }: InitWSOptions) {
 	ws.onmessage = (event) => {
 		// console.log('Message received:', event);
 		const message = JSON.parse(event.data);
-		const { data } = message;
+		const data = JSON.parse(message.data);
 		switch (message.type) {
 			case 'get_model':
 			case 'load_model':
 				setModelInfo({
-					model: data.model_name,
+					model: data.model,
 					loader_name: data.loader_name,
 				});
 				setStatus(ServerStatus.ON_MODEL_LOADED);

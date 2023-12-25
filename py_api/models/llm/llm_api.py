@@ -13,6 +13,8 @@ class PromptPart(BaseModel):
 class PromptParts(BaseModel):
 	user: list[PromptPart] = Field(..., description='User prompt parts.')
 	system: list[PromptPart] = Field([], description='System prompt parts.')
+	prior_msgs: list[MessageObject] = Field(
+	    [], description='Prior messages to add to prompt.')
 
 
 class CompletionRequest(CompletionOptions):
@@ -38,8 +40,7 @@ class CompletionUsage(BaseModel):
 
 
 class CompletionChoice(BaseModel):
-	text: str = Field('', description='Completion text.')
-	message: MessageObject = Field({}, description='Completion message.')
+	text: str = Field(..., description='Completion text.')
 	index: int = Field(..., description='Completion index.')
 	# logprobs: Union[dict, None] = Field(..., description='Completion logprobs.')
 	finish_reason: str = Field(...,
@@ -90,6 +91,12 @@ class GetModelResponse(BaseModel):
 	loader_name: str = Field(...,
 	                         description='Loader name.',
 	                         examples=['llamacpp', 'exllamav2', 'transformers'])
+
+
+class LoadModelRequest(BaseModel):
+	model: str = Field(...,
+	                   description='Model to load.',
+	                   examples=['username/model_name[:branch]'])
 
 
 class LoadModelResponse(BaseModel):

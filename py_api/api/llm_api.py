@@ -5,8 +5,8 @@ from huggingface_hub import snapshot_download
 from py_api.args import Args
 from py_api.client import llm_client_manager
 from py_api.client.llm import LLMClient_OpenAI
-from py_api.models.llm.llm_api import CompletionRequest, CompletionResponse, DownloadModelRequest, DownloadModelResponse, ListModelsResponse, GetModelResponse, LoadModelResponse, UnloadModelRequest
-from py_api.models.llm.client import CompletionOptions
+from py_api.models.llm.llm_api import CompletionRequest, CompletionResponse, DownloadModelRequest, DownloadModelResponse, ListModelsResponse, GetModelResponse, LoadModelResponse, UnloadModelRequest, LoadModelRequest
+from py_api.models.llm.client import CompletionOptions, MessageObject
 from py_api.utils import prompt_format
 from py_api.utils.llm_models import detect_loader_name
 
@@ -29,10 +29,8 @@ def llm_api(app: FastAPI):
 
 	def get_model() -> GetModelResponse:
 		return GetModelResponse.model_validate({
-		    'model_name':
-		    modelName(),
-		    'loader_name':
-		    detect_loader_name(modelName())
+		    'model': modelName(),
+		    'loader_name': manager.loader_name
 		})
 
 	def load_model(model_name: str) -> LoadModelResponse:
@@ -157,14 +155,25 @@ def llm_api(app: FastAPI):
 		messages = req.messages
 		prefix_response = req.prefix_response
 		return_prompt = req.return_prompt
+		model = req.model
+		if model == '':
+			model = manager.model_name or ''
 
 		# TODO wrapper for hanndling prompt/parts/messages
 		if prompt is None and parts is None and len(messages) == 0:
 			raise Exception('Prompt or parts or messages is required.')
 		if parts is not None:
 			try:
-				prompt = prompt_format.parts_to_prompt(parts, modelName(),
-				                                       prefix_response)
+				if 'gpt-' in model:
+					m = prompt_format.parts_to_messages(parts,
+					                                    prefix_response=prefix_response)
+					# reconstruct models from message objects
+					messages = []
+					for msg in m:
+						messages.append(MessageObject.model_validate(msg))
+				else:
+					prompt = prompt_format.parts_to_prompt(parts, modelName(),
+					                                       prefix_response)
 			except Exception as e:
 				raise Exception(
 				    'Internal server error: Unknown model when detecting format: ' +
@@ -172,6 +181,7 @@ def llm_api(app: FastAPI):
 		else:
 			prompt = str(prompt)
 		req.prompt = prompt
+		req.messages = messages
 		options = CompletionOptions.model_validate(req.model_dump())
 		result = manager.complete(options)
 		res: dict = {'result': result}
@@ -261,12 +271,12 @@ def llm_api(app: FastAPI):
 		"""Get list of models (using relative filenames) in llm_models_dir"""
 		return JSONResponse(content=list_models().model_dump())
 
-	@app.get('/llm/v1/model/load',
-	         response_model=LoadModelResponse,
-	         tags=['llm'])
-	async def llm_load_model(model_name: str = Path(
-	    ..., description='Model name (from **GET** `/llm/v1/list-models`)')):
+	@app.post('/llm/v1/model/load',
+	          response_model=LoadModelResponse,
+	          tags=['llm'])
+	async def llm_load_model(body: LoadModelRequest):
 		"""Load a model by filename from llm_models_dir"""
+		model_name = body.model
 		return JSONResponse(content=load_model(model_name).model_dump())
 
 	@app.get('/llm/v1/model/unload',

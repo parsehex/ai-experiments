@@ -36,8 +36,8 @@ export function genStoryDescription(
 		},
 		{ use: chars.length > 0, val: charStr },
 	];
-	const prefixResponse = 'DESCRIPTION:';
-	return { user, system, prefix_response: prefixResponse };
+	const prefix_response = 'DESCRIPTION:';
+	return { user, system, prefix_response };
 }
 
 const relevancePrompt: Record<string, string> = {
@@ -166,7 +166,7 @@ A simple example could be "Dark and gritty but realistic."\n\n`,
 			// truncate after the first quote
 			const quoteIndex = response.indexOf('"');
 			if (quoteIndex === -1) return response;
-			return response.substring(0, quoteIndex + 1);
+			return response.substring(0, quoteIndex);
 		},
 	};
 }

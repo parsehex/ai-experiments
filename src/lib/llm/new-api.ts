@@ -109,9 +109,13 @@ export async function listModels(): Promise<ListModelsResponse> {
 }
 export async function loadModel(modelName: string): Promise<LoadModelResponse> {
 	if (!adjusted) fixUrl();
-	const response = await fetch(
-		`${BASE_URL}/v1/model/load?model_name=${modelName}`
-	);
+	const response = await fetch(`${BASE_URL}/v1/model/load`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ model: modelName }),
+	});
 	return response.json();
 }
 export async function unloadModel(): Promise<LoadModelResponse> {

@@ -194,9 +194,6 @@ export async function complete(
 		'prompt' | 'parts' | 'prefix_response' | 'grammar'
 	>
 ): Promise<string> {
-	if (!opt?.prompt && !opt?.parts) {
-		throw new Error('Must provide prompt or parts');
-	}
 	const params: Record<string, any> = {};
 	const entries = Object.entries(opt || {});
 	if (opt) {
@@ -204,16 +201,13 @@ export async function complete(
 			params[key] = value;
 		}
 	}
-	if (opt?.prompt) {
-		params.prompt = opt.prompt;
-	} else if (opt?.parts) {
-		params.parts = {
-			user: opt.parts.user,
-			system: opt.parts.system,
-		};
-	}
-	if (opt?.prefix_response) params.prefix_response = opt.prefix_response;
-	if (opt?.grammar) params.grammar = opt.grammar;
+	params.parts = {
+		user: promptFmt.user,
+		system: promptFmt.system,
+	};
+	if (promptFmt?.prefix_response)
+		params.prefix_response = promptFmt.prefix_response;
+	if (promptFmt?.grammar) params.grammar = promptFmt.grammar;
 	const resp = await newapi.generateText(params);
 	const res = resp.result.choices[0].text;
 	return promptFmt.response_formatter ? promptFmt.response_formatter(res) : res;
