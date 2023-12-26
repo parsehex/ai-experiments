@@ -9,6 +9,10 @@
 			"type": "python",
 			"request": "launch",
 			"module": "py_api.main",
+			"args": [
+				// "--no-llm"
+				// "--no-tts",
+			],
 			"justMyCode": true
 		}
 	]
