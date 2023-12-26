@@ -16,49 +16,60 @@ from py_api.utils import prompt_format
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Starts the API server.')
 
-	# --host | --port
-	parser.add_argument('--host',
-	                    type=str,
-	                    default=HOST,
-	                    help='The host to bind to.')
-	parser.add_argument('--port',
-	                    type=int,
-	                    default=PORT,
-	                    help='The port to bind to.')
+	# Group for host and port
+	server_group = parser.add_argument_group('server')
+	server_group.add_argument('--host',
+	                          type=str,
+	                          default=HOST,
+	                          help='The host to bind to.')
+	server_group.add_argument('--port',
+	                          type=int,
+	                          default=PORT,
+	                          help='The port to bind to.')
 
-	# --llm-models-dir | --llm-model
-	parser.add_argument('--llm-models-dir',
-	                    type=str,
-	                    default=LLM_MODELS_DIR,
-	                    help='The directory to load LLM models from.')
-	parser.add_argument('--llm-model',
-	                    type=str,
-	                    default=LLM_MODEL,
-	                    help='The LLM model to load.')
+	# Group for LLM
+	llm_group = parser.add_argument_group('llm')
+	llm_group.add_argument('--no-llm', action='store_true', help='Disable LLM.')
+	llm_group.add_argument(
+	    '--llm-models-dir',
+	    #  type=argparse.FileType('r'),
+	    default=LLM_MODELS_DIR,
+	    help='The directory to load LLM models from.')
+	llm_group.add_argument('--llm-model',
+	                       type=str,
+	                       default=LLM_MODEL,
+	                       help='The LLM model to load.')
 
-	# --tts-models-dir | --tts-model | --tts-output-dir | --tts-voices-dir
-	parser.add_argument('--tts-model',
-	                    type=str,
-	                    default=TTS_MODEL,
-	                    help='The TTS model to load.')
-	parser.add_argument('--tts-models-dir',
-	                    type=str,
-	                    default=TTS_MODELS_DIR,
-	                    help='The directory to load TTS models from.')
-	parser.add_argument('--tts-output-dir',
-	                    type=str,
-	                    default=TTS_OUTPUT_DIR,
-	                    help='The directory to save TTS output to.')
-	parser.add_argument('--tts-voices-dir',
-	                    type=str,
-	                    default=TTS_VOICES_DIR,
-	                    help='The directory to load TTS voices from.')
+	# Group for TTS
+	tts_group = parser.add_argument_group('tts')
+	tts_group.add_argument('--no-tts', action='store_true', help='Disable TTS.')
+	tts_group.add_argument(
+	    '--tts-models-dir',
+	    #  type=argparse.FileType('r'),
+	    default=TTS_MODELS_DIR,
+	    help='The directory to load TTS models from.')
+	tts_group.add_argument('--tts-model',
+	                       type=str,
+	                       default=TTS_MODEL,
+	                       help='The TTS model to load.')
+	tts_group.add_argument(
+	    '--tts-output-dir',
+	    #  type=argparse.FileType('r'),
+	    default=TTS_OUTPUT_DIR,
+	    help='The directory to save TTS output to.')
+	tts_group.add_argument(
+	    '--tts-voices-dir',
+	    #  type=argparse.FileType('r'),
+	    default=TTS_VOICES_DIR,
+	    help='The directory to load TTS voices from.')
 
-	# --log-level
-	parser.add_argument('--log-level',
-	                    type=str,
-	                    default='INFO',
-	                    help='The log level to use.')
+	# Log level
+	parser.add_argument(
+	    '--log-level',
+	    type=str,
+	    default='INFO',
+	    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+	    help='The log level to use.')
 
 	args = parser.parse_args()
 	Args['host'] = args.host
@@ -84,14 +95,6 @@ if __name__ == '__main__':
 
 	llm_model = Args['llm_model']
 	tts_model = Args['tts_model']
-	if llm_model is not None:
-		fmt = prompt_format.get_model_format(llm_model)
-		logger.info(f'Detected model prompt format: {fmt}')
-
-	llmManager = llm_client_manager.LLMManager.instance
-	llmManager.load_model(llm_model)
-	ttsManager = tts_client_manager.TTSManager.instance
-	ttsManager.load_model(tts_model)
 
 	app = fastapi.FastAPI()
 	app.add_middleware(
@@ -103,8 +106,20 @@ if __name__ == '__main__':
 	    allow_methods=["*"],
 	    allow_headers=["*"],
 	)
-	llm_api(app)
-	tts_api(app)
+
+	if not args.no_llm:
+		llmManager = llm_client_manager.LLMManager.instance
+		if llm_model is not None:
+			fmt = prompt_format.get_model_format(llm_model)
+			logger.info(f'Loading LLM model: {llm_model}')
+			logger.info(f'Detected model prompt format: {fmt}')
+		llmManager.load_model(llm_model)
+		llm_api(app)
+
+	if not args.no_tts:
+		ttsManager = tts_client_manager.TTSManager.instance
+		ttsManager.load_model(tts_model)
+		tts_api(app)
 
 	uvicorn.run(app, host=args.host, port=args.port)
 	logger.info(f'API server started on {args.host}:{args.port}.')

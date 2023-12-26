@@ -6,4 +6,4 @@ else
 		source ./py_api/venv/bin/activate
 fi
 
-python3 -m py_api.main
+python3 -m py_api.main $@
