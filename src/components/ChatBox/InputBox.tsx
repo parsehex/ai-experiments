@@ -10,9 +10,16 @@ interface InputBoxProps {
 }
 const combineWhisperParts = (parts: WhisperResultChunk[]) => {
 	let text = '';
+	// chunks are separated by a space
+	// if the next chunk starts with an apostrophe or comma, don't add a space
 	for (let i = 0; i < parts.length; i++) {
-		const part = parts[i];
-		text += part.speech;
+		const chunk = parts[i];
+		text += chunk.speech;
+		if (i < parts.length - 1) {
+			const nextChunk = parts[i + 1];
+			if (nextChunk.speech[0] === "'" || nextChunk.speech[0] === ',') continue;
+			text += ' ';
+		}
 	}
 	return text;
 };
