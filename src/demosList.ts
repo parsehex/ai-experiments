@@ -61,7 +61,7 @@ const componentPrototypes: ItemProps[] = [
 	{
 		title: 'Test Prompt Button',
 		description: 'Button to fill a random test prompt',
-		href: '/test-prompts',
+		// href: '/test-prompts',
 		tags: ['Component'],
 	},
 	{
@@ -126,13 +126,13 @@ export const demos: ItemProps[] = [
 	{
 		title: 'LangChain Chat',
 		description: 'Prototype chat app using LangChain',
-		href: '/langchain-chat',
+		// href: '/langchain-chat',
 		tags: ['Chat', 'LLM', 'LangChain'],
 	},
 	{
 		title: 'Entity Memory',
 		description: 'Entity memory',
-		href: '/entity-memory',
+		// href: '/entity-memory',
 		tags: ['Chat', 'LLM', 'Memory', 'LangChain'],
 	},
 	{
