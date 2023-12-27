@@ -1,17 +1,36 @@
 'use client';
 import React, { useState } from 'react';
 import { ChatBox } from '@/components/ChatBox';
-import { Message, PromptPart } from '@/lib/types/llm';
-import { complete, generate } from '@/lib/llm';
+import { PromptPart, RawMessage, Message } from '@/lib/types/llm';
+import { complete } from '@/lib/llm';
 import { addMsg, makeMsg } from '@/lib/utils/messages';
+import LLMModelStatus from '@/components/LLMModelStatus';
 
-function SimpleChat() {
-	const defMsg = makeMsg(
-		'message',
-		'ASSISTANT',
-		"Hi, I'm a chatbot. How can I help you today?"
+const getResponse = async (input: string, messages: Message[]) => {
+	const system: PromptPart[] = [
+		{
+			val: 'Continue the following conversation between a user and an AI assistant.',
+		},
+	];
+	const user: PromptPart[] = [{ val: input }];
+	const prior_msgs = messages.map((msg) => ({
+		role: msg.role,
+		content: msg.content,
+	}));
+	const response = await complete(
+		{ user, system, prefix_response: 'RESPONSE: ', prior_msgs },
+		{ temp: 0.5, max: 150, stop: ['RESPONSE:'] }
 	);
-	const [messages, setMessages] = useState<Message[]>([defMsg]);
+	return response;
+};
+
+const defaultMsg = makeMsg(
+	'message',
+	'ASSISTANT',
+	"Hi, I'm a chatbot. How can I help you today?"
+);
+function SimpleChat() {
+	const [messages, setMessages] = useState<Message[]>([defaultMsg]);
 
 	const handleSend = async (input: string) => {
 		if (!input.trim()) return;
@@ -19,34 +38,17 @@ function SimpleChat() {
 		const userMsg = makeMsg('message', 'USER', input);
 		const newMsgs = addMsg(userMsg, messages, setMessages);
 
-		const resMsg = makeMsg('message', 'ASSISTANT', await getAIResponse(input));
-		addMsg(resMsg, newMsgs, setMessages);
-	};
-
-	const getAIResponse = async (input: string) => {
-		let messagesStr = messages
-			.map((msg) => `${msg.role}: ${msg.content}`)
-			.join('\n');
-		const lastRole = messages[messages.length - 1].role;
-		const role = lastRole === 'USER' ? 'ASSISTANT' : 'USER';
-		messagesStr += `\n${role}: ${input}`;
-		const parts: PromptPart[] = [
-			{
-				val: 'Continue the following conversation between a user and an AI assistant.',
-			},
-			{ val: messagesStr },
-		];
-		console.log(prompt);
-
-		const response = await complete(
-			{ user: parts, prefix_response: '\nRESPONSE: ' },
-			{ temp: 0.5, max: 150, stop: ['RESPONSE:'] }
+		const resMsg = makeMsg(
+			'message',
+			'ASSISTANT',
+			await getResponse(input, newMsgs)
 		);
-		return response;
+		addMsg(resMsg, newMsgs, setMessages);
 	};
 
 	return (
 		<div className="chat-container">
+			<LLMModelStatus />
 			<ChatBox
 				messages={messages}
 				setMessages={setMessages}
