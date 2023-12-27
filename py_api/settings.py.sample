@@ -17,6 +17,8 @@ TTS_MODEL = 'tts_models/multilingual/multi-dataset/xtts_v2'
 TTS_VOICES_DIR = '/your/tts/voices/dir'
 TTS_OUTPUT_DIR = '/your/tts/output/dir'
 
+STT_INPUT_DIR = '/your/stt/input/dir'
+
 LLM_DEFAULT_SEED = -1
 LLM_MAX_SEQ_LEN = 4096  # (n_ctx)
 LLM_SCALE_POS_EMB = 1.5

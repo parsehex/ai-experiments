@@ -8,9 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from py_api.api.llm_api import llm_api
 from py_api.api.tts_api import tts_api
+from py_api.api.stt_api import stt_api
 from py_api.args import Args
-from py_api.client import llm_client_manager, tts_client_manager
-from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL, TTS_MODELS_DIR, TTS_MODEL, TTS_OUTPUT_DIR, TTS_VOICES_DIR
+from py_api.client import llm_client_manager, tts_client_manager, stt_client_manager
+from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL, TTS_MODELS_DIR, TTS_MODEL, TTS_OUTPUT_DIR, TTS_VOICES_DIR, STT_INPUT_DIR
 from py_api.utils import prompt_format
 
 if __name__ == '__main__':
@@ -63,6 +64,15 @@ if __name__ == '__main__':
 	    default=TTS_VOICES_DIR,
 	    help='The directory to load TTS voices from.')
 
+	# Group for STT
+	stt_group = parser.add_argument_group('stt')
+	stt_group.add_argument('--no-stt', action='store_true', help='Disable STT.')
+	stt_group.add_argument(
+	    '--stt-input-dir',
+	    #  type=argparse.FileType('r'),
+	    default=STT_INPUT_DIR,
+	    help='The directory to load STT input from.')
+
 	# Log level
 	parser.add_argument(
 	    '--log-level',
@@ -80,6 +90,7 @@ if __name__ == '__main__':
 	Args['tts_model'] = args.tts_model
 	Args['tts_output_dir'] = args.tts_output_dir
 	Args['tts_voices_dir'] = args.tts_voices_dir
+	Args['stt_input_dir'] = args.stt_input_dir
 
 	logging.basicConfig(level=args.log_level)
 	logger = logging.getLogger(__name__)
@@ -120,6 +131,9 @@ if __name__ == '__main__':
 		ttsManager = tts_client_manager.TTSManager.instance
 		ttsManager.load_model(tts_model)
 		tts_api(app)
+
+	if not args.no_stt:
+		stt_api(app)
 
 	uvicorn.run(app, host=args.host, port=args.port)
 	logger.info(f'API server started on {args.host}:{args.port}.')

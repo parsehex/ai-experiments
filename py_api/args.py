@@ -7,4 +7,5 @@ Args = {
 	'tts_models_dir': '',
 	'tts_output_dir': '',
 	'tts_voices_dir': '',
+	'stt_input_dir': '',
 }

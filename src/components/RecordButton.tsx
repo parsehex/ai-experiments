@@ -27,8 +27,11 @@ const RecordButton: React.FC<AudioToTextButtonProps> = ({ onResult }) => {
 			const audioData = new Blob(audioChunks, { type: 'audio/webm' });
 			const formData = new FormData();
 			formData.append('file', audioData, 'audio.webm');
-			const response = await axios.post('/api/convert-to-text', formData);
-			onResult(response.data.convertedText);
+			const response = await axios.post(
+				'http://localhost:5000/stt/v1/transcribe',
+				formData
+			);
+			onResult(response.data.parts);
 		};
 	};
 
