@@ -19,7 +19,8 @@ from py_api.models.llm.llm_api import PromptPart, PromptParts
 
 
 class Formatter:
-	# prior_msgs is a list of message objects (role and content)
+	# TODO use consistent casing of role names
+	# (e.g. user vs USER)
 	def flexible(
 	    self,
 	    user,

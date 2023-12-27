@@ -7,8 +7,8 @@ function ChatboxDemo() {
 	const [messages, setMessages] = useState<Message[]>([]);
 
 	const handleMessageSubmit = (content: string) => {
-		const lastMsgRole = messages[messages.length - 1]?.role || 'ASSISTANT';
-		const nextRole = lastMsgRole === 'USER' ? 'ASSISTANT' : 'USER';
+		const lastMsgRole = messages[messages.length - 1]?.role || 'assistant';
+		const nextRole = lastMsgRole === 'user' ? 'assistant' : 'user';
 		if (content.trim() !== '') {
 			console.log(content);
 			const newMsg = makeMsg('message', nextRole, content);

@@ -18,7 +18,7 @@ function SimpleChat() {
 	const [inputStr, setInputStr] = useState<string>('');
 	const defMsg = makeMsg(
 		'message',
-		'ASSISTANT',
+		'assistant',
 		"Hi, I'm a chatbot. How can I help you today?"
 	);
 	const [messages, setMessages] = useState<Message[]>([defMsg]);
@@ -26,12 +26,12 @@ function SimpleChat() {
 	const handleSend = async (input = inputStr) => {
 		if (!input.trim()) return;
 
-		const userMessage = makeMsg('message', 'USER', input);
+		const userMessage = makeMsg('message', 'user', input);
 		const newMessages = addMsg(userMessage, messages, setMessages);
 
 		const response = makeMsg(
 			'message',
-			'ASSISTANT',
+			'assistant',
 			await getAIResponse(input.trim())
 		);
 		addMsg(response, newMessages, setMessages);
@@ -42,7 +42,7 @@ function SimpleChat() {
 			.map((msg) => `${msg.role}: ${msg.content}`)
 			.join('\n');
 		const lastRole = messages[messages.length - 1].role;
-		const role = lastRole === 'USER' ? 'ASSISTANT' : 'USER';
+		const role = lastRole === 'user' ? 'assistant' : 'user';
 		messagesStr += `\n${role}: ${input}`;
 		const prompt = `<|im_start|>system
 Continue the following conversation between a user and an AI assistant.<|im_end|>

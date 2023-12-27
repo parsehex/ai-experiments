@@ -6,7 +6,7 @@ import InputBox from './InputBox';
 import { ChatBoxMessage } from '@/lib/types/llm';
 
 export const ChatBox = ({
-	roles = ['USER', 'ASSISTANT'],
+	roles = ['user', 'assistant'],
 	messages,
 	setMessages,
 	deleteMessage,

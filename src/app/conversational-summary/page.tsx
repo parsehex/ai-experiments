@@ -69,7 +69,7 @@ function ConversationalSummaryChat() {
 		if (!userInput) return;
 		setInput('');
 
-		const userMsg = makeMsg('message', 'USER', userInput);
+		const userMsg = makeMsg('message', 'user', userInput);
 		let newMessages = addMsg(userMsg, messages, setMessages);
 
 		const chatSummary = summary || '';
@@ -80,7 +80,7 @@ function ConversationalSummaryChat() {
 		}
 		const response = await sendInput(userInput, lastMesgWithRole, chatSummary);
 
-		const resMsg = makeMsg('message', 'ASSISTANT', response);
+		const resMsg = makeMsg('message', 'assistant', response);
 		newMessages = addMsg(resMsg, newMessages, setMessages);
 
 		const msgsToSummarize = [...newMessages];

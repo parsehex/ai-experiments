@@ -15,7 +15,7 @@ function RolePlay() {
 			if (localStorage.getItem('chat-characters'))
 				setCharacters(
 					JSON.parse(
-						localStorage.getItem('chat-characters') || '["USER", "ASSISTANT"]'
+						localStorage.getItem('chat-characters') || '["user", "assistant"]'
 					)
 				);
 		}

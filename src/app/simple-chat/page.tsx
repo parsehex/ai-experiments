@@ -35,12 +35,12 @@ function SimpleChat() {
 	const handleSend = async (input: string) => {
 		if (!input.trim()) return;
 
-		const userMsg = makeMsg('message', 'USER', input);
+		const userMsg = makeMsg('message', 'user', input);
 		const newMsgs = addMsg(userMsg, messages, setMessages);
 
 		const resMsg = makeMsg(
 			'message',
-			'ASSISTANT',
+			'assistant',
 			await getResponse(input, newMsgs)
 		);
 		addMsg(resMsg, newMsgs, setMessages);

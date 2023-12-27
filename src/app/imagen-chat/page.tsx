@@ -125,7 +125,7 @@ function InnerMonologueChat() {
 			toast.error('Please enter a message');
 			return;
 		}
-		const userMsg = makeMsg('message', 'USER', userInput);
+		const userMsg = makeMsg('message', 'user', userInput);
 		let newMessages = addMsg(userMsg, messages, setMessages);
 
 		let image: string | undefined;
