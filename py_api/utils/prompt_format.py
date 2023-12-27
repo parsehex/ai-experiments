@@ -244,7 +244,10 @@ def parts_to_prompt(parts: PromptParts, model: str, prefix_response='') -> str:
 		system = parts_to_str(parts.system)
 	else:
 		system = ''
-	return formatter(user, system, prefix_response)
+	prior_msgs = []
+	if len(parts.prior_msgs) > 0 and not isinstance(parts.prior_msgs[0], dict):
+		prior_msgs = [msg.model_dump() for msg in parts.prior_msgs]
+	return formatter(user, system, prefix_response, prior_msgs=prior_msgs)
 
 
 def parts_to_messages(parts: PromptParts,
