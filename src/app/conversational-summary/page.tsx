@@ -1,8 +1,7 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { v4 } from 'uuid';
+import React, { useState } from 'react';
 import { ChatBox } from '@/components/ChatBox';
-import { generate } from '@/lib/llm';
+import { complete } from '@/lib/llm';
 import { PromptPart, Message } from '@/lib/types/llm';
 import { addMsg, makeMsg } from '@/lib/utils/messages';
 
@@ -15,9 +14,15 @@ const summarize = async (messages: Message[], summary?: string) => {
 Revise the summary based on the following new messages in the chat in one paragraph:\n`,
 			use: !!summary,
 		},
-		{ val: `${msgs}\nSUMMARY: ` },
+		{ val: msgs },
 	];
-	const result = await generate(parts, { cfg: 1.2 });
+	const result = await complete(
+		{
+			user: parts,
+			prefix_response: '\nSUMMARY: ',
+		},
+		{ cfg: 1.2 }
+	);
 	console.log('summary', prompt, result);
 	return result;
 };
@@ -36,14 +41,15 @@ const sendInput = async (
 			use: !!summary,
 		},
 		{ val: `${lastMessageWithRole}`, suf: '\n' },
-		{ val: `INPUT: ${input}\nRERSPONSE: ` },
+		{ val: `INPUT: ${input}` },
 	];
-	const result = await generate(parts, {
-		cfg: 1.5,
-		temp: 0.25,
-		max: 1500,
-		stop: ['INPUT:', 'RESPONSE:'],
-	});
+	const result = await complete(
+		{
+			user: parts,
+			prefix_response: '\nRESPONSE: ',
+		},
+		{ cfg: 1.2, temp: 0.25, max: 1500, stop: ['INPUT:', 'RESPONSE:'] }
+	);
 	console.log('message', prompt, result);
 	return result;
 };

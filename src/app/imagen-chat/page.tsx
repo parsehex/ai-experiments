@@ -1,7 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { v4 as uuidv4 } from 'uuid';
 import { ChatBox } from '@/components/ChatBox';
 import { Message } from '@/lib/types/llm';
 import { txt2img } from '@/lib/imagen';
