@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { addCorsIfNot } from '@/lib/utils';
+import RecordButton from '@/components/RecordButton';
+import { WhisperResultChunk } from '@/lib/types';
 
 const TranscribeAudio: React.FC = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -59,16 +61,33 @@ const TranscribeAudio: React.FC = () => {
 		}
 	};
 
+	const transcribed = (result: WhisperResultChunk[]) => {
+		let text = '';
+		// need slightly clever logic for constructing the string
+		// - most chunks are separated by a space
+		// - if the next chunk starts with an apostrophe or comma, don't add a space
+		// TODO probably switch to whisper-cpp-python https://pypi.org/project/whisper-cpp-python/
+		// (looks to have timestamps)
+		for (let i = 0; i < result.length; i++) {
+			const chunk = result[i];
+			text += chunk.speech;
+			if (i < result.length - 1) {
+				const nextChunk = result[i + 1];
+				if (nextChunk.speech.match(/^[',]/)) {
+					continue;
+				}
+				text += ' ';
+			}
+		}
+		setTranscription(text);
+	};
+
 	return (
 		<div className="flex">
-			<h2>
-				Note: This demo relies on the new, OpenAI-compatible API for Oobabooga,
-				cannot be used with its old one.
-			</h2>
 			<div className="inline-flex">
 				<div>
 					<h3>Tools</h3>
-					<div>
+					{/* <div>
 						<h4>Audio Converter</h4>
 						<form onSubmit={handleConversionSubmit}>
 							<input type="file" accept="audio/*" onChange={handleFileChange} />
@@ -76,16 +95,17 @@ const TranscribeAudio: React.FC = () => {
 								Convert to WAV
 							</button>
 						</form>
+					</div> */}
+					<div>
+						<RecordButton onResult={(result) => transcribed(result)} />
 					</div>
 				</div>
 				<div>
 					<h3>TODO</h3>
 					<ul>
-						<li>Auto-convert to wav before transcribing</li>
 						<li>Change Whisper options in ui (model, language, prompt)</li>
 					</ul>
 				</div>
-				h
 			</div>
 			<div className="inline-flex">
 				<form onSubmit={handleFormSubmit}>
