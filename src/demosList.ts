@@ -101,7 +101,7 @@ export const demos: ItemProps[] = [
 	{
 		title: 'Speak Chat',
 		description: 'Chat with end-to-end speech',
-		href: '/speak-chat',
+		// href: '/speak-chat',
 		tags: ['Chat', 'LLM', 'STT'],
 	},
 	{
@@ -121,7 +121,7 @@ export const demos: ItemProps[] = [
 		title: 'Simple Chat',
 		description: 'Simple chat meant to be a guide for other demos',
 		href: '/simple-chat',
-		tags: ['Chat', 'LLM'],
+		tags: ['Chat', 'LLM', 'STT'],
 	},
 	{
 		title: 'LangChain Chat',
