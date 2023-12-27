@@ -98,8 +98,8 @@ def tts_api(app: FastAPI):
 	async def tts_ws(websocket: WebSocket):
 		await websocket.accept()
 
-		await websocket.send_json({'type': 'list_models', 'data': list_models()})
-		await websocket.send_json({'type': 'get_model', 'data': get_model()})
+		await websocket.send_json({'type': 'list_models', 'data': list_models().model_dump()})
+		await websocket.send_json({'type': 'get_model', 'data': get_model().model_dump()})
 
 		async def send_json(data):
 			return websocket.send_json(data)
@@ -113,27 +113,27 @@ def tts_api(app: FastAPI):
 				break
 			if data['type'] == 'speak':
 				req = SpeakRequest.model_validate(data['data'])
-				res = speak(req)
+				res = speak(req).model_dump()
 				await send_json({'type': 'speak', 'data': res})
 			elif data['type'] == 'speak_to_file':
 				req = SpeakToFileRequest.model_validate(data['data'])
-				res = speak_to_file(req)
+				res = speak_to_file(req).model_dump()
 				await send_json({'type': 'speak_to_file', 'data': res})
 			elif data['type'] == 'load_model':
 				req = data['data']
 				try:
-					res = load_model(req.model_name)
+					res = load_model(req.model_name).model_dump()
 				except Exception as e:
 					res = {'error': str(e)}
 				await send_json({'type': 'load_model', 'data': res})
 			elif data['type'] == 'unload_model':
-				await send_json({'type': 'unload_model', 'data': unload_model()})
+				await send_json({'type': 'unload_model', 'data': unload_model().model_dump()})
 			elif data['type'] == 'get_model':
-				await send_json({'type': 'get_model', 'data': get_model()})
+				await send_json({'type': 'get_model', 'data': get_model().model_dump()})
 			elif data['type'] == 'list_models':
-				await send_json({'type': 'list_models', 'data': list_models()})
+				await send_json({'type': 'list_models', 'data': list_models().model_dump()})
 			elif data['type'] == 'list_voices':
-				await send_json({'type': 'list_voices', 'data': list_voices()})
+				await send_json({'type': 'list_voices', 'data': list_voices().model_dump()})
 			elif data['type'] == 'play':
 				# TODO
 				pass
@@ -144,7 +144,7 @@ def tts_api(app: FastAPI):
 		global manager
 		if manager.model_name is None:
 			raise HTTPException(status_code=500, detail='Model not loaded.')
-		return speak(req)
+		return speak(req).model_dump()
 
 	@app.post('/tts/v1/speak-to-file',
 	          response_model=SpeakToFileResponse,
@@ -154,40 +154,40 @@ def tts_api(app: FastAPI):
 		global manager
 		if manager.model_name is None:
 			raise HTTPException(status_code=500, detail='Model not loaded.')
-		return speak_to_file(req)
+		return speak_to_file(req).model_dump()
 
 	@app.get('/tts/v1/model', response_model=GetModelResponse, tags=['tts'])
 	async def tts_get_model():
 		"""Get currently-loaded model_name"""
-		return JSONResponse(content=get_model())
+		return JSONResponse(content=get_model().model_dump())
 
 	@app.get('/tts/v1/list-models',
 	         response_model=ListModelsResponse,
 	         tags=['tts'])
 	async def tts_list_models():
 		"""Get list of models (using relative filenames) in llm_models_dir"""
-		return JSONResponse(content=list_models())
+		return JSONResponse(content=list_models().model_dump())
 
 	@app.get('/tts/v1/list-voices',
 	         response_model=ListVoicesResponse,
 	         tags=['tts'])
 	async def tts_list_voices():
 		"""Get list of voices (using relative filenames) in tts_voices_dir"""
-		return JSONResponse(content=list_voices())
+		return JSONResponse(content=list_voices().model_dump())
 
 	@app.get('/tts/v1/model/load',
 	         response_model=LoadModelResponse,
 	         tags=['tts'])
 	async def tts_load_model(model_name: str):
 		"""Load a model by filename from llm_models_dir"""
-		return JSONResponse(content=load_model(model_name))
+		return JSONResponse(content=load_model(model_name).model_dump())
 
 	@app.get('/tts/v1/model/unload',
 	         response_model=UnloadModelResponse,
 	         tags=['tts'])
 	async def tts_unload_model():
 		"""Unload currently-loaded model"""
-		return JSONResponse(content=unload_model())
+		return JSONResponse(content=unload_model().model_dump())
 
 	@app.get('/tts/v1/play', tags=['tts'])
 	async def tts_play(file: str):
