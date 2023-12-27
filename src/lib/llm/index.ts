@@ -204,12 +204,13 @@ export async function complete(
 	params.parts = {
 		user: promptFmt.user,
 		system: promptFmt.system,
+		prior_msgs: promptFmt.prior_msgs,
 	};
 	if (promptFmt?.prefix_response)
 		params.prefix_response = promptFmt.prefix_response;
 	if (promptFmt?.grammar) params.grammar = promptFmt.grammar;
 	const resp = await newapi.generateText(params);
-	const res = resp.result.choices[0].text;
+	const res = resp.result.choices[0].text.trim();
 	return promptFmt.response_formatter ? promptFmt.response_formatter(res) : res;
 }
 

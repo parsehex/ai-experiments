@@ -8,6 +8,7 @@ export interface PromptPartResponse {
 	user: PromptPart[];
 	system?: PromptPart[];
 	prefix_response?: string;
+	prior_msgs?: RawMessage[];
 	grammar?: string;
 	response_formatter?: (response: string) => string;
 }
@@ -25,10 +26,8 @@ interface ImageObj {
 }
 export type ImgType = string | ImageObj;
 /** A more general object for this app to use. */
-export interface Message {
+export interface Message extends RawMessage {
 	id: string;
-	role: string;
-	content: string;
 	type: 'message' | 'thought';
 	images: ImgType[];
 	thoughtLabel?: string;
