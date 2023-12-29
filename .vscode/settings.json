@@ -3,5 +3,13 @@
 	"files.exclude": {
 		"**/__pycache__": true,
 		"**/venv": true
-	}
+	},
+	"python.defaultInterpreterPath": "./py_api/venv/bin/python",
+	"[python]": {
+		"editor.defaultFormatter": "eeyore.yapf"
+	},
+	"yapf.args": [
+		"--style",
+		"{indent_width: 2, use_tabs: true}"
+	]
 }
