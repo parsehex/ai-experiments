@@ -66,7 +66,7 @@ class Formatter:
 			prompt += '### Instruction:\n'
 		prompt += user.strip() + '\n'
 		r = '' if len(prior_msgs) == 0 else f' {assistant_role.capitalize()}'
-		prompt += f'###{r} Response:\n'
+		prompt += f'### Response:\n'
 		if prefix_response != '':
 			prompt += prefix_response
 		return prompt
