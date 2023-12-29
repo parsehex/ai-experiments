@@ -3,10 +3,10 @@ from py_api.args import Args
 from py_api.client.tts.xtts import XTTSClient
 from py_api.models.tts.tts_client import SpeakOptions, SpeakToFileOptions, SpeakResponse, SpeakToFileResponse
 
-class TTSManager:
+class ImgManager:
 	_instance = None
 	clients: dict[str, XTTSClient] = {
-		'xtts': XTTSClient.instance,
+		# 'sd': DiffusersClient.instance,
 	}
 	model_name: Union[str, None] = None
 	loader: Union[XTTSClient, None] = None
@@ -21,15 +21,15 @@ class TTSManager:
 
 	def __init__(self):
 		self.clients = {
-			'xtts': XTTSClient.instance,
+			# 'sd': DiffusersClient.instance,
 		}
 
 	def load_model(self, model_name: Union[str, None]):
 		if model_name is None or model_name == '':
-			model_name = Args['tts_model']
+			model_name = Args['img_model']
 		if model_name == self.model_name:
 			return
-		client = 'xtts'
+		client = 'sd'
 		client_instance = self.clients[client]
 		self.loader_name = client
 		self.loader = client_instance
@@ -42,6 +42,9 @@ class TTSManager:
 		self.loader = None
 		self.loader_name = None
 		self.model_name = None
+
+	# def txt2img(self, gen_options):
+	# def img2img(self, gen_options):
 
 	def speak(self, gen_options: SpeakOptions) -> SpeakResponse:
 		if not self.loader:

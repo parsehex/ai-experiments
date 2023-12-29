@@ -1,10 +1,10 @@
 import logging, os, time
 from fastapi import FastAPI, HTTPException, Path, WebSocket
 from fastapi.responses import JSONResponse, FileResponse
-from huggingface_hub import snapshot_download
 from py_api.args import Args
 from py_api.client import tts_client_manager
-from py_api.models.tts.tts_api import SpeakRequest, SpeakToFileRequest, GetModelResponse, LoadModelResponse, UnloadModelResponse, ListModelsResponse, ListVoicesResponse
+from py_api.models.common_api import GetModelResponse, ListModelsResponse, LoadModelResponse, UnloadModelResponse
+from py_api.models.tts.tts_api import SpeakRequest, SpeakToFileRequest, ListVoicesResponse
 from py_api.models.tts.tts_client import SpeakResponse, SpeakToFileResponse
 
 logger = logging.getLogger(__name__)
@@ -98,8 +98,14 @@ def tts_api(app: FastAPI):
 	async def tts_ws(websocket: WebSocket):
 		await websocket.accept()
 
-		await websocket.send_json({'type': 'list_models', 'data': list_models().model_dump()})
-		await websocket.send_json({'type': 'get_model', 'data': get_model().model_dump()})
+		await websocket.send_json({
+		    'type': 'list_models',
+		    'data': list_models().model_dump()
+		})
+		await websocket.send_json({
+		    'type': 'get_model',
+		    'data': get_model().model_dump()
+		})
 
 		async def send_json(data):
 			return websocket.send_json(data)
@@ -127,13 +133,25 @@ def tts_api(app: FastAPI):
 					res = {'error': str(e)}
 				await send_json({'type': 'load_model', 'data': res})
 			elif data['type'] == 'unload_model':
-				await send_json({'type': 'unload_model', 'data': unload_model().model_dump()})
+				await send_json({
+				    'type': 'unload_model',
+				    'data': unload_model().model_dump()
+				})
 			elif data['type'] == 'get_model':
-				await send_json({'type': 'get_model', 'data': get_model().model_dump()})
+				await send_json({
+				    'type': 'get_model',
+				    'data': get_model().model_dump()
+				})
 			elif data['type'] == 'list_models':
-				await send_json({'type': 'list_models', 'data': list_models().model_dump()})
+				await send_json({
+				    'type': 'list_models',
+				    'data': list_models().model_dump()
+				})
 			elif data['type'] == 'list_voices':
-				await send_json({'type': 'list_voices', 'data': list_voices().model_dump()})
+				await send_json({
+				    'type': 'list_voices',
+				    'data': list_voices().model_dump()
+				})
 			elif data['type'] == 'play':
 				# TODO
 				pass
@@ -165,7 +183,7 @@ def tts_api(app: FastAPI):
 	         response_model=ListModelsResponse,
 	         tags=['tts'])
 	async def tts_list_models():
-		"""Get list of models (using relative filenames) in llm_models_dir"""
+		"""Get list of models (using relative filenames) in tts_models_dir"""
 		return JSONResponse(content=list_models().model_dump())
 
 	@app.get('/tts/v1/list-voices',
@@ -179,7 +197,7 @@ def tts_api(app: FastAPI):
 	         response_model=LoadModelResponse,
 	         tags=['tts'])
 	async def tts_load_model(model_name: str):
-		"""Load a model by filename from llm_models_dir"""
+		"""Load a model by filename from tts_models_dir"""
 		return JSONResponse(content=load_model(model_name).model_dump())
 
 	@app.get('/tts/v1/model/unload',
