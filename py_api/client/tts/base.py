@@ -1,6 +1,4 @@
-from typing import Generator, List, Dict, Union, Any
-from pydantic import BaseModel
-from py_api.models.llm.llm_api import CompletionChoice, CompletionResponse, CompletionRequest, CompletionResult, CompletionUsage, PromptPart, PromptParts
+from typing import Union
 from py_api.models.tts.tts_client import SpeakOptions, SpeakToFileOptions, SpeakResponse, SpeakToFileResponse
 
 class TTSClient_Base:
@@ -59,16 +57,12 @@ class TTSClient_Base:
 	def unload_model(self):
 		raise NotImplementedError()
 
-	def speak(
-		self,
-		options: SpeakOptions
-	) -> SpeakResponse:
+	def speak(self, options: SpeakOptions) -> SpeakResponse:
 		"""Generate audio from a prompt. Returns wav file data."""
 		raise NotImplementedError()
 
 	def speak_to_file(
-		self,
-		options: SpeakToFileOptions
+		self, options: SpeakToFileOptions
 	) -> SpeakToFileResponse:
 		"""Generate audio from a prompt and save to file on server."""
 		raise NotImplementedError()

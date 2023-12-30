@@ -58,7 +58,9 @@ class ImgClient_Base:
 	def unload_model(self):
 		raise NotImplementedError()
 
-	def txt2img(self, gen_options: Txt2ImgOptions) -> Txt2ImgResponse:
+	def txt2img(
+		self, gen_options: Txt2ImgOptions
+	) -> Txt2ImgResponse:
 		raise NotImplementedError()
 
 	# def img2img(self, gen_options):

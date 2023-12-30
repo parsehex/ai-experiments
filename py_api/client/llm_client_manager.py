@@ -4,21 +4,26 @@ from py_api.client.llm import LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLM
 from py_api.utils.llm_models import detect_loader_name
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_Transformers
 
-
 # TODO probaby need to put list_models in here
 #   (still crawl models dir, also call .list_models() on each client that has it (add prefix to those))
 class LLMManager:
 	_instance = None
-	clients: dict[str, Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2,
-	                         LLMClient_OpenAI, LLMClient_Transformers]] = {
-	                             'llamacpp': LLMClient_LlamaCppPython.instance,
-	                             'exllamav2': LLMClient_Exllamav2.instance,
-	                             'openai': LLMClient_OpenAI.instance,
-	                             'transformers': LLMClient_Transformers.instance,
-	                         }
+	# TODO fix formatting
+	clients: dict[str,
+								Union[LLMClient_LlamaCppPython,
+											LLMClient_Exllamav2, LLMClient_OpenAI,
+											LLMClient_Transformers]] = {
+												'llamacpp':
+												LLMClient_LlamaCppPython.instance,
+												'exllamav2':
+												LLMClient_Exllamav2.instance,
+												'openai': LLMClient_OpenAI.instance,
+												'transformers':
+												LLMClient_Transformers.instance,
+											}
 	model_name: Union[str, None] = None
 	loader: Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2,
-	              LLMClient_Transformers, None] = None
+								LLMClient_Transformers, None] = None
 	loader_name: Union[str, None] = None
 
 	def get_loader_model(self):
@@ -38,10 +43,10 @@ class LLMManager:
 
 	def __init__(self):
 		self.clients = {
-		    'llamacpp': LLMClient_LlamaCppPython.instance,
-		    'exllamav2': LLMClient_Exllamav2.instance,
-		    'openai': LLMClient_OpenAI.instance,
-		    'transformers': LLMClient_Transformers.instance,
+			'llamacpp': LLMClient_LlamaCppPython.instance,
+			'exllamav2': LLMClient_Exllamav2.instance,
+			'openai': LLMClient_OpenAI.instance,
+			'transformers': LLMClient_Transformers.instance,
 		}
 
 	def load_model(self, model_name: Union[str, None]):
@@ -54,9 +59,10 @@ class LLMManager:
 			self.loader_name = 'openai'
 			return
 		client = detect_loader_name(model_name)
-		client_instance: Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2,
-		                       LLMClient_Transformers] = self.clients[
-		                           client]  # type: ignore
+		client_instance: Union[
+			LLMClient_LlamaCppPython, LLMClient_Exllamav2,
+			LLMClient_Transformers] = self.clients[client
+																							]  # type: ignore
 		self.loader_name = client
 		self.loader = client_instance
 		self.loader.load_model(model_name)

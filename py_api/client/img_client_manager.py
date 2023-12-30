@@ -53,7 +53,9 @@ class ImgManager:
 				raise Exception('Model not loaded.')
 		return self.loader.speak(gen_options)
 
-	def speak_to_file(self, gen_options: SpeakToFileOptions) -> SpeakToFileResponse:
+	def speak_to_file(
+		self, gen_options: SpeakToFileOptions
+	) -> SpeakToFileResponse:
 		if not self.loader:
 			self.load_model(None)
 			if not self.loader:

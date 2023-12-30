@@ -15,71 +15,93 @@ from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL, TTS_MODELS_DI
 from py_api.utils import prompt_format
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='Starts the API server.')
+	parser = argparse.ArgumentParser(
+		description='Starts the API server.'
+	)
 
 	# Group for host and port
 	server_group = parser.add_argument_group('server')
-	server_group.add_argument('--host',
-	                          type=str,
-	                          default=HOST,
-	                          help='The host to bind to.')
-	server_group.add_argument('--port',
-	                          type=int,
-	                          default=PORT,
-	                          help='The port to bind to.')
+	server_group.add_argument(
+		'--host',
+		type=str,
+		default=HOST,
+		help='The host to bind to.'
+	)
+	server_group.add_argument(
+		'--port',
+		type=int,
+		default=PORT,
+		help='The port to bind to.'
+	)
 
 	# Group for LLM
 	llm_group = parser.add_argument_group('llm')
-	llm_group.add_argument('--no-llm', action='store_true', help='Disable LLM.')
 	llm_group.add_argument(
-	    '--llm-models-dir',
-	    #  type=argparse.FileType('r'),
-	    default=LLM_MODELS_DIR,
-	    help='The directory to load LLM models from.')
-	llm_group.add_argument('--llm-model',
-	                       type=str,
-	                       default=LLM_MODEL,
-	                       help='The LLM model to load.')
+		'--no-llm', action='store_true', help='Disable LLM.'
+	)
+	llm_group.add_argument(
+		'--llm-models-dir',
+		#  type=argparse.FileType('r'),
+		default=LLM_MODELS_DIR,
+		help='The directory to load LLM models from.'
+	)
+	llm_group.add_argument(
+		'--llm-model',
+		type=str,
+		default=LLM_MODEL,
+		help='The LLM model to load.'
+	)
 
 	# Group for TTS
 	tts_group = parser.add_argument_group('tts')
-	tts_group.add_argument('--no-tts', action='store_true', help='Disable TTS.')
 	tts_group.add_argument(
-	    '--tts-models-dir',
-	    #  type=argparse.FileType('r'),
-	    default=TTS_MODELS_DIR,
-	    help='The directory to load TTS models from.')
-	tts_group.add_argument('--tts-model',
-	                       type=str,
-	                       default=TTS_MODEL,
-	                       help='The TTS model to load.')
+		'--no-tts', action='store_true', help='Disable TTS.'
+	)
 	tts_group.add_argument(
-	    '--tts-output-dir',
-	    #  type=argparse.FileType('r'),
-	    default=TTS_OUTPUT_DIR,
-	    help='The directory to save TTS output to.')
+		'--tts-models-dir',
+		#  type=argparse.FileType('r'),
+		default=TTS_MODELS_DIR,
+		help='The directory to load TTS models from.'
+	)
 	tts_group.add_argument(
-	    '--tts-voices-dir',
-	    #  type=argparse.FileType('r'),
-	    default=TTS_VOICES_DIR,
-	    help='The directory to load TTS voices from.')
+		'--tts-model',
+		type=str,
+		default=TTS_MODEL,
+		help='The TTS model to load.'
+	)
+	tts_group.add_argument(
+		'--tts-output-dir',
+		#  type=argparse.FileType('r'),
+		default=TTS_OUTPUT_DIR,
+		help='The directory to save TTS output to.'
+	)
+	tts_group.add_argument(
+		'--tts-voices-dir',
+		#  type=argparse.FileType('r'),
+		default=TTS_VOICES_DIR,
+		help='The directory to load TTS voices from.'
+	)
 
 	# Group for STT
 	stt_group = parser.add_argument_group('stt')
-	stt_group.add_argument('--no-stt', action='store_true', help='Disable STT.')
 	stt_group.add_argument(
-	    '--stt-input-dir',
-	    #  type=argparse.FileType('r'),
-	    default=STT_INPUT_DIR,
-	    help='The directory to load STT input from.')
+		'--no-stt', action='store_true', help='Disable STT.'
+	)
+	stt_group.add_argument(
+		'--stt-input-dir',
+		#  type=argparse.FileType('r'),
+		default=STT_INPUT_DIR,
+		help='The directory to load STT input from.'
+	)
 
 	# Log level
 	parser.add_argument(
-	    '--log-level',
-	    type=str,
-	    default='INFO',
-	    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-	    help='The log level to use.')
+		'--log-level',
+		type=str,
+		default='INFO',
+		choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+		help='The log level to use.'
+	)
 
 	args = parser.parse_args()
 	Args['host'] = args.host
@@ -109,13 +131,13 @@ if __name__ == '__main__':
 
 	app = fastapi.FastAPI()
 	app.add_middleware(
-	    CORSMiddleware,
-	    allow_origins=[
-	        "http://localhost:8085",
-	    ],
-	    allow_credentials=True,
-	    allow_methods=["*"],
-	    allow_headers=["*"],
+		CORSMiddleware,
+		allow_origins=[
+			"http://localhost:8085",
+		],
+		allow_credentials=True,
+		allow_methods=["*"],
+		allow_headers=["*"],
 	)
 
 	if not args.no_llm:

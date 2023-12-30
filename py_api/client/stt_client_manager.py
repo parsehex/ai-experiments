@@ -16,4 +16,6 @@ class STTManager:
 
 	def transcribe(self, file_path: str) -> TranscribeResponse:
 		client = self.clients['whispercpp']
-		return client.transcribe(TranscribeOptions.model_validate({'file_path': file_path}))
+		return client.transcribe(
+			TranscribeOptions.model_validate({'file_path': file_path})
+		)

@@ -1,4 +1,4 @@
-import logging, os, re, time
+import logging, os, time
 from py_api.args import Args
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_Exllamav2
 from .base import LLMClient_Base
@@ -8,18 +8,21 @@ import torch
 
 logger = logging.getLogger('Exllamav2-client')
 
-
 class LLMClient_Exllamav2(LLMClient_Base):
-	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+	device = torch.device(
+		'cuda' if torch.cuda.is_available() else 'cpu'
+	)
 	OPTIONS_MAP = {
-	    'temp': 'temperature',
-	    'repeat_pen': 'token_repetition_penalty',
+		'temp': 'temperature',
+		'repeat_pen': 'token_repetition_penalty',
 	}
 
 	def convert_options(
-	    self, options: CompletionOptions) -> CompletionOptions_Exllamav2:
-		new_options = self.map_options_from_moodel(options,
-		                                           CompletionOptions_Exllamav2)
+		self, options: CompletionOptions
+	) -> CompletionOptions_Exllamav2:
+		new_options = self.map_options_from_moodel(
+			options, CompletionOptions_Exllamav2
+		)
 		assert isinstance(new_options, CompletionOptions_Exllamav2)
 		return new_options
 
@@ -31,7 +34,9 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		# TODO: model name can also start with 'hf:' to download from HuggingFace
 		is_dir = os.path.isdir(os.path.join(models_dir, model_name))
 		if not is_dir:
-			raise Exception(f'Model {model_name} not found in {models_dir}.')
+			raise Exception(
+				f'Model {model_name} not found in {models_dir}.'
+			)
 		self.model_abspath = os.path.join(models_dir, model_name)
 		self.model_name = model_name
 
@@ -51,12 +56,15 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		self.model.load_autosplit(self.cache)
 
 		self.tokenizer = ExLlamaV2Tokenizer(self.config)
-		self.generator = ExLlamaV2StreamingGenerator(self.model, self.cache,
-		                                             self.tokenizer)
+		self.generator = ExLlamaV2StreamingGenerator(
+			self.model, self.cache, self.tokenizer
+		)
 		self.generator.warmup()
 
 		end = time.time()
-		logger.debug(f'Loaded model {self.model_name} in {end - start}s')
+		logger.debug(
+			f'Loaded model {self.model_name} in {end - start}s'
+		)
 		self.loaded = True
 
 	def unload_model(self):
@@ -84,7 +92,9 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		settings.token_repetition_penalty = options.token_repetition_penalty
 		settings.token_repetition_range = options.token_repetition_range
 		settings.token_repetition_decay = options.token_repetition_decay
-		settings.disallow_tokens(self.tokenizer, [])  # would ban eos token here?
+		settings.disallow_tokens(
+			self.tokenizer, []
+		)  # would ban eos token here?
 
 		start = time.time()
 
@@ -116,26 +126,26 @@ class LLMClient_Exllamav2(LLMClient_Base):
 			result += chunk
 
 		obj = {
-		    'id':
-		    '',
-		    'object':
-		    'text_completion',
-		    'created':
-		    int(time.time()),
-		    'model':
-		    self.model_name,
-		    'choices': [{
-		        'text':
-		        result,
-		        'index':
-		        0,
-		        'finish_reason':
-		        'length' if tokens >= options.max_tokens else 'stop',
-		    }],
-		    'usage': {
-		        'prompt_tokens': 0,
-		        'completion_tokens': 0,
-		        'total_tokens': 0,
-		    }
+			'id':
+			'',
+			'object':
+			'text_completion',
+			'created':
+			int(time.time()),
+			'model':
+			self.model_name,
+			'choices': [{
+				'text':
+				result,
+				'index':
+				0,
+				'finish_reason':
+				'length' if tokens >= options.max_tokens else 'stop',
+			}],
+			'usage': {
+				'prompt_tokens': 0,
+				'completion_tokens': 0,
+				'total_tokens': 0,
+			}
 		}
 		return obj

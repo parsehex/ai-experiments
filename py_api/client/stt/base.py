@@ -1,6 +1,5 @@
 from py_api.models.stt.stt_client import TranscribeOptions, TranscribeResponse
 
-
 class STTClient_Base:
 	_instance = None
 
@@ -12,7 +11,6 @@ class STTClient_Base:
 		return cls._instance
 
 	def transcribe(
-		self,
-		options: TranscribeOptions
+		self, options: TranscribeOptions
 	) -> TranscribeResponse:
 		raise NotImplementedError()

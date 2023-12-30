@@ -17,25 +17,25 @@
 import fnmatch, os
 from py_api.models.llm.llm_api import PromptPart, PromptParts
 
-
 class Formatter:
 	# TODO use consistent casing of role names
 	# (e.g. user vs USER)
 	def flexible(
-	    self,
-	    user,
-	    system: str = '',
-	    prefix_response='',
-	    prior_msgs=[],
-	    user_role='user',
-	    assistant_role='assistant',
+		self,
+		user,
+		system: str = '',
+		prefix_response='',
+		prior_msgs=[],
+		user_role='user',
+		assistant_role='assistant',
 	):
 		prompt = ''
 		if system != '':
 			prompt += system.strip() + '\n'
 		if len(prior_msgs) > 0:
 			for msg in prior_msgs:
-				prompt += msg['role'].capitalize() + ': ' + msg['content'] + '\n'
+				prompt += msg['role'].capitalize(
+				) + ': ' + msg['content'] + '\n'
 			prompt += user_role.capitalize() + ': '
 		prompt += user.strip() + '\n'
 		if prefix_response == '':
@@ -46,13 +46,15 @@ class Formatter:
 			prompt += prefix_response
 		return prompt
 
-	def Alpaca(self,
-	           user: str,
-	           system: str = '',
-	           prefix_response='',
-	           prior_msgs=[],
-	           user_role='user',
-	           assistant_role='assistant'):
+	def Alpaca(
+		self,
+		user: str,
+		system: str = '',
+		prefix_response='',
+		prior_msgs=[],
+		user_role='user',
+		assistant_role='assistant'
+	):
 		prompt = ''
 		if system != '':
 			if len(prior_msgs) > 0:
@@ -60,24 +62,29 @@ class Formatter:
 			prompt += system.strip() + '\n\n'
 		if len(prior_msgs) > 0:
 			for msg in prior_msgs:
-				prompt += msg['role'].capitalize() + ': ' + msg['content'] + '\n\n'
+				prompt += msg['role'].capitalize(
+				) + ': ' + msg['content'] + '\n\n'
 			prompt += user_role.capitalize() + ': '
 		else:
 			prompt += '### Instruction:\n'
 		prompt += user.strip() + '\n'
-		r = '' if len(prior_msgs) == 0 else f' {assistant_role.capitalize()}'
+		r = '' if len(
+			prior_msgs
+		) == 0 else f' {assistant_role.capitalize()}'
 		prompt += f'### Response:\n'
 		if prefix_response != '':
 			prompt += prefix_response
 		return prompt
 
-	def Alpaca_Input(self,
-	                 user: str,
-	                 system: str = '',
-	                 prefix_response='',
-	                 prior_msgs=[],
-	                 user_role='user',
-	                 assistant_role='assistant'):
+	def Alpaca_Input(
+		self,
+		user: str,
+		system: str = '',
+		prefix_response='',
+		prior_msgs=[],
+		user_role='user',
+		assistant_role='assistant'
+	):
 		"""Alpaca variation with the system prompt as the instructions."""
 		prompt = ''
 		if system != '':
@@ -85,44 +92,53 @@ class Formatter:
 		prompt += '### Input:\n'
 		if len(prior_msgs) > 0:
 			for msg in prior_msgs:
-				prompt += msg['role'].capitalize() + ': ' + msg['content'] + '\n\n'
+				prompt += msg['role'].capitalize(
+				) + ': ' + msg['content'] + '\n\n'
 			prompt += user_role.capitalize() + ': '
 		prompt += user.strip() + '\n'
-		r = '' if len(prior_msgs) == 0 else f' {assistant_role.capitalize()}'
+		r = '' if len(
+			prior_msgs
+		) == 0 else f' {assistant_role.capitalize()}'
 		prompt += f'###{r} Response:\n'
 		if prefix_response != '':
 			prompt += prefix_response
 		return prompt
 
-	def ChatML(self,
-	           user: str,
-	           system: str = '',
-	           prefix_response='',
-	           prior_msgs=[],
-	           user_role='user',
-	           assistant_role='assistant'):
+	def ChatML(
+		self,
+		user: str,
+		system: str = '',
+		prefix_response='',
+		prior_msgs=[],
+		user_role='user',
+		assistant_role='assistant'
+	):
 		prompt = ''
 		u = user_role.lower()
 		a = assistant_role.lower()
 		if system != '':
-			prompt += '<|im_start|>system\n' + system.strip() + '<|im_end|>\n'
+			prompt += '<|im_start|>system\n' + system.strip(
+			) + '<|im_end|>\n'
 		if len(prior_msgs) > 0:
 			for msg in prior_msgs:
 				prompt += f'<|im_start|>{msg["role"]}\n' + msg[
-				    "content"] + '<|im_end|>\n'
-		prompt += f'<|im_start|>{u}\n' + user.strip() + '<|im_end|>\n'
+					"content"] + '<|im_end|>\n'
+		prompt += f'<|im_start|>{u}\n' + user.strip(
+		) + '<|im_end|>\n'
 		prompt += f'<|im_start|>{a}\n'
 		if prefix_response != '':
 			prompt += prefix_response
 		return prompt
 
-	def MistralInstruct(self,
-	                    user: str,
-	                    system: str = '',
-	                    prefix_response='',
-	                    prior_msgs=[],
-	                    user_role='user',
-	                    assistant_role='assistant'):
+	def MistralInstruct(
+		self,
+		user: str,
+		system: str = '',
+		prefix_response='',
+		prior_msgs=[],
+		user_role='user',
+		assistant_role='assistant'
+	):
 		# <s>[INST] {prompt} [/INST]
 		prompt = '<s>'
 		if system != '':
@@ -139,7 +155,9 @@ class Formatter:
 			prompt += '\n' + prefix_response
 		return prompt
 
-	def UserAssistant(self, user: str, system: str = '', prefix_response=''):
+	def UserAssistant(
+		self, user: str, system: str = '', prefix_response=''
+	):
 		prompt = ''
 		if system != '':
 			prompt += system.strip() + '\n'
@@ -149,13 +167,15 @@ class Formatter:
 			prompt += prefix_response
 		return prompt
 
-	def UserAssistantNewlines(self,
-	                          user: str,
-	                          system: str = '',
-	                          prefix_response='',
-	                          prior_msgs=[],
-	                          user_role='user',
-	                          assistant_role='assistant'):
+	def UserAssistantNewlines(
+		self,
+		user: str,
+		system: str = '',
+		prefix_response='',
+		prior_msgs=[],
+		user_role='user',
+		assistant_role='assistant'
+	):
 		# this one's not supposed to have system
 		prompt = ''
 		if system != '':
@@ -173,25 +193,35 @@ class Formatter:
 
 	# this one returns a list of messages instead
 	# not sure what to do with this exactly
-	def OpenAI(self,
-	           user: str,
-	           system: str = '',
-	           prefix_response='',
-	           prior_msgs=[],
-	           user_role='user',
-	           assistant_role='assistant'):
+	def OpenAI(
+		self,
+		user: str,
+		system: str = '',
+		prefix_response='',
+		prior_msgs=[],
+		user_role='user',
+		assistant_role='assistant'
+	):
 		# not sure how to implement prefix_response
 		prompt = []
 		if system != '':
-			prompt.append({'role': 'system', 'content': system.strip()})
+			prompt.append({
+				'role': 'system',
+				'content': system.strip()
+			})
 		if len(prior_msgs) > 0:
 			for msg in prior_msgs:
-				prompt.append({'role': msg['role'], 'content': msg['content']})
+				prompt.append({
+					'role': msg['role'],
+					'content': msg['content']
+				})
 		prompt.append({'role': user_role, 'content': user.strip()})
 		if prefix_response != '':
-			prompt.append({'role': assistant_role, 'content': prefix_response})
+			prompt.append({
+				'role': assistant_role,
+				'content': prefix_response
+			})
 		return prompt
-
 
 def parts_to_str(parts: list[PromptPart]):
 	s = ''
@@ -207,19 +237,17 @@ def parts_to_str(parts: list[PromptPart]):
 			s += partStr
 	return s
 
-
 model_formats = {
-    '*dolphin-2.*-mistral-7b*': 'ChatML',
-    '*emerhyst-20b*': 'Alpaca',
-    '*luna-ai-llama2*': 'UserAssistant',
-    '*mistral-7b-instruct*': 'MistralInstruct',
-    '*mythalion-13b*': 'Alpaca',
-    '*mythomax-l2-13b*': 'Alpaca',
-    '*openhermes-2.*-mistral-7b*': 'ChatML',
-    '*platypus-30b*': 'Alpaca',
-    '*solar-10.7b-instruct*': 'UserAssistantNewlines',
+	'*dolphin-2.*-mistral-7b*': 'ChatML',
+	'*emerhyst-20b*': 'Alpaca',
+	'*luna-ai-llama2*': 'UserAssistant',
+	'*mistral-7b-instruct*': 'MistralInstruct',
+	'*mythalion-13b*': 'Alpaca',
+	'*mythomax-l2-13b*': 'Alpaca',
+	'*openhermes-2.*-mistral-7b*': 'ChatML',
+	'*platypus-30b*': 'Alpaca',
+	'*solar-10.7b-instruct*': 'UserAssistantNewlines',
 }
-
 
 def get_model_format(model: str) -> str:
 	fmt = None
@@ -232,8 +260,9 @@ def get_model_format(model: str) -> str:
 		raise Exception(f'Model {model} not supported.')
 	return fmt
 
-
-def parts_to_prompt(parts: PromptParts, model: str, prefix_response='') -> str:
+def parts_to_prompt(
+	parts: PromptParts, model: str, prefix_response=''
+) -> str:
 	formatter = None
 	# is model a path? get just the model name
 	if '/' in model:
@@ -246,13 +275,17 @@ def parts_to_prompt(parts: PromptParts, model: str, prefix_response='') -> str:
 	else:
 		system = ''
 	prior_msgs = []
-	if len(parts.prior_msgs) > 0 and not isinstance(parts.prior_msgs[0], dict):
+	if len(parts.prior_msgs
+					) > 0 and not isinstance(parts.prior_msgs[0], dict):
 		prior_msgs = [msg.model_dump() for msg in parts.prior_msgs]
-	return formatter(user, system, prefix_response, prior_msgs=prior_msgs)
+	return formatter(
+		user, system, prefix_response, prior_msgs=prior_msgs
+	)
 
-
-def parts_to_messages(parts: PromptParts,
-                      prefix_response='') -> list[dict[str, str]]:
+def parts_to_messages(
+	parts: PromptParts,
+	prefix_response=''
+) -> list[dict[str, str]]:
 	# only works for OpenAI format
 	u = 'user'
 	a = 'assistant'
@@ -260,8 +293,13 @@ def parts_to_messages(parts: PromptParts,
 	# convert prior_msgs to list of dicts if necessary
 	if len(prior_msgs) > 0 and not isinstance(prior_msgs[0], dict):
 		prior_msgs = [msg.model_dump() for msg in prior_msgs]
-	u = prior_msgs[-1]['role'] if len(prior_msgs) > 0 else u  # type: ignore
+	assert isinstance(prior_msgs, list)
+	msg = prior_msgs[-1] if len(prior_msgs) > 0 else None
+	if msg != None:
+		assert isinstance(msg, dict)
+		u = msg['role']
 
-	return Formatter().OpenAI(parts_to_str(parts.user),
-	                          parts_to_str(parts.system), prefix_response,
-	                          prior_msgs, u, a)
+	return Formatter().OpenAI(
+		parts_to_str(parts.user), parts_to_str(parts.system),
+		prefix_response, prior_msgs, u, a
+	)

@@ -1,26 +1,25 @@
 from typing import Union
 from pydantic import BaseModel, Field
 
-
 class GetModelResponse(BaseModel):
 	"""Get currently loaded AI model."""
 	model: str = Field(..., description='Model name.')
-
 
 class ListModelsResponse(BaseModel):
 	"""List available AI models."""
 	models: list[str] = Field(..., description='Available models.')
 
-
 class LoadModelResponse(BaseModel):
 	"""Load AI model."""
-	status: str = Field(...,
-	                    description='Model status.',
-	                    examples=['Loaded', 'Error'])
+	status: str = Field(
+		...,
+		description='Model status.',
+		examples=['Loaded', 'Error']
+	)
 	model: str = Field(..., description='Model name.')
 	time: float = Field(..., description='Time to load model.')
-	error: Union[str, None] = Field(None, description='Error message.')
-
+	error: Union[
+		str, None] = Field(None, description='Error message.')
 
 class UnloadModelResponse(BaseModel):
 	"""Unload AI model."""
