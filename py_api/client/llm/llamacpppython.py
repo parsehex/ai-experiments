@@ -118,8 +118,8 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 		o = options.model_dump()
 		o = {k: v for k, v in o.items() if v is not None}
 
-		print(o)
 		result = self.model.create_completion(**o)
 		end = time.time()
 		logger.debug(f'Generated text in {end - start}s')
+		# TODO return more, like the exact options used
 		return result

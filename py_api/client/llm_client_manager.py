@@ -1,30 +1,40 @@
-from typing import Union
+from typing import Union, Dict, TypeVar
+import logging, os
 from py_api.args import Args
+from py_api.client.base_manager import BaseAIManager
 from py_api.client.llm import LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLMClient_OpenAI, LLMClient_Transformers
-from py_api.utils.llm_models import detect_loader_name
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_Transformers
 
-# TODO probaby need to put list_models in here
-#   (still crawl models dir, also call .list_models() on each client that has it (add prefix to those))
-class LLMManager:
-	_instance = None
-	# TODO fix formatting
-	clients: dict[str,
-								Union[LLMClient_LlamaCppPython,
-											LLMClient_Exllamav2, LLMClient_OpenAI,
-											LLMClient_Transformers]] = {
-												'llamacpp':
-												LLMClient_LlamaCppPython.instance,
-												'exllamav2':
-												LLMClient_Exllamav2.instance,
-												'openai': LLMClient_OpenAI.instance,
-												'transformers':
-												LLMClient_Transformers.instance,
-											}
-	model_name: Union[str, None] = None
-	loader: Union[LLMClient_LlamaCppPython, LLMClient_Exllamav2,
-								LLMClient_Transformers, None] = None
-	loader_name: Union[str, None] = None
+ClientType = TypeVar(
+	'ClientType', LLMClient_LlamaCppPython, LLMClient_Exllamav2,
+	LLMClient_OpenAI, LLMClient_Transformers
+)
+ClientUnion = Union[LLMClient_LlamaCppPython,
+										LLMClient_Exllamav2, LLMClient_OpenAI,
+										LLMClient_Transformers]
+ClientDict = Dict[str, ClientUnion]
+
+EXTENSIONS = ['.gguf', '.ggml', '.safetensor']
+logger = logging.getLogger(__name__)
+
+class LLMManager(BaseAIManager):
+	clients: ClientDict = {
+		'llamacpp': LLMClient_LlamaCppPython.instance,
+		'exllamav2': LLMClient_Exllamav2.instance,
+		'openai': LLMClient_OpenAI.instance,
+		'transformers': LLMClient_Transformers.instance,
+	}
+	loader: Union[ClientUnion, None] = None
+
+	def __init__(self):
+		self.clients = {
+			'llamacpp': LLMClient_LlamaCppPython.instance,
+			'exllamav2': LLMClient_Exllamav2.instance,
+			'openai': LLMClient_OpenAI.instance,
+			'transformers': LLMClient_Transformers.instance,
+		}
+		self.default_model = Args['llm_model']
+		self.models_dir = Args['llm_models_dir']
 
 	def get_loader_model(self):
 		if self.loader == LLMClient_LlamaCppPython.instance:
@@ -34,46 +44,64 @@ class LLMManager:
 		if self.loader == LLMClient_Transformers.instance:
 			return CompletionOptions_Transformers
 
-	@classmethod
-	@property
-	def instance(cls):
-		if not cls._instance:
-			cls._instance = cls()
-		return cls._instance
+	def list_local_models(self) -> list[str]:
+		models_dir = self.models_dir
+		if not models_dir or not os.path.isdir(models_dir):
+			return []
+		model_names = []
+		for filename in os.listdir(models_dir):
+			path = os.path.join(models_dir, filename)
+			if os.path.isfile(path) and os.path.splitext(filename)[
+				1] in EXTENSIONS:
+				model_names.append(filename)
+			if os.path.isdir(path):
+				f = filename.lower()
+				if 'awq' in f or 'gptq' in f or 'exl2' in f:
+					model_names.append(filename)
+					continue
+				for subfilename in os.listdir(
+					os.path.join(models_dir, filename)
+				):
+					path = os.path.join(models_dir, filename, subfilename)
+					if os.path.isfile(path) and os.path.splitext(
+						subfilename
+					)[1] in EXTENSIONS:
+						model_names.append(
+							os.path.join(filename, subfilename)
+						)
+		return model_names
 
-	def __init__(self):
-		self.clients = {
-			'llamacpp': LLMClient_LlamaCppPython.instance,
-			'exllamav2': LLMClient_Exllamav2.instance,
-			'openai': LLMClient_OpenAI.instance,
-			'transformers': LLMClient_Transformers.instance,
-		}
+	def list_models(self) -> list[str]:
+		models = self.list_local_models()
+		models.extend(LLMClient_OpenAI.instance.list_models())
+		return models
+
+	def pick_client(self, model_name: str):
+		# open openai models with openai
+		# open GPTQ and EXL2 models with exllamav2
+		# open AWQ models with transformers
+		# open everything else with llamacpp
+		models_dir = self.models_dir or Args['llm_models_dir']
+		p = os.path.join(models_dir, model_name)
+		model_name = model_name.lower()
+		if 'openai:' in model_name:
+			return 'openai'
+		if os.path.isdir(p):
+			if 'gptq' in model_name or 'exl2' in model_name:
+				return 'exllamav2'
+			if 'awq' in model_name:
+				return 'transformers'
+		return 'llamacpp'
 
 	def load_model(self, model_name: Union[str, None]):
 		if model_name is None or model_name == '':
-			model_name = Args['llm_model']
-		if model_name == self.model_name:
-			return
+			return super().load_model(model_name)
 		if 'openai:' in model_name:
 			self.model_name = model_name
 			self.loader_name = 'openai'
 			return
-		client = detect_loader_name(model_name)
-		client_instance: Union[
-			LLMClient_LlamaCppPython, LLMClient_Exllamav2,
-			LLMClient_Transformers] = self.clients[client
-																							]  # type: ignore
-		self.loader_name = client
-		self.loader = client_instance
-		self.loader.load_model(model_name)
-		self.model_name = model_name
 
-	def unload_model(self):
-		if self.loader:
-			self.loader.unload_model()
-		self.loader = None
-		self.loader_name = None
-		self.model_name = None
+		return super().load_model(model_name)
 
 	def generate(self, gen_options: CompletionOptions):
 		if not self.loader:

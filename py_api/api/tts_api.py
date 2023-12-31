@@ -81,8 +81,10 @@ def tts_api(app: FastAPI):
 		})
 
 	def list_models() -> ListModelsResponse:
-		models = ['tts_models/multilingual/multi-dataset/xtts_v2']
-		return ListModelsResponse.model_validate({'models': models})
+		return ListModelsResponse.model_validate({
+			'models':
+			manager.list_models()
+		})
 
 	def speak(req: SpeakRequest) -> SpeakResponse:
 		try:

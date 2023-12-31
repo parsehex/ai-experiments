@@ -8,7 +8,6 @@ from py_api.client.llm import LLMClient_OpenAI
 from py_api.models.llm.llm_api import CompletionRequest, CompletionResponse, DownloadModelRequest, DownloadModelResponse, ListModelsResponse, GetModelResponse, LoadModelResponse, UnloadModelRequest, LoadModelRequest
 from py_api.models.llm.client import CompletionOptions, MessageObject
 from py_api.utils import prompt_format
-from py_api.utils.llm_models import detect_loader_name
 
 # supported extensions
 EXTENSIONS = ['.gguf', '.ggml', '.safetensor']
@@ -99,37 +98,9 @@ def llm_api(app: FastAPI):
 		})
 
 	def list_models() -> ListModelsResponse:
-		models_dir = Args['llm_models_dir']
-		model_names = []
-		for filename in os.listdir(models_dir):
-			path = os.path.join(models_dir, filename)
-			if os.path.isfile(path) and os.path.splitext(filename)[
-				1] in EXTENSIONS:
-				model_names.append(filename)
-			if os.path.isdir(path):
-				f = filename.lower()
-				if 'awq' in f or 'gptq' in f or 'exl2' in f:
-					model_names.append(filename)
-					continue
-				for subfilename in os.listdir(
-					os.path.join(models_dir, filename)
-				):
-					path = os.path.join(models_dir, filename, subfilename)
-					if os.path.isfile(path) and os.path.splitext(
-						subfilename
-					)[1] in EXTENSIONS:
-						model_names.append(
-							os.path.join(filename, subfilename)
-						)
-		if openai.hasKey():
-			models = openai.list_models()
-			# add "openai:" prefix to each model
-			for i in range(len(models)):
-				models[i] = 'openai:' + models[i]
-			model_names.extend(models)
 		return ListModelsResponse.model_validate({
 			'models':
-			model_names
+			manager.list_models()
 		})
 
 	def download_model(model_name: str) -> DownloadModelResponse:

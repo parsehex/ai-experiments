@@ -1,47 +1,32 @@
 from typing import Union
 from py_api.args import Args
+from py_api.client.base_manager import BaseAIManager
 from py_api.client.tts.xtts import XTTSClient
 from py_api.models.tts.tts_client import SpeakOptions, SpeakToFileOptions, SpeakResponse, SpeakToFileResponse
 
-class TTSManager:
-	_instance = None
+class TTSManager(BaseAIManager):
 	clients: dict[str, XTTSClient] = {
 		'xtts': XTTSClient.instance,
+		# 'openai': TTSClient_OpenAI.instance, # TODO
 	}
-	model_name: Union[str, None] = None
 	loader: Union[XTTSClient, None] = None
-	loader_name: Union[str, None] = None
-
-	@classmethod
-	@property
-	def instance(cls):
-		if not cls._instance:
-			cls._instance = cls()
-		return cls._instance
 
 	def __init__(self):
 		self.clients = {
 			'xtts': XTTSClient.instance,
 		}
+		self.default_model = Args['tts_model']
+		# self.models_dir = Args['tts_models_dir']
 
-	def load_model(self, model_name: Union[str, None]):
-		if model_name is None or model_name == '':
-			model_name = Args['tts_model']
-		if model_name == self.model_name:
-			return
-		client = 'xtts'
-		client_instance = self.clients[client]
-		self.loader_name = client
-		self.loader = client_instance
-		self.loader.load_model(model_name)
-		self.model_name = model_name
+	def pick_client(self, model_name: str):
+		return 'xtts'
 
-	def unload_model(self):
-		if self.loader:
-			self.loader.unload_model()
-		self.loader = None
-		self.loader_name = None
-		self.model_name = None
+	def list_models(self):
+		models = ['tts_models/multilingual/multi-dataset/xtts_v2']
+		return models
+
+	# def list_voices(self):
+	# includes local and external voices
 
 	def speak(self, gen_options: SpeakOptions) -> SpeakResponse:
 		if not self.loader:
