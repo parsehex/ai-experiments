@@ -1,11 +1,11 @@
 from typing import Union
 from py_api.client.base_manager import BaseAIManager
-from py_api.client.stt.whispercpp import WhisperCppClient
+from py_api.client.stt.whispercpp import STTClient_WhisperCpp
 from py_api.models.stt.stt_client import TranscribeOptions, TranscribeResponse
 
 class STTManager(BaseAIManager):
 	clients = {
-		'whispercpp': WhisperCppClient.instance,
+		'whispercpp': STTClient_WhisperCpp.instance,
 	}
 
 	def load_model(self, model_name: str | None):

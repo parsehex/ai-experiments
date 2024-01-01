@@ -5,10 +5,6 @@ from py_api.client.base_manager import BaseAIManager
 from py_api.client.llm import LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLMClient_OpenAI, LLMClient_Transformers
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_Transformers
 
-ClientType = TypeVar(
-	'ClientType', LLMClient_LlamaCppPython, LLMClient_Exllamav2,
-	LLMClient_OpenAI, LLMClient_Transformers
-)
 ClientUnion = Union[LLMClient_LlamaCppPython,
 										LLMClient_Exllamav2, LLMClient_OpenAI,
 										LLMClient_Transformers]

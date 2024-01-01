@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from py_api.args import Args
 from py_api.client import img_client_manager
 from py_api.models.common_api import GetModelResponse, ListModelsResponse, LoadModelResponse, UnloadModelResponse
+from py_api.models.img.img_client import Txt2ImgOptions, Txt2ImgResponse
 
 EXTENSIONS = []
 logger = logging.getLogger(__name__)
@@ -83,7 +84,16 @@ def img_api(app: FastAPI):
 		# TODO
 		return ListModelsResponse.model_validate({'models': models})
 
-	# def txt2img(gen_options: Txt2ImgOptions) -> Txt2ImgResponse:
+	def txt2img(gen_options: Txt2ImgOptions) -> Txt2ImgResponse:
+		if manager.model_name is None:
+			raise Exception('No model loaded.')
+		res = manager.txt2img(gen_options)
+		return Txt2ImgResponse.model_validate({
+			'images':
+			res.images,
+			'nsfw_content_detected':
+			res.nsfw_content_detected,
+		})
 
 	@app.websocket('/img/v1/ws')
 	async def img_ws(websocket: WebSocket):
@@ -170,8 +180,13 @@ def img_api(app: FastAPI):
 		return JSONResponse(content=unload_model().model_dump())
 
 	# POST /img/v1/txt2img
-	@app.post('/img/v1/txt2img', tags=['img'])
-	async def img_txt2img():
-		"""Generate image from text."""
-		# TODO
-		pass
+	@app.post(
+		'/img/v1/txt2img',
+		response_model=Txt2ImgResponse,
+		tags=['img']
+	)
+	async def img_txt2img(gen_options: Txt2ImgOptions):
+		"""Generate an image from text"""
+		return JSONResponse(
+			content=txt2img(gen_options).model_dump()
+		)

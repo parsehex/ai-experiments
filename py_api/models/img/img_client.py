@@ -1,6 +1,5 @@
 from typing import Optional, List, Any
 from pydantic import BaseModel, Field
-from PIL import Image
 
 class Txt2ImgOptions(BaseModel):
 	"""Options to generate image from text."""
@@ -13,11 +12,11 @@ class Txt2ImgOptions(BaseModel):
 	num_inference_steps: int = Field(
 		20, description='Number of inference steps.'
 	)
-	guidance_scale: int = Field(
+	guidance_scale: float = Field(
 		5.5, description='CFG/Guidance scale.'
 	)
 	width: int = Field(512, description='Width of image.')
-	height: int = Field(512, description='Height of image.')
+	height: int = Field(768, description='Height of image.')
 	clip_skip: int = Field(
 		0,
 		description=
@@ -26,9 +25,10 @@ class Txt2ImgOptions(BaseModel):
 
 class Txt2ImgResponse(BaseModel):
 	"""Response to generate image from text."""
-	images: List[
-		Image.Image
-	] = Field(..., description='Images generated from prompt.')
+	images: List[str] = Field(
+		...,
+		description='Base64-encoded PNG images generated from prompt.'
+	)
 	nsfw_content_detected: List[bool] = Field(
 		...,
 		description=

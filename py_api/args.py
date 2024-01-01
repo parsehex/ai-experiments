@@ -8,4 +8,6 @@ Args = {
 	'tts_output_dir': '',
 	'tts_voices_dir': '',
 	'stt_input_dir': '',
+	'img_model': '',
+	'img_models_dir': '',
 }

@@ -1,19 +1,19 @@
 from typing import Union
 from py_api.args import Args
 from py_api.client.base_manager import BaseAIManager
-from py_api.client.tts.xtts import XTTSClient
+from py_api.client.tts.xtts import TTSClient_XTTS
 from py_api.models.tts.tts_client import SpeakOptions, SpeakToFileOptions, SpeakResponse, SpeakToFileResponse
 
 class TTSManager(BaseAIManager):
-	clients: dict[str, XTTSClient] = {
-		'xtts': XTTSClient.instance,
+	clients: dict[str, TTSClient_XTTS] = {
+		'xtts': TTSClient_XTTS.instance,
 		# 'openai': TTSClient_OpenAI.instance, # TODO
 	}
-	loader: Union[XTTSClient, None] = None
+	loader: Union[TTSClient_XTTS, None] = None
 
 	def __init__(self):
 		self.clients = {
-			'xtts': XTTSClient.instance,
+			'xtts': TTSClient_XTTS.instance,
 		}
 		self.default_model = Args['tts_model']
 		# self.models_dir = Args['tts_models_dir']

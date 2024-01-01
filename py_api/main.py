@@ -9,9 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from py_api.api.llm_api import llm_api
 from py_api.api.tts_api import tts_api
 from py_api.api.stt_api import stt_api
+from py_api.api.img_api import img_api
 from py_api.args import Args
-from py_api.client import llm_client_manager, tts_client_manager, stt_client_manager
-from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL, TTS_MODELS_DIR, TTS_MODEL, TTS_OUTPUT_DIR, TTS_VOICES_DIR, STT_INPUT_DIR
+from py_api.client import llm_client_manager, tts_client_manager, stt_client_manager, img_client_manager
+from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL, TTS_MODELS_DIR, TTS_MODEL, TTS_OUTPUT_DIR, TTS_VOICES_DIR, STT_INPUT_DIR, IMG_MODELS_DIR, IMG_MODEL
 from py_api.utils import prompt_format
 
 if __name__ == '__main__':
@@ -94,6 +95,24 @@ if __name__ == '__main__':
 		help='The directory to load STT input from.'
 	)
 
+	# Group for Img
+	img_group = parser.add_argument_group('img')
+	img_group.add_argument(
+		'--no-img', action='store_true', help='Disable Img AI.'
+	)
+	img_group.add_argument(
+		'--img-models-dir',
+		#  type=argparse.FileType('r'),
+		default=IMG_MODELS_DIR,
+		help='The directory to load Img AI models from.'
+	)
+	img_group.add_argument(
+		'--img-model',
+		type=str,
+		default=IMG_MODEL,
+		help='The Img AI model to load.'
+	)
+
 	# Log level
 	parser.add_argument(
 		'--log-level',
@@ -113,6 +132,8 @@ if __name__ == '__main__':
 	Args['tts_output_dir'] = args.tts_output_dir
 	Args['tts_voices_dir'] = args.tts_voices_dir
 	Args['stt_input_dir'] = args.stt_input_dir
+	Args['img_models_dir'] = args.img_models_dir
+	Args['img_model'] = args.img_model
 
 	logging.basicConfig(level=args.log_level)
 	logger = logging.getLogger(__name__)
@@ -156,6 +177,11 @@ if __name__ == '__main__':
 
 	if not args.no_stt:
 		stt_api(app)
+
+	if not args.no_img:
+		imgManager = img_client_manager.ImgManager.instance
+		imgManager.load_model('')
+		img_api(app)
 
 	uvicorn.run(app, host=args.host, port=args.port)
 	logger.info(f'API server started on {args.host}:{args.port}.')
