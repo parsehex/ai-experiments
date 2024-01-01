@@ -11,7 +11,7 @@ DEFAULT_VOICE = 'jaiden-10s.wav'
 # might need to think of something for supporting bark model (tts_to_file takes voice_dir with bark, but not other models?)
 # see https://github.com/coqui-ai/TTS/blob/dev/docs/source/models/bark.md
 
-class TTSClient_XTTS(TTSClient_Base):
+class TTSClient_Coqui(TTSClient_Base):
 	device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 	def get_voice_path(self, voice: str) -> str:

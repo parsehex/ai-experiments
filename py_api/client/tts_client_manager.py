@@ -1,25 +1,25 @@
 from typing import Union
 from py_api.args import Args
 from py_api.client.base_manager import BaseAIManager
-from py_api.client.tts.xtts import TTSClient_XTTS
+from py_api.client.tts import TTSClient_Coqui
 from py_api.models.tts.tts_client import SpeakOptions, SpeakToFileOptions, SpeakResponse, SpeakToFileResponse
 
 class TTSManager(BaseAIManager):
-	clients: dict[str, TTSClient_XTTS] = {
-		'xtts': TTSClient_XTTS.instance,
+	clients: dict[str, TTSClient_Coqui] = {
+		'coqui': TTSClient_Coqui.instance,
 		# 'openai': TTSClient_OpenAI.instance, # TODO
 	}
-	loader: Union[TTSClient_XTTS, None] = None
+	loader: Union[TTSClient_Coqui, None] = None
 
 	def __init__(self):
 		self.clients = {
-			'xtts': TTSClient_XTTS.instance,
+			'coqui': TTSClient_Coqui.instance,
 		}
 		self.default_model = Args['tts_model']
 		# self.models_dir = Args['tts_models_dir']
 
 	def pick_client(self, model_name: str):
-		return 'xtts'
+		return 'coqui'
 
 	def list_models(self):
 		models = ['tts_models/multilingual/multi-dataset/xtts_v2']

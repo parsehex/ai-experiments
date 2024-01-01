@@ -1,6 +1,6 @@
 from typing import Union
 from py_api.client.base_manager import BaseAIManager
-from py_api.client.stt.whispercpp import STTClient_WhisperCpp
+from py_api.client.stt import STTClient_WhisperCpp
 from py_api.models.stt.stt_client import TranscribeOptions, TranscribeResponse
 
 class STTManager(BaseAIManager):
