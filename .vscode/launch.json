@@ -10,8 +10,10 @@
 			"request": "launch",
 			"module": "py_api.main",
 			"args": [
-				// "--no-llm"
+				// "--no-llm",
 				// "--no-tts",
+				// "--no-stt",
+				// "--no-img",
 			],
 			"justMyCode": true
 		}
