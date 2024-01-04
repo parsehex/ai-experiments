@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import JSONResponse, FileResponse
 from py_api.args import Args
 from py_api.client import img_client_manager
-from py_api.models.common_api import GetModelResponse, ListModelsResponse, LoadModelResponse, UnloadModelResponse
+from py_api.models.common_api import GetModelResponse, ListModelsResponse, LoadModelRequest, LoadModelResponse, UnloadModelResponse
 from py_api.models.img.img_client import Txt2ImgOptions, Txt2ImgResponse
 
 EXTENSIONS = []
@@ -80,8 +80,7 @@ def img_api(app: FastAPI):
 		})
 
 	def list_models() -> ListModelsResponse:
-		models = []
-		# TODO
+		models = manager.list_models()
 		return ListModelsResponse.model_validate({'models': models})
 
 	def txt2img(gen_options: Txt2ImgOptions) -> Txt2ImgResponse:
@@ -99,17 +98,17 @@ def img_api(app: FastAPI):
 	async def img_ws(websocket: WebSocket):
 		await websocket.accept()
 
-		await websocket.send_json({
-			'type': 'list_models',
-			'data': list_models().model_dump()
-		})
-		await websocket.send_json({
-			'type': 'get_model',
-			'data': get_model().model_dump()
-		})
-
 		async def send_json(data):
-			return websocket.send_json(data)
+			return await websocket.send_json(data)
+
+		await send_json({
+			'type': 'list_models',
+			'data': list_models().model_dump_json()
+		})
+		await send_json({
+			'type': 'get_model',
+			'data': get_model().model_dump_json()
+		})
 
 		while True:
 			try:
@@ -121,24 +120,24 @@ def img_api(app: FastAPI):
 			if data['type'] == 'load_model':
 				req = data['data']
 				try:
-					res = load_model(req.model_name).model_dump()
+					res = load_model(req.model_name).model_dump_json()
 				except Exception as e:
 					res = {'error': str(e)}
 				await send_json({'type': 'load_model', 'data': res})
 			elif data['type'] == 'unload_model':
 				await send_json({
 					'type': 'unload_model',
-					'data': unload_model().model_dump()
+					'data': unload_model().model_dump_json()
 				})
 			elif data['type'] == 'get_model':
 				await send_json({
 					'type': 'get_model',
-					'data': get_model().model_dump()
+					'data': get_model().model_dump_json()
 				})
 			elif data['type'] == 'list_models':
 				await send_json({
 					'type': 'list_models',
-					'data': list_models().model_dump()
+					'data': list_models().model_dump_json()
 				})
 
 	@app.get(
@@ -159,13 +158,14 @@ def img_api(app: FastAPI):
 		"""Get list of models (using relative filenames) in llm_models_dir"""
 		return JSONResponse(content=list_models().model_dump())
 
-	@app.get(
+	@app.post(
 		'/img/v1/model/load',
 		response_model=LoadModelResponse,
 		tags=['img']
 	)
-	async def img_load_model(model_name: str):
+	async def img_load_model(body: LoadModelRequest):
 		"""Load a model by filename from img_models_dir"""
+		model_name = body.model
 		return JSONResponse(
 			content=load_model(model_name).model_dump()
 		)
@@ -190,3 +190,8 @@ def img_api(app: FastAPI):
 		return JSONResponse(
 			content=txt2img(gen_options).model_dump()
 		)
+
+	@app.get('/img/v1/list-samplers', tags=['img'])
+	async def img_list_samplers():
+		"""Get list of available samplers."""
+		return JSONResponse(content={'samplers': []})

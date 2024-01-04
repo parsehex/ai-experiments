@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useServerStatus } from '@/hooks/useLLMServerStatus';
+import { useImgServerStatus } from '@/hooks/useImgServerStatus';
 import { LoadModelResponse, ServerStatus } from '@/lib/types/new-api';
-import { loadModel, unloadModel } from '@/lib/llm/new-api';
+import { loadModel, unloadModel } from '@/lib/imagen';
 
-const LLMModelStatus: React.FC = () => {
+const ImgModelStatus: React.FC = () => {
 	const { status, setStatus, modelInfo, setModelInfo, models } =
-		useServerStatus();
+		useImgServerStatus();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [selectedModel, setSelectedModel] = useState('');
 
@@ -63,17 +63,18 @@ const LLMModelStatus: React.FC = () => {
 	};
 
 	const handleModelSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+		console.log('handleModelSelect', event.target.value);
 		const selected = event.target.value;
 		setSelectedModel(selected);
 	};
 
 	const handleLoadModel = async (model = selectedModel) => {
-		let res: LoadModelResponse | undefined;
+		let res: string | undefined;
 		if (model) res = await loadModel(model);
 		if (res) {
 			setModelInfo({
-				model: res.model,
-				loader_name: res.loader_name || '',
+				model: res,
+				loader_name: '',
 			});
 			setSelectedModel('');
 			setStatus(ServerStatus.ON_MODEL_LOADED);
@@ -107,14 +108,13 @@ const LLMModelStatus: React.FC = () => {
 					onChange={handleModelSelect}
 					value={selectedModel}
 				>
-					<option value="">Select a Model</option>
 					{sources[selectedSource].map((model) => (
 						<option key={model} value={model}>
 							{model}
 						</option>
 					))}
 				</select>
-				{!!selectedModel && (
+				{!!selectedModel && selectedModel !== modelInfo?.model && (
 					<button
 						className="basic"
 						onClick={() => handleLoadModel(selectedModel)}
@@ -157,4 +157,4 @@ const LLMModelStatus: React.FC = () => {
 	);
 };
 
-export default LLMModelStatus;
+export default ImgModelStatus;

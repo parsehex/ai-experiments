@@ -18,8 +18,8 @@ export interface txt2imgParams {
 	sampler_name: string;
 	batch_size: number;
 	n_iter: number;
-	steps: number;
-	cfg_scale: number;
+	num_inference_steps: number;
+	guidance_scale: number;
 	width: number;
 	height: number;
 	restore_faces: boolean;
@@ -49,8 +49,9 @@ export interface txt2imgResponseInfo {
 }
 export interface txt2imgResponse {
 	images: string[]; // array of base64-png(s)
-	parameters: Partial<txt2imgParams>; // copy of the parameters passed to the api
-	info: string; // the final params used to generate the images, find seed here
+	parameters?: Partial<txt2imgParams>; // copy of the parameters passed to the api
+	info?: string; // the final params used to generate the images, find seed here
+	nsfw_content_detected: boolean[];
 }
 
 export interface Lora {

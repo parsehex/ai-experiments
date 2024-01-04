@@ -9,6 +9,7 @@ numpy
 omegaconf
 pydantic
 python-dotenv
+scipy
 simpleaudio
 torch
 torchaudio

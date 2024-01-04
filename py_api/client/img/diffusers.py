@@ -3,10 +3,15 @@ from py_api.models.img.img_client import Txt2ImgOptions, Txt2ImgResponse
 from PIL import Image
 from diffusers.pipelines.auto_pipeline import AutoPipelineForText2Image
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import StableDiffusionPipeline
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import StableDiffusionXLPipeline
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl_img2img import StableDiffusionXLImg2ImgPipeline
 from diffusers.pipelines.stable_diffusion.pipeline_output import StableDiffusionPipelineOutput
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 import base64
 from io import BytesIO
+from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
+from diffusers.schedulers.scheduling_dpmsolver_multistep import DPMSolverMultistepScheduler
+import torch
 
 import torch
 from typing import Union, List, Any
@@ -15,7 +20,8 @@ import os
 
 class ImgClient_Diffusers(ImgClient_Base):
 	device = 'cuda' if torch.cuda.is_available() else 'cpu'
-	model: Union[StableDiffusionPipeline, None] = None
+	model: Union[StableDiffusionPipeline,
+								StableDiffusionXLPipeline, None] = None
 	pipeline: Union[DiffusionPipeline, None] = None
 
 	# def __init__(self):
@@ -32,10 +38,34 @@ class ImgClient_Diffusers(ImgClient_Base):
 		self.abspath = os.path.join(
 			Args['img_models_dir'], model_name
 		)
-		self.pipeline = StableDiffusionPipeline.from_single_file(
-			self.abspath
-		)
+		if 'xl' in model_name:
+			self.pipeline = StableDiffusionXLPipeline.from_single_file(
+				self.abspath,
+				variant="fp16",
+				load_safety_checker=False,
+				torch_dtype=torch.float16
+			)
+			print('Using SDXL pipeline')
+		else:
+			self.pipeline = StableDiffusionPipeline.from_single_file(
+				self.abspath,
+				variant="fp16",
+				load_safety_checker=False,
+				torch_dtype=torch.float16
+			)
 		self.pipeline.to(self.device)
+		self.pipeline.unet.set_default_attn_processor()
+
+		# use vae from model
+		vae = AutoencoderKL.from_single_file(
+			self.abspath, variant="fp16", torch_dtype=torch.float16
+		).to(self.device)
+		self.pipeline.vae = vae
+
+		self.pipeline.scheduler = DPMSolverMultistepScheduler.from_config(
+			self.pipeline.scheduler.config
+		)
+
 		self.model = AutoPipelineForText2Image.from_pipe(
 			self.pipeline
 		)
@@ -60,6 +90,7 @@ class ImgClient_Diffusers(ImgClient_Base):
 		if gen_options.prompt == '':
 			raise Exception('No prompt provided.')
 		assert self.model is not None
+		assert self.pipeline is not None
 		prompt = gen_options.prompt
 		prompt = prompt.replace('\n', ' ')
 		prompt = prompt.replace('\r', ' ')
@@ -67,16 +98,22 @@ class ImgClient_Diffusers(ImgClient_Base):
 		prompt = prompt.replace('  ', ' ')
 		prompt = prompt.strip()
 
+		# TODO option to enable freeu
+		self.pipeline.enable_freeu(s1=0.9, s2=0.2, b1=1.2, b2=1.4)
+
 		opt = gen_options.model_dump()
 		res = self.model(**opt)
-		assert isinstance(res, StableDiffusionPipelineOutput)
-		img = res.images[0]
+
+		self.pipeline.disable_freeu()
+		# assert isinstance(res, StableDiffusionPipelineOutput)
+		img = res.images[0]  # type: ignore
 		assert isinstance(img, Image.Image)
 		imgb64 = 'data:image/png;base64,'
 		with BytesIO() as buffer:
 			img.save(buffer, 'png')
 			imgb64 += base64.b64encode(buffer.getvalue()).decode()
 
+		torch.cuda.empty_cache()
 		return Txt2ImgResponse(
 			images=[imgb64], nsfw_content_detected=[False]
 		)

@@ -41,7 +41,7 @@ class LLMManager(BaseAIManager):
 			return CompletionOptions_Transformers
 
 	def list_local_models(self) -> list[str]:
-		models_dir = self.models_dir
+		models_dir = self.get_models_dir()
 		if not models_dir or not os.path.isdir(models_dir):
 			return []
 		model_names = []
@@ -77,7 +77,7 @@ class LLMManager(BaseAIManager):
 		# open GPTQ and EXL2 models with exllamav2
 		# open AWQ models with transformers
 		# open everything else with llamacpp
-		models_dir = self.models_dir or Args['llm_models_dir']
+		models_dir = self.get_models_dir()
 		p = os.path.join(models_dir, model_name)
 		model_name = model_name.lower()
 		if 'openai:' in model_name:
@@ -88,6 +88,12 @@ class LLMManager(BaseAIManager):
 			if 'awq' in model_name:
 				return 'transformers'
 		return 'llamacpp'
+
+	def get_models_dir(self):
+		return Args['llm_models_dir']
+
+	def get_default_model(self):
+		return Args['llm_model']
 
 	def load_model(self, model_name: Union[str, None]):
 		if model_name is None or model_name == '':

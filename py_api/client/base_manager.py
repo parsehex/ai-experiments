@@ -17,16 +17,26 @@ class BaseAIManager:
 			cls._instance = cls()
 		return cls._instance
 
-	def pick_client(self, model_name: str):
+	def pick_client(self, model_name: str) -> str:
+		raise NotImplementedError()
+
+	def get_models_dir(self) -> str:
+		raise NotImplementedError()
+
+	def get_default_model(self) -> str:
 		raise NotImplementedError()
 
 	def load_model(self, model_name: Union[str, None]):
 		if model_name is None or model_name == '':
-			if self.default_model is None:
+			# if self.default_model is None:
+			# 	raise Exception('No default model set')
+			d = self.get_default_model()
+			if d is None:
 				raise Exception('No default model set')
-			model_name = self.default_model
+			model_name = d
 		if model_name == self.model_name:
 			return
+		print('Loading model', model_name)
 		client_key = self.pick_client(model_name)
 		client_instance = self.clients.get(client_key)
 		if client_instance:

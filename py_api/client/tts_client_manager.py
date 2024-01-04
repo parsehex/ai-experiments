@@ -21,6 +21,12 @@ class TTSManager(BaseAIManager):
 	def pick_client(self, model_name: str):
 		return 'coqui'
 
+	def get_models_dir(self):
+		return Args['tts_models_dir']
+
+	def get_default_model(self):
+		return Args['tts_model']
+
 	def list_models(self):
 		models = ['tts_models/multilingual/multi-dataset/xtts_v2']
 		return models

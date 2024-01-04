@@ -5,6 +5,7 @@ import { txt2imgResponseInfo } from '@/lib/imagen/types';
 import { IoRefreshOutline, IoShuffleOutline } from 'react-icons/io5';
 import TextInput from '@/components/TextInput';
 import ImgCarousel from '@/components/ImgCarousel';
+import ImgModelStatus from '@/components/ImgModelStatus';
 
 // TODO
 //   show something when getting samplers fails, meaning the server is not online
@@ -14,6 +15,10 @@ const DefaultParams = {
 	width: 512,
 	height: 768,
 };
+const SizePresets = [
+	{ label: '512x768', width: 512, height: 768 },
+	{ label: '1024x1024', width: 1024, height: 1024 },
+];
 
 const ImageGenerator = () => {
 	const [prompt, setPrompt] = useState('beautiful');
@@ -29,15 +34,23 @@ const ImageGenerator = () => {
 	const [lastGenParams, setLastGenParams] = useState({} as txt2imgResponseInfo);
 	const [genTime, setGenTime] = useState(0);
 	const [sdOnline, setSdOnline] = useState(false);
+	const [width, setWidth] = useState(DefaultParams.width);
+	const [height, setHeight] = useState(DefaultParams.height);
+	const [selectedSizePreset, setSelectedSizePreset] = useState(SizePresets[0]);
+
+	useEffect(() => {
+		setWidth(selectedSizePreset.width);
+		setHeight(selectedSizePreset.height);
+	}, [selectedSizePreset]);
 
 	useEffect(() => {
 		getSamplers()
 			.then((samplers) => {
 				setSdOnline(true);
-				const samplerNames = samplers.map((sampler) => sampler.name);
-				setSamplers(samplerNames);
-				const i = samplerNames.indexOf('Euler a');
-				setSelectedSampler(samplers[i || 0].name);
+				// const samplerNames = samplers.map((sampler) => sampler.name);
+				// setSamplers(samplerNames);
+				// const i = samplerNames.indexOf('Euler a');
+				// setSelectedSampler(samplers[i || 0].name);
 			})
 			.catch(() => {
 				setSdOnline(false);
@@ -52,22 +65,24 @@ const ImageGenerator = () => {
 			negative_prompt: negativePrompt,
 			seed,
 			sampler_name: selectedSampler,
-			cfg_scale: cfgScale,
+			guidance_scale: cfgScale,
 			batch_size: batchSize,
 			n_iter: nIter,
-			steps,
-			...DefaultParams,
+			num_inference_steps: steps,
+			width,
+			height,
 		});
 		setGeneratedImages(response.images);
 		console.log(response);
 		setGenTime(Date.now() - startTime);
-		const params: txt2imgResponseInfo = JSON.parse(response.info);
-		setLastGenParams(params);
+		// const params: txt2imgResponseInfo = JSON.parse(response.info);
+		// setLastGenParams(params);
 	};
 
 	const GenOptions = () => {
 		return (
 			<div className="gen-options">
+				<ImgModelStatus />
 				<div>
 					<TextInput
 						label="Prompt"
@@ -79,6 +94,24 @@ const ImageGenerator = () => {
 						id="imagen-negprompt"
 						value={[negativePrompt, setNegativePrompt]}
 					/>
+					<label>
+						Size
+						<select
+							value={selectedSizePreset.label}
+							onChange={(e) => {
+								const preset = SizePresets.find(
+									(p) => p.label === e.target.value
+								);
+								if (preset) setSelectedSizePreset(preset);
+							}}
+						>
+							{SizePresets.map((preset) => (
+								<option key={preset.label} value={preset.label}>
+									{preset.label}
+								</option>
+							))}
+						</select>
+					</label>
 				</div>
 				<div>
 					<label>
