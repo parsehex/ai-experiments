@@ -15,7 +15,7 @@ import torch
 
 from typing import Union, List, Any
 from py_api.args import Args
-import os
+import os, json
 
 class ImgClient_Diffusers(ImgClient_Base):
 	device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -105,8 +105,9 @@ class ImgClient_Diffusers(ImgClient_Base):
 		if seed >= 0:
 			generator = [generator.manual_seed(seed)]
 		else:
-			ran = torch.randint(0, 2**32, (1, )).item()
-			generator = generator.manual_seed(int(ran))
+			ran = int(torch.randint(0, 2**32, (1, )).item())
+			generator = generator.manual_seed((ran))
+			seed = ran
 
 		# TODO option to enable freeu
 		self.pipeline.enable_freeu(s1=0.9, s2=0.2, b1=1.2, b2=1.4)
@@ -124,9 +125,24 @@ class ImgClient_Diffusers(ImgClient_Base):
 			imgb64 += base64.b64encode(buffer.getvalue()).decode()
 
 		torch.cuda.empty_cache()
-		return Txt2ImgResponse(
-			images=[imgb64], nsfw_content_detected=[False]
-		)
+
+		options = {
+			'prompt': prompt,
+			'negative_prompt': gen_options.negative_prompt,
+			'num_inference_steps': gen_options.num_inference_steps,
+			'guidance_scale': gen_options.guidance_scale,
+			'width': gen_options.width,
+			'height': gen_options.height,
+			'clip_skip': gen_options.clip_skip,
+			'seed': seed
+		}
+		print(json.dumps(options))
+		return Txt2ImgResponse.model_validate({
+			'images': [imgb64],
+			'nsfw_content_detected': [False],
+			'info':
+			json.dumps(options)
+		})
 
 	# def img2img(
 	# 	self, gen_options: Img2ImgOptions

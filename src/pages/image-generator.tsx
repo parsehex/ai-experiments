@@ -64,10 +64,10 @@ const ImageGenerator = () => {
 			prompt,
 			negative_prompt: negativePrompt,
 			seed,
-			sampler_name: selectedSampler,
+			// sampler_name: selectedSampler,
 			guidance_scale: cfgScale,
-			batch_size: batchSize,
-			n_iter: nIter,
+			// batch_size: batchSize,
+			// n_iter: nIter,
 			num_inference_steps: steps,
 			width,
 			height,
@@ -75,8 +75,9 @@ const ImageGenerator = () => {
 		setGeneratedImages(response.images);
 		console.log(response);
 		setGenTime(Date.now() - startTime);
-		// const params: txt2imgResponseInfo = JSON.parse(response.info);
-		// setLastGenParams(params);
+		if (!response.info) return;
+		const params: txt2imgResponseInfo = JSON.parse(response.info);
+		setLastGenParams(params);
 	};
 
 	const GenOptions = () => {
@@ -200,9 +201,9 @@ const ImageGenerator = () => {
 
 					{!!generatedImages.length && (
 						<div className="gen-image flex flex-col">
-							{lastGenParams.infotexts?.length && (
+							{/* {lastGenParams.infotexts?.length && (
 								<span className="params">{lastGenParams.infotexts[0]}</span>
-							)}
+							)} */}
 							<ImgCarousel images={generatedImages} defaultExpanded={true} />
 						</div>
 					)}

@@ -87,12 +87,7 @@ def img_api(app: FastAPI):
 		if manager.model_name is None:
 			raise Exception('No model loaded.')
 		res = manager.txt2img(gen_options)
-		return Txt2ImgResponse.model_validate({
-			'images':
-			res.images,
-			'nsfw_content_detected':
-			res.nsfw_content_detected,
-		})
+		return Txt2ImgResponse.model_validate(res)
 
 	@app.websocket('/img/v1/ws')
 	async def img_ws(websocket: WebSocket):
