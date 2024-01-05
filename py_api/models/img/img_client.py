@@ -22,6 +22,9 @@ class Txt2ImgOptions(BaseModel):
 		description=
 		'Number of layers to be skipped from CLIP while computing the prompt embeddings. A value of 1 means that the output of the pre-final layer will be used for computing the prompt embeddings.'
 	)
+	seed: Optional[int] = Field(
+		None, description='Seed for random number generator.'
+	)
 
 class Txt2ImgResponse(BaseModel):
 	"""Response to generate image from text."""

@@ -13,7 +13,6 @@ from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
 from diffusers.schedulers.scheduling_dpmsolver_multistep import DPMSolverMultistepScheduler
 import torch
 
-import torch
 from typing import Union, List, Any
 from py_api.args import Args
 import os
@@ -98,11 +97,22 @@ class ImgClient_Diffusers(ImgClient_Base):
 		prompt = prompt.replace('  ', ' ')
 		prompt = prompt.strip()
 
+		seed = -1
+		if gen_options.seed is not None:
+			seed = gen_options.seed
+
+		generator = torch.Generator(device=self.device)
+		if seed >= 0:
+			generator = [generator.manual_seed(seed)]
+		else:
+			ran = torch.randint(0, 2**32, (1, )).item()
+			generator = generator.manual_seed(int(ran))
+
 		# TODO option to enable freeu
 		self.pipeline.enable_freeu(s1=0.9, s2=0.2, b1=1.2, b2=1.4)
 
 		opt = gen_options.model_dump()
-		res = self.model(**opt)
+		res = self.model(generator=generator, **opt)
 
 		self.pipeline.disable_freeu()
 		# assert isinstance(res, StableDiffusionPipelineOutput)
