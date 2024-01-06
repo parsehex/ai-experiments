@@ -1,6 +1,7 @@
 import { GenerateTTSOptions } from '@/app/api/tts/generate/route';
 import { Provider, Speaker } from '@/app/api/tts/types';
 import axios from 'axios';
+import { LoadModelResponse, UnloadModelResponse } from './types/new-api';
 
 // TODO add /api/tts route that does most of this stuff
 // this file will be a thin wrapper around that route
@@ -33,7 +34,7 @@ interface SpeakToFileResponse {
 // POST /tts/v1/speak : SpeakOptions => SpeakResponse
 // POST /tts/v1/speak-to-file : SpeakToFileOptions => SpeakToFileResponse
 
-const BASE = 'http://localhost:5000';
+const BASE_URL = 'http://localhost:5000';
 
 function base64ToBlob(base64: string): Blob {
 	const byteString = atob(base64);
@@ -46,7 +47,7 @@ function base64ToBlob(base64: string): Blob {
 }
 
 export async function speak(text: string, voice: string): Promise<Blob> {
-	const url = `${BASE}/tts/v1/speak`;
+	const url = `${BASE_URL}/tts/v1/speak`;
 	const body: SpeakOptions = {
 		text,
 		voice,
@@ -85,7 +86,41 @@ export async function getSpeakers(provider: Provider): Promise<Speaker[]> {
 }
 
 export async function getVoices(): Promise<string[]> {
-	const url = `${BASE}/tts/v1/list-voices`;
+	const url = `${BASE_URL}/tts/v1/list-voices`;
 	const res = await axios.get<{ voices: string[] }>(url);
 	return res.data.voices;
+}
+
+export async function listModels(): Promise<string[]> {
+	const res = await fetch(`${BASE_URL}/tts/v1/list-models`);
+	const r = await res.json();
+	return r.models;
+}
+
+export async function getModel(): Promise<string> {
+	const res = await fetch(`${BASE_URL}/tts/v1/model`);
+	const r = await res.json();
+	return r.model;
+}
+
+export async function loadModel(model: string): Promise<LoadModelResponse> {
+	const res = await fetch(`${BASE_URL}/tts/v1/model/load`, {
+		method: 'POST',
+		body: JSON.stringify({ model }),
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	});
+	return await res.json();
+}
+
+export async function unloadModel(): Promise<UnloadModelResponse> {
+	const res = await fetch(`${BASE_URL}/tts/v1/model/unload`, {
+		method: 'POST',
+		body: JSON.stringify({}),
+		headers: {
+			'Content-Type': 'application/json',
+		},
+	});
+	return await res.json();
 }

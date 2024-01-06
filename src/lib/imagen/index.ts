@@ -1,5 +1,6 @@
 // first api to support is sd
 
+import { LoadModelResponse, UnloadModelResponse } from '../types/new-api';
 import { addCorsIfNot } from '../utils';
 import { Lora, Sampler, txt2imgParams, txt2imgResponse } from './types';
 
@@ -48,7 +49,7 @@ export async function getModel(): Promise<string> {
 }
 
 // loadModel
-export async function loadModel(model: string): Promise<string> {
+export async function loadModel(model: string): Promise<LoadModelResponse> {
 	if (!adjusted) fixUrl();
 	const res = await fetch(`${BASE_URL}/img/v1/model/load`, {
 		method: 'POST',
@@ -57,12 +58,11 @@ export async function loadModel(model: string): Promise<string> {
 			'Content-Type': 'application/json',
 		},
 	});
-	const r = await res.json();
-	return r.model;
+	return await res.json();
 }
 
 // unloadModel
-export async function unloadModel(): Promise<string> {
+export async function unloadModel(): Promise<UnloadModelResponse> {
 	if (!adjusted) fixUrl();
 	const res = await fetch(`${BASE_URL}/img/v1/model/unload`, {
 		method: 'POST',
@@ -71,8 +71,7 @@ export async function unloadModel(): Promise<string> {
 			'Content-Type': 'application/json',
 		},
 	});
-	const r = await res.json();
-	return r.model;
+	return await res.json();
 }
 
 export async function txt2img(

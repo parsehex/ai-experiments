@@ -1,4 +1,6 @@
 'use client';
+import AIModelStatus from '@/components/AIModelStatus';
+import Collapsible from '@/components/Collapsible';
 import { ItemProps, demos } from '@/demosList';
 import React, { useState } from 'react';
 
@@ -67,6 +69,22 @@ export default function Home() {
 
 	return (
 		<main className="flex min-h-screen flex-col items-center p-12">
+			<Collapsible
+				className="text-right"
+				title="AI Server Statuses"
+				titleSize="sm"
+				defaultCollapsed={true}
+			>
+				<div>
+					LLM: <AIModelStatus type="llm" inline />
+				</div>
+				<div>
+					TTS: <AIModelStatus type="tts" inline />
+				</div>
+				<div>
+					Img: <AIModelStatus type="img" inline />
+				</div>
+			</Collapsible>
 			<h3 className="text-3xl font-bold mb-4">AI Demos and Experiments</h3>
 			<small className="text-gray-400 mb-4">
 				A collection of AI-powered demos and experiments. Select a tag to filter

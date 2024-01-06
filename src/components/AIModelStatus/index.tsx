@@ -1,11 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useServerStatus } from '@/hooks/useLLMServerStatus';
-import { LoadModelResponse, ServerStatus } from '@/lib/types/new-api';
-import { loadModel, unloadModel } from '@/lib/llm/new-api';
+import React, { useState, useEffect, HTMLAttributes } from 'react';
+import { useServerStatus } from '@/hooks/useServerStatus';
+import {
+	LoadModelResponse,
+	LoaderName,
+	ServerStatus,
+} from '@/lib/types/new-api';
+import * as llm from '@/lib/llm/new-api';
+import * as img from '@/lib/imagen';
+import * as tts from '@/lib/tts';
 
-const LLMModelStatus: React.FC = () => {
+export interface AIModelStatusProps extends HTMLAttributes<HTMLDivElement> {
+	type: 'llm' | 'img' | 'tts' | 'stt';
+	inline?: boolean;
+}
+
+const AIModelStatus: React.FC<AIModelStatusProps> = ({ type, inline }) => {
+	let name = type.toUpperCase();
+	if (type === 'img') name = 'Img';
 	const { status, setStatus, modelInfo, setModelInfo, models } =
-		useServerStatus();
+		useServerStatus(type);
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [selectedModel, setSelectedModel] = useState('');
 
@@ -81,13 +94,38 @@ const LLMModelStatus: React.FC = () => {
 		setSelectedModel(selected);
 	};
 
+	const loadModel = async (model: string) => {
+		switch (type) {
+			case 'llm':
+				return await llm.loadModel(model);
+			case 'img':
+				return await img.loadModel(model);
+			case 'tts':
+				return await tts.loadModel(model);
+			case 'stt':
+				console.log('STT not implemented');
+		}
+	};
+	const unloadModel = async () => {
+		switch (type) {
+			case 'llm':
+				return await llm.unloadModel();
+			case 'img':
+				return await img.unloadModel();
+			case 'tts':
+				return await tts.unloadModel();
+			case 'stt':
+				console.log('STT not implemented');
+		}
+	};
+
 	const handleLoadModel = async (model = selectedModel) => {
 		let res: LoadModelResponse | undefined;
 		if (model) res = await loadModel(model);
 		if (res) {
 			setModelInfo({
 				model: res.model,
-				loader_name: res.loader_name || '',
+				loader_name: res.loader_name as LoaderName,
 			});
 			setSelectedModel('');
 			setStatus(ServerStatus.ON_MODEL_LOADED);
@@ -139,11 +177,19 @@ const LLMModelStatus: React.FC = () => {
 		);
 	};
 
+	// either normal flex or inline flex
+	const flexClass = inline ? 'inline-flex' : 'flex';
 	return (
-		<div className="flex flex-col">
+		<div
+			className={`${flexClass} flex-col`}
+			style={{
+				minWidth: inline ? '50px' : 'auto',
+			}}
+		>
 			<div
 				className={`h-3 w-full rounded-full ${getStatusColor()} cursor-pointer`}
 				onClick={handleToggleExpand}
+				title={`${name} Status`}
 			/>
 			{isExpanded && (
 				<div className="mb-3 p-2 border rounded shadow-lg bg-white dark:bg-gray-800">
@@ -152,7 +198,7 @@ const LLMModelStatus: React.FC = () => {
 						<>
 							{modelInfo && (
 								<div className="mb-2 flex">
-									<div className="font-bold">Current Model:</div>
+									<div className="font-bold">Current {name} Model:</div>
 									<div>
 										{modelInfo.model} (<i>{modelInfo.loader_name}</i> loader)
 									</div>
@@ -170,4 +216,4 @@ const LLMModelStatus: React.FC = () => {
 	);
 };
 
-export default LLMModelStatus;
+export default AIModelStatus;

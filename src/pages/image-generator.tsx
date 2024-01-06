@@ -5,7 +5,7 @@ import { txt2imgResponseInfo } from '@/lib/imagen/types';
 import { IoRefreshOutline, IoShuffleOutline } from 'react-icons/io5';
 import TextInput from '@/components/TextInput';
 import ImgCarousel from '@/components/ImgCarousel';
-import ImgModelStatus from '@/components/ImgModelStatus';
+import AIModelStatus from '@/components/AIModelStatus';
 
 // TODO
 //   show something when getting samplers fails, meaning the server is not online
@@ -82,7 +82,7 @@ const ImageGenerator = () => {
 	const GenOptions = () => {
 		return (
 			<div className="gen-options">
-				<ImgModelStatus />
+				<AIModelStatus type="img" />
 				<div>
 					<TextInput
 						label="Prompt"

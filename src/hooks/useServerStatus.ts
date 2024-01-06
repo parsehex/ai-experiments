@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ModelInfo, ServerStatus } from '@/lib/types/new-api';
+import { AIType, ModelInfo, ServerStatus } from '@/lib/types/new-api';
 
 interface JSONObject {
 	[key: string]: JSONValue;
@@ -8,14 +8,21 @@ type JSONArray = JSONValue[];
 type JSONValue = string | number | boolean | null | JSONObject | JSONArray;
 
 interface InitWSOptions {
+	type: AIType;
 	setStatus: (status: ServerStatus) => void;
 	setModelInfo: (modelInfo: ModelInfo | null) => void;
 	setModels: (models: string[]) => void;
 	wsSend: (message: JSONValue) => void;
 }
 
-function initWS({ setStatus, setModelInfo, setModels, wsSend }: InitWSOptions) {
-	const ws = new WebSocket('ws://localhost:5000/img/v1/ws');
+function initWS({
+	type,
+	setStatus,
+	setModelInfo,
+	setModels,
+	wsSend,
+}: InitWSOptions) {
+	const ws = new WebSocket(`ws://localhost:5000/${type}/v1/ws`);
 	ws.onopen = () => {
 		setStatus(ServerStatus.ON_NO_MODEL);
 		try {
@@ -34,7 +41,7 @@ function initWS({ setStatus, setModelInfo, setModels, wsSend }: InitWSOptions) {
 			case 'load_model':
 				setModelInfo({
 					model: data.model,
-					loader_name: '',
+					loader_name: data.loader_name,
 				});
 				setStatus(ServerStatus.ON_MODEL_LOADED);
 				break;
@@ -56,7 +63,7 @@ function initWS({ setStatus, setModelInfo, setModels, wsSend }: InitWSOptions) {
 	return ws;
 }
 
-export function useImgServerStatus() {
+export function useServerStatus(type: AIType) {
 	let ws: WebSocket | null = null;
 	const wsSend = (message: JSONValue) => {
 		if (!ws || ws.readyState !== WebSocket.OPEN) return;
@@ -83,18 +90,18 @@ export function useImgServerStatus() {
 
 	useEffect(() => {
 		const startWS = (lastTimeout?: number) => {
-			try {
-				setTimeout(() => {
-					ws = initWS({ setStatus, setModelInfo, setModels, wsSend });
-				}, 250);
-			} catch (error) {
-				console.error('Failed to start WS:', error);
-				setStatus(ServerStatus.OFF);
-				setTimeout(
-					startWS,
-					lastTimeout ? Math.max(60, lastTimeout * 1.25) : 1000
-				);
-			}
+			setTimeout(() => {
+				try {
+					ws = initWS({ type, setStatus, setModelInfo, setModels, wsSend });
+				} catch (error) {
+					console.error('Failed to start WS:', error);
+					setStatus(ServerStatus.OFF);
+					setTimeout(
+						startWS,
+						lastTimeout ? Math.max(60, lastTimeout * 1.25) : 1000
+					);
+				}
+			}, 250);
 		};
 		const refreshModel = async () => {
 			wsSend({ type: 'get_model' });

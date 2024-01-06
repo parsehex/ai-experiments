@@ -4,6 +4,7 @@ import {
 	ListModelsResponse,
 	LoadModelResponse,
 	GenerateParams,
+	UnloadModelResponse,
 } from '../types/new-api';
 import { addCorsIfNot } from '../utils';
 
@@ -119,7 +120,7 @@ export async function loadModel(modelName: string): Promise<LoadModelResponse> {
 	});
 	return response.json();
 }
-export async function unloadModel(): Promise<LoadModelResponse> {
+export async function unloadModel(): Promise<UnloadModelResponse> {
 	if (!adjusted) fixUrl();
 	const response = await fetch(`${BASE_URL}/v1/model/unload`);
 	return response.json();

@@ -4,7 +4,7 @@ import { ChatBox } from '@/components/ChatBox';
 import { PromptPart, Message } from '@/lib/types/llm';
 import { complete } from '@/lib/llm';
 import { addMsg, makeMsg } from '@/lib/utils/messages';
-import LLMModelStatus from '@/components/LLMModelStatus';
+import AIModelStatus from '@/components/AIModelStatus';
 import { Character } from './types';
 
 // TODO allow "self" info (for the user)
@@ -117,7 +117,7 @@ function CharacterChat() {
 
 	return (
 		<div className="chat-container">
-			<LLMModelStatus />
+			<AIModelStatus type="llm" />
 			<div className="flex flex-row">
 				<div className="character-selection flex flex-col">
 					{characters.map((character) => (

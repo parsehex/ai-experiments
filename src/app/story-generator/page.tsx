@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import Collapsible from '@/components/Collapsible';
 import TextInput from '@/components/TextInput';
 import HoverMenuButton from '@/components/HoverMenuButton';
-import LLMModelStatus from '@/components/LLMModelStatus';
+import AIModelStatus from '@/components/AIModelStatus';
 import { generate, complete } from '@/lib/llm';
 import { PromptPartResponse } from '@/lib/types/llm';
 import { addCharacterOptions } from './hover-menus';
@@ -611,7 +611,7 @@ const StoryGenerator = () => {
 
 	return (
 		<>
-			<LLMModelStatus />
+			<AIModelStatus type="llm" />
 			<div>
 				<label htmlFor="preset">Preset:</label>
 				<select

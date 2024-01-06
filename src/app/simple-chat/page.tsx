@@ -4,7 +4,7 @@ import { ChatBox } from '@/components/ChatBox';
 import { PromptPart, RawMessage, Message } from '@/lib/types/llm';
 import { complete } from '@/lib/llm';
 import { addMsg, makeMsg } from '@/lib/utils/messages';
-import LLMModelStatus from '@/components/LLMModelStatus';
+import AIModelStatus from '@/components/AIModelStatus';
 
 const getResponse = async (input: string, messages: Message[]) => {
 	const system: PromptPart[] = [
@@ -48,7 +48,7 @@ function SimpleChat() {
 
 	return (
 		<div className="chat-container">
-			<LLMModelStatus />
+			<AIModelStatus type="llm" />
 			<ChatBox
 				messages={messages}
 				setMessages={setMessages}

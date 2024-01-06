@@ -73,16 +73,31 @@ export type ModelActionResponse = {
 
 export interface ModelInfo {
 	model: string;
-	loader_name: 'llamacpp' | 'exllamav2' | 'transformers' | '';
+	loader_name: LoaderName;
 }
 export type ListModelsResponse = {
 	models: string[];
 };
+
+export type LoaderName =
+	| 'llamacpp'
+	| 'exllamav2'
+	| 'transformers'
+	| 'diffusers'
+	| 'openai'
+	| 'coqui'
+	| 'whispercpp';
+export type AIType = 'llm' | 'img' | 'tts' | 'stt';
 export type LoadModelResponse = {
 	status: 'Loaded' | 'Error';
 	model: string;
-	loader_name?: 'llamacpp' | 'exllamav2' | 'transformers' | '';
+	loader_name?: LoaderName;
 	error?: string;
+};
+export type UnloadModelResponse = {
+	status: 'Unloaded';
+	model: string;
+	time: number;
 };
 // export interface TokenCountOptions {
 // 	prompt: string;
