@@ -5,6 +5,7 @@ from .base import LLMClient_Base
 from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config, ExLlamaV2Tokenizer
 from exllamav2.generator import ExLlamaV2StreamingGenerator, ExLlamaV2Sampler
 import torch
+from ._utils import text_completion
 
 logger = logging.getLogger('Exllamav2-client')
 
@@ -122,30 +123,16 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		result = ''
 		tokens = 0
 		for chunk in self.generate(options):
-			tokens += len(chunk)
 			result += chunk
+			tokens += 1
 
-		obj = {
-			'id':
-			'',
-			'object':
-			'text_completion',
-			'created':
-			int(time.time()),
-			'model':
-			self.model_name,
-			'choices': [{
-				'text':
-				result,
-				'index':
-				0,
-				'finish_reason':
-				'length' if tokens >= options.max_tokens else 'stop',
-			}],
-			'usage': {
-				'prompt_tokens': 0,
-				'completion_tokens': 0,
-				'total_tokens': 0,
-			}
+		r = text_completion(
+			result,
+			model_name=self.model_name or '',
+			tokens=tokens,
+			max_tokens=options.max_tokens
+		)
+		return {
+			'result': r,
+			'params': options.model_dump(),
 		}
-		return obj

@@ -27,7 +27,8 @@ interface GenerateResponse {
 			total_tokens: number;
 		};
 	};
-	prompt?: string;
+	params: Partial<GenerateParams>;
+	// prompt?: string;
 }
 
 interface ModelInfo {

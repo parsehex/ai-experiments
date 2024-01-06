@@ -3,6 +3,7 @@ import requests
 from py_api.models.llm.llm_api import CompletionResult
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_OpenAI
 from .base import LLMClient_Base
+from ._utils import text_completion
 from py_api.settings import OPENAI_API_KEY
 
 # so, with this there is no loading models, you pick which model when calling complete
@@ -79,9 +80,7 @@ class LLMClient_OpenAI(LLMClient_Base):
 		"""(TODO) Generate text from a prompt. Returns a Generator."""
 		raise NotImplementedError()
 
-	def complete(
-		self, options: CompletionOptions_OpenAI
-	) -> CompletionResult:
+	def complete(self, options: CompletionOptions_OpenAI):
 		"""Generate text from a prompt. Returns a string."""
 		if not self.hasKey():
 			raise Exception('OpenAI API key not set.')
@@ -100,24 +99,15 @@ class LLMClient_OpenAI(LLMClient_Base):
 		}
 		res = self._api_post(url, body)
 		choice = res['choices'][0]
-		obj = {
-			'id':
-			res['id'],
-			'object':
-			'text_completion',
-			'created':
-			res['created'],
-			'model':
-			res['model'],
-			'choices': [{
-				'text': choice['message']['content'],
-				'index': 0,
-				'finish_reason': choice['finish_reason'],
-			}],
-			'usage':
-			res['usage'],
+		r = text_completion(
+			choice['text'],
+			model_name=options.model,
+			finish_reason=choice['finish_reason'],
+		)
+		return {
+			'result': r,
+			'params': options.model_dump(),
 		}
-		return CompletionResult.model_validate(obj)
 
 	def chat(
 		self, messages: List[Dict],

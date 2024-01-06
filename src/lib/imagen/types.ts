@@ -50,7 +50,7 @@ export interface txt2imgResponseInfo {
 export interface txt2imgResponse {
 	images: string[]; // array of base64-png(s)
 	// parameters?: Partial<txt2imgParams>; // copy of the parameters passed to the api
-	info: string; // the final params used to generate the images, find seed here
+	info: txt2imgParams; // the final params used to generate the images, find seed here
 	nsfw_content_detected: boolean[];
 }
 

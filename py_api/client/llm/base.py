@@ -1,5 +1,5 @@
 from typing import Generator, List, Dict, Union, Any
-from py_api.models.llm.llm_api import CompletionResult
+from py_api.models.llm.llm_api import CompletionReturn
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2
 
 class LLMClient_Base:
@@ -87,7 +87,7 @@ class LLMClient_Base:
 	def complete(
 		self, options: Union[CompletionOptions_LlamaCppPython,
 													CompletionOptions_Exllamav2]
-	) -> CompletionResult:
+	) -> CompletionReturn:
 		"""Generate text from a prompt. Returns a string."""
 		raise NotImplementedError()
 

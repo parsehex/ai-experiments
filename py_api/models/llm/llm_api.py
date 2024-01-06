@@ -88,11 +88,20 @@ class CompletionResponse(BaseModel):
 	result: CompletionResult = Field(
 		..., description='Completion result.'
 	)
+	params: dict[
+		str, Any] = Field(..., description='Completion parameters.')
 	prompt: str = Field(
 		'',
 		description=
 		'Prompt used to generate result, if passed `return_prompt` was True.'
 	)
+
+class CompletionReturn(BaseModel):
+	result: CompletionResult = Field(
+		..., description='Completion result.'
+	)
+	params: dict[
+		str, Any] = Field(..., description='Completion parameters.')
 
 class DownloadModelRequest(BaseModel):
 	model: str = Field(

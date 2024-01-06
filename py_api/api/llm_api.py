@@ -196,9 +196,14 @@ def llm_api(app: FastAPI):
 		req.messages = messages
 		options = CompletionOptions.model_validate(req.model_dump())
 		result = manager.complete(options)
-		res: dict = {'result': result}
-		if return_prompt:
-			res['prompt'] = prompt
+		assert result is not None
+		res: dict = {
+			'result': result.result,
+			'params': result.params
+		}
+		# TODO remove (client should check params.prompt)
+		# if return_prompt:
+		# 	res['prompt'] = prompt
 		return CompletionResponse(**res)
 
 	@app.websocket('/llm/v1/ws')

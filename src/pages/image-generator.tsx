@@ -75,7 +75,7 @@ const ImageGenerator = () => {
 		console.log(response);
 		setGenTime(Date.now() - startTime);
 		if (!response.info) return;
-		const params: txt2imgResponseInfo = JSON.parse(response.info);
+		const params: txt2imgResponseInfo = response.info;
 		setLastGenParams(params);
 	};
 
@@ -200,6 +200,7 @@ const ImageGenerator = () => {
 
 					{!!generatedImages.length && (
 						<div className="gen-image flex flex-col">
+							{/* TODO makeInfotext func? */}
 							{/* {lastGenParams.infotexts?.length && (
 								<span className="params">{lastGenParams.infotexts[0]}</span>
 							)} */}

@@ -2,6 +2,7 @@ import logging, os, time
 from py_api.args import Args
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_Transformers
 from .base import LLMClient_Base
+from ._utils import text_completion
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 import torch
 
@@ -139,28 +140,17 @@ class LLMClient_Transformers(LLMClient_Base):
 		)
 
 		result = pipe(options.prompt)
+		print(result)
 		result = result[0]['generated_text']  # type: ignore
 		# remove prompt from result
 		result = result[len(options.prompt):]
+		assert isinstance(result, str)
 
-		obj = {
-			'id':
-			'',
-			'object':
-			'text_completion',
-			'created':
-			int(time.time()),
-			'model':
-			self.model_name,
-			'choices': [{
-				'text': result,
-				'index': 0,
-				'finish_reason': 'length',
-			}],
-			'usage': {
-				'prompt_tokens': 0,
-				'completion_tokens': 0,
-				'total_tokens': 0,
-			}
+		r = text_completion(
+			result,
+			model_name=self.model_name or '',
+		)
+		return {
+			'result': r,
+			'params': options.model_dump(),
 		}
-		return obj

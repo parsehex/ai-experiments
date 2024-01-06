@@ -182,7 +182,7 @@ class ImgClient_Diffusers(ImgClient_Base):
 			'images': [imgb64],
 			'nsfw_content_detected': [False],
 			'info':
-			json.dumps(options)
+			Txt2ImgOptions.model_validate(options)
 		})
 
 	# def img2img(

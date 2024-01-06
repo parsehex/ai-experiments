@@ -4,6 +4,7 @@ from py_api.args import Args
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython
 from py_api.utils.llm_models import parse_size_and_quant
 from .base import LLMClient_Base
+from ._utils import text_completion
 from llama_cpp import Llama, LlamaGrammar, LlamaCache
 import torch
 
@@ -121,5 +122,7 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 		result = self.model.create_completion(**o)
 		end = time.time()
 		logger.debug(f'Generated text in {end - start}s')
-		# TODO return more, like the exact options used
-		return result
+		return {
+			'result': result,
+			'params': o,
+		}

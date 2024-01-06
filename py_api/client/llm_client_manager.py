@@ -3,6 +3,7 @@ import logging, os
 from py_api.args import Args
 from py_api.client.base_manager import BaseAIManager
 from py_api.client.llm import LLMClient_LlamaCppPython, LLMClient_Exllamav2, LLMClient_OpenAI, LLMClient_Transformers
+from py_api.models.llm.llm_api import CompletionReturn
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2, CompletionOptions_Transformers
 
 ClientUnion = Union[LLMClient_LlamaCppPython,
@@ -121,16 +122,29 @@ class LLMManager(BaseAIManager):
 		if model is None or model == '':
 			model = self.model_name or Args['llm_model']
 			gen_options.model = model
+
 		if 'openai:' in model:
 			OpenAI = LLMClient_OpenAI.instance
 			opt = OpenAI.convert_options(gen_options)
-			return LLMClient_OpenAI.instance.complete(opt)
-		if not self.loader:
-			self.load_model(model or None)
+			result = LLMClient_OpenAI.instance.complete(opt)
+		else:
+			if not self.loader:
+				self.load_model(model or None)
 			if not self.loader:
 				raise Exception('Model not loaded.')
-		options = self.loader.convert_options(gen_options)
-		loader_model = self.get_loader_model()
-		assert loader_model is not None
-		assert isinstance(options, loader_model)
-		return self.loader.complete(options)  # type: ignore
+			options = self.loader.convert_options(gen_options)
+			loader_model = self.get_loader_model()
+			assert loader_model is not None
+			assert isinstance(options, loader_model)
+			result = self.loader.complete(options)  # type: ignore
+
+		try:
+			validated_result = CompletionReturn.model_validate(result)
+		except Exception as e:
+			logger.error(
+				"Validation failed for model %s with options %s. Error: %s",
+				model, gen_options, str(e)
+			)
+			return None
+
+		return validated_result

@@ -156,11 +156,30 @@ class Formatter:
 		return prompt
 
 	def UserAssistant(
-		self, user: str, system: str = '', prefix_response=''
+		self,
+		user: str,
+		system: str = '',
+		prefix_response='',
+		prior_msgs=[],
+		user_role='user',
+		assistant_role='assistant'
 	):
 		prompt = ''
 		if system != '':
 			prompt += system.strip() + '\n'
+		if len(prior_msgs) > 0:
+			# if roles are not standard, use them to map to standard User/Assistant roles
+			is_standard = True
+			if user_role != 'user' or assistant_role != 'assistant':
+				is_standard = False
+			for msg in prior_msgs:
+				role = msg['role']
+				if not is_standard:
+					if role == user_role:
+						role = 'USER'
+					elif role == assistant_role:
+						role = 'ASSISTANT'
+				prompt += role + ':\n' + msg['content'].strip() + '\n'
 		prompt += 'USER:\n' + user.strip() + '\n'
 		prompt += 'ASSISTANT:\n'
 		if prefix_response != '':

@@ -40,6 +40,6 @@ class Txt2ImgResponse(BaseModel):
 		description=
 		'List indicating whether the corresponding image contains NSFW content.'
 	)
-	info: str = Field(
+	info: Txt2ImgOptions = Field(
 		..., description='Information about the image generation.'
 	)
