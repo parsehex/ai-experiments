@@ -47,10 +47,9 @@ const ImageGenerator = () => {
 		getSamplers()
 			.then((samplers) => {
 				setSdOnline(true);
-				// const samplerNames = samplers.map((sampler) => sampler.name);
-				// setSamplers(samplerNames);
-				// const i = samplerNames.indexOf('Euler a');
-				// setSelectedSampler(samplers[i || 0].name);
+				setSamplers(samplers);
+				const i = samplers.indexOf('Euler a');
+				setSelectedSampler(samplers[i || 0]);
 			})
 			.catch(() => {
 				setSdOnline(false);
@@ -64,7 +63,7 @@ const ImageGenerator = () => {
 			prompt,
 			negative_prompt: negativePrompt,
 			seed,
-			// sampler_name: selectedSampler,
+			sampler_name: selectedSampler,
 			guidance_scale: cfgScale,
 			// batch_size: batchSize,
 			// n_iter: nIter,

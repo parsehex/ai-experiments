@@ -15,7 +15,7 @@ export interface txt2imgParams {
 	negative_prompt: string;
 	// styles: string[];
 	seed: number;
-	// sampler_name: string;
+	sampler_name: string;
 	// batch_size: number;
 	// n_iter: number;
 	num_inference_steps: number;
@@ -40,7 +40,7 @@ export interface txt2imgResponseInfo {
 	// subseed_strength: number;
 	width: number;
 	height: number;
-	// sampler_name: string;
+	sampler_name: string;
 	guidance_scale: number;
 	num_inference_steps: number;
 	// batch_size: number;

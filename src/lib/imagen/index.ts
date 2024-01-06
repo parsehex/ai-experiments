@@ -23,7 +23,8 @@ function fixUrl() {
 export async function getSamplers(): Promise<string[]> {
 	if (!adjusted) fixUrl();
 	const res = await fetch(`${BASE_URL}/img/v1/list-samplers`);
-	return await res.json();
+	const r = await res.json();
+	return r.samplers;
 }
 export async function getLoras(): Promise<Lora[]> {
 	if (!adjusted) fixUrl();
