@@ -145,7 +145,7 @@ class ImgClient_Diffusers(ImgClient_Base):
 
 		generator = torch.Generator(device=self.device)
 		if seed >= 0:
-			generator = [generator.manual_seed(seed)]
+			generator = generator.manual_seed(seed)
 		else:
 			ran = int(torch.randint(0, 2**32, (1, )).item())
 			generator = generator.manual_seed((ran))
