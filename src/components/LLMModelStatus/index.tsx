@@ -32,6 +32,20 @@ const LLMModelStatus: React.FC = () => {
 		}
 	}, [models]);
 
+	// when we get modelinfo for first time,
+	//   update the selected source and model
+	useEffect(() => {
+		if (!modelInfo || selectedModel) return;
+		if (!modelInfo.model.includes(':')) {
+			setSelectedSource('local');
+			setSelectedModel(modelInfo.model);
+			return;
+		}
+		const source = modelInfo.model.split(':')[0];
+		setSelectedSource(source);
+		setSelectedModel(modelInfo.model.split(':')[1]);
+	}, [modelInfo]);
+
 	useEffect(() => {
 		setSelectedSource('local');
 	}, []);
@@ -107,14 +121,13 @@ const LLMModelStatus: React.FC = () => {
 					onChange={handleModelSelect}
 					value={selectedModel}
 				>
-					<option value="">Select a Model</option>
 					{sources[selectedSource].map((model) => (
 						<option key={model} value={model}>
 							{model}
 						</option>
 					))}
 				</select>
-				{!!selectedModel && (
+				{!!selectedModel && selectedModel !== modelInfo?.model && (
 					<button
 						className="basic"
 						onClick={() => handleLoadModel(selectedModel)}

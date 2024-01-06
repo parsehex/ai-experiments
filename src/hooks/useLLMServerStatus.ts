@@ -19,8 +19,8 @@ function initWS({ setStatus, setModelInfo, setModels, wsSend }: InitWSOptions) {
 	ws.onopen = () => {
 		setStatus(ServerStatus.ON_NO_MODEL);
 		try {
-			wsSend({ type: 'get_model' });
 			wsSend({ type: 'list_models' });
+			wsSend({ type: 'get_model' });
 		} catch (error) {
 			console.error('Failed to send message:', error);
 		}
@@ -101,7 +101,6 @@ export function useServerStatus() {
 		};
 		const refreshModels = async () => {
 			wsSend({ type: 'list_models' });
-			console.log('refreshed models');
 		};
 
 		startWS();

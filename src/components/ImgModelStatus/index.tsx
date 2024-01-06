@@ -32,6 +32,20 @@ const ImgModelStatus: React.FC = () => {
 		}
 	}, [models]);
 
+	// when we get modelinfo for first time,
+	//   update the selected source and model
+	useEffect(() => {
+		if (!modelInfo || selectedModel) return;
+		if (!modelInfo.model.includes(':')) {
+			setSelectedSource('local');
+			setSelectedModel(modelInfo.model);
+			return;
+		}
+		const source = modelInfo.model.split(':')[0];
+		setSelectedSource(source);
+		setSelectedModel(modelInfo.model.split(':')[1]);
+	}, [modelInfo]);
+
 	useEffect(() => {
 		setSelectedSource('local');
 	}, []);
