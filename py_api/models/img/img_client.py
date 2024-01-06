@@ -25,6 +25,9 @@ class Txt2ImgOptions(BaseModel):
 	seed: Optional[int] = Field(
 		None, description='Seed for random number generator.'
 	)
+	sampler_name: Optional[str] = Field(
+		None, description='Sampler name.'
+	)
 
 class Txt2ImgResponse(BaseModel):
 	"""Response to generate image from text."""

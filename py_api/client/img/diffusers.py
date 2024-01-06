@@ -7,26 +7,35 @@ from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl_img2img import StableDiffusionXLImg2ImgPipeline
 from diffusers.pipelines.stable_diffusion.pipeline_output import StableDiffusionPipelineOutput
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline
-import base64
+import base64, time
 from io import BytesIO
 from diffusers.models.autoencoders.autoencoder_kl import AutoencoderKL
+
 from diffusers.schedulers.scheduling_dpmsolver_multistep import DPMSolverMultistepScheduler
+from diffusers.schedulers.scheduling_euler_ancestral_discrete import EulerAncestralDiscreteScheduler
+
 import torch
 
-from typing import Union, List, Any
+from typing import Union, List, Any, Dict
 from py_api.args import Args
 import os, json
+
+SamplersUnion = Union[DPMSolverMultistepScheduler,
+											EulerAncestralDiscreteScheduler]
+SamplersDict = Dict[str, Union[SamplersUnion, None]]
+
+samplers: SamplersDict = {
+	'dpm++ 2m': None,
+	'dpm++ 2m kerras': None,
+	'euler a': None
+}
 
 class ImgClient_Diffusers(ImgClient_Base):
 	device = 'cuda' if torch.cuda.is_available() else 'cpu'
 	model: Union[StableDiffusionPipeline,
 								StableDiffusionXLPipeline, None] = None
 	pipeline: Union[DiffusionPipeline, None] = None
-
-	# def __init__(self):
-	# 	self.model = None
-	# 	self.model_name = None
-	# 	self.model_abspath = None
+	default_config: Any = {}
 
 	def load_model(self, model_name: str):
 		if model_name is None or model_name == '':
@@ -50,10 +59,11 @@ class ImgClient_Diffusers(ImgClient_Base):
 				self.abspath,
 				variant="fp16",
 				load_safety_checker=False,
-				torch_dtype=torch.float16
+				torch_dtype=torch.float16,
+				# scheduler_type='dpm'
 			)
 		self.pipeline.to(self.device)
-		self.pipeline.unet.set_default_attn_processor()
+		# self.pipeline.unet.set_default_attn_processor()
 
 		# use vae from model
 		vae = AutoencoderKL.from_single_file(
@@ -61,8 +71,9 @@ class ImgClient_Diffusers(ImgClient_Base):
 		).to(self.device)
 		self.pipeline.vae = vae
 
+		self.default_config = self.pipeline.scheduler.config
 		self.pipeline.scheduler = DPMSolverMultistepScheduler.from_config(
-			self.pipeline.scheduler.config
+			self.default_config
 		)
 
 		self.model = AutoPipelineForText2Image.from_pipe(
@@ -76,6 +87,28 @@ class ImgClient_Diffusers(ImgClient_Base):
 		self.model_abspath = None
 		self.loaded = False
 		torch.cuda.empty_cache()
+
+	def list_samplers(self) -> List[str]:
+		return ['DPM++ 2M', 'DPM++ 2M Kerras', 'Euler a']
+
+	def get_sampler(self, sampler_name: str) -> Any:
+		sampler_name = sampler_name.lower()
+		if samplers[sampler_name] is None:
+			sampler = None
+			if sampler_name == 'dpm++ 2m':
+				sampler = DPMSolverMultistepScheduler.from_config(
+					self.default_config
+				)
+			elif sampler_name == 'dpm++ 2m kerras':
+				sampler = DPMSolverMultistepScheduler.from_config(
+					self.default_config, use_karras_sigmas=True
+				)
+			elif sampler_name == 'euler a':
+				sampler = EulerAncestralDiscreteScheduler.from_config(
+					self.default_config
+				)
+			samplers[sampler_name] = sampler  # type: ignore
+		return samplers[sampler_name]
 
 	def txt2img(
 		self, gen_options: Txt2ImgOptions
@@ -97,6 +130,15 @@ class ImgClient_Diffusers(ImgClient_Base):
 		prompt = prompt.replace('  ', ' ')
 		prompt = prompt.strip()
 
+		sampler_name = gen_options.sampler_name
+		if sampler_name is None or sampler_name == '':
+			sampler_name = 'Euler a'
+		sampler = self.get_sampler(sampler_name)
+		self.pipeline.scheduler = sampler
+		self.model = AutoPipelineForText2Image.from_pipe(
+			self.pipeline
+		)
+
 		seed = -1
 		if gen_options.seed is not None:
 			seed = gen_options.seed
@@ -116,7 +158,6 @@ class ImgClient_Diffusers(ImgClient_Base):
 		res = self.model(generator=generator, **opt)
 
 		self.pipeline.disable_freeu()
-		# assert isinstance(res, StableDiffusionPipelineOutput)
 		img = res.images[0]  # type: ignore
 		assert isinstance(img, Image.Image)
 		imgb64 = 'data:image/png;base64,'
@@ -134,9 +175,9 @@ class ImgClient_Diffusers(ImgClient_Base):
 			'width': gen_options.width,
 			'height': gen_options.height,
 			'clip_skip': gen_options.clip_skip,
-			'seed': seed
+			'seed': seed,
+			'sampler_name': sampler_name
 		}
-		print(json.dumps(options))
 		return Txt2ImgResponse.model_validate({
 			'images': [imgb64],
 			'nsfw_content_detected': [False],

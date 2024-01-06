@@ -45,6 +45,11 @@ class ImgManager(BaseAIManager):
 			models.append(filename)
 		return models
 
+	def list_samplers(self) -> list[str]:
+		if self.loader is None:
+			return []
+		return self.loader.list_samplers()
+
 	def txt2img(self, gen_options):
 		if self.loader is None:
 			raise Exception('No model loaded.')

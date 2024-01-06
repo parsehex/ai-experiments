@@ -52,6 +52,12 @@ class ImgClient_Base:
 	# 	"""Convert options from common names to model-specific names and values."""
 	# 	raise NotImplementedError()
 
+	def list_samplers(self) -> List[str]:
+		raise NotImplementedError()
+
+	def get_sampler(self, sampler_name: str) -> Any:
+		raise NotImplementedError()
+
 	def load_model(self, model_name: str):
 		raise NotImplementedError()
 

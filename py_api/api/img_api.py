@@ -1,4 +1,5 @@
 import logging, os, time
+from typing import List, Union
 from fastapi import FastAPI, HTTPException, WebSocket
 from fastapi.responses import JSONResponse, FileResponse
 from py_api.args import Args
@@ -82,6 +83,9 @@ def img_api(app: FastAPI):
 	def list_models() -> ListModelsResponse:
 		models = manager.list_models()
 		return ListModelsResponse.model_validate({'models': models})
+
+	def list_samplers() -> List[str]:
+		return manager.list_samplers()
 
 	def txt2img(gen_options: Txt2ImgOptions) -> Txt2ImgResponse:
 		if manager.model_name is None:
@@ -189,4 +193,4 @@ def img_api(app: FastAPI):
 	@app.get('/img/v1/list-samplers', tags=['img'])
 	async def img_list_samplers():
 		"""Get list of available samplers."""
-		return JSONResponse(content={'samplers': []})
+		return JSONResponse(content={'samplers': list_samplers()})
