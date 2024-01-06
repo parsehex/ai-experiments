@@ -105,16 +105,10 @@ export const demos: ItemProps[] = [
 		tags: ['Chat', 'LLM', 'Imagen', 'STT'],
 	},
 	{
-		title: 'Speak Chat',
-		description: 'Chat with end-to-end speech',
-		// href: '/speak-chat',
+		title: 'Simple Chat',
+		description: 'Simple chat meant to be a guide for other demos',
+		href: '/simple-chat',
 		tags: ['Chat', 'LLM', 'STT'],
-	},
-	{
-		title: 'Prompt Improver',
-		description: 'Improve a prompt using LLM',
-		// href: '/prompt-improver',
-		tags: ['LLM'],
 	},
 	{
 		// inspiration: https://old.reddit.com/r/LocalLLaMA/comments/17fmhcb/
@@ -130,10 +124,16 @@ export const demos: ItemProps[] = [
 		tags: ['Chat', 'LLM', 'Memory'],
 	},
 	{
-		title: 'Simple Chat',
-		description: 'Simple chat meant to be a guide for other demos',
-		href: '/simple-chat',
+		title: 'Speak Chat',
+		description: 'Chat with end-to-end speech',
+		// href: '/speak-chat',
 		tags: ['Chat', 'LLM', 'STT'],
+	},
+	{
+		title: 'Prompt Improver',
+		description: 'Improve a prompt using LLM',
+		// href: '/prompt-improver',
+		tags: ['LLM'],
 	},
 	{
 		title: 'LangChain Chat',

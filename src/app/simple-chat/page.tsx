@@ -26,7 +26,7 @@ const getResponse = async (input: string, messages: Message[]) => {
 
 const defaultMsg = makeMsg(
 	'message',
-	'ASSISTANT',
+	'assistant',
 	"Hi, I'm a chatbot. How can I help you today?"
 );
 function SimpleChat() {
