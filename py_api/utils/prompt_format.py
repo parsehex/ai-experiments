@@ -257,7 +257,7 @@ def parts_to_str(parts: list[PromptPart]):
 	return s
 
 model_formats = {
-	'*dolphin-2.*-mistral-7b*': 'ChatML',
+	'*dolphin-2*': 'ChatML',
 	'*emerhyst-20b*': 'Alpaca',
 	'*luna-ai-llama2*': 'UserAssistant',
 	'*mistral-7b-instruct*': 'MistralInstruct',
