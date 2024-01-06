@@ -50,6 +50,9 @@ function initWS({
 				setStatus(ServerStatus.ON_NO_MODEL);
 				break;
 			case 'list_models':
+				data.models.sort((a: string, b: string) =>
+					a.toLowerCase().localeCompare(b.toLowerCase())
+				);
 				setModels(data.models);
 				break;
 			default:
