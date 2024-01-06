@@ -8,8 +8,10 @@ const pageTitleMap: Record<string, string> = {
 	'/redacter': 'Redacter',
 	'/role-play': 'Role Play Chat',
 	'/simple-chat': 'Simple Chat',
+	'/character-chat': 'Character Chat',
 	'/story-generator': 'Story Generator',
 	'/summarizer': 'Summarizer',
+	'/transcribe-audio': 'Transcribe Audio',
 	'/text-to-speech': 'Text to Speech',
 	'/thought-chain': 'Thought Chain',
 };

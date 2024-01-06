@@ -93,6 +93,12 @@ export const demos: ItemProps[] = [
 		tags: ['Story', 'LLM', 'Memory'],
 	},
 	{
+		title: 'Character Chat',
+		description: 'Customize the LLM with characters',
+		href: '/character-chat',
+		tags: ['Chat', 'LLM', 'STT'],
+	},
+	{
 		title: 'Imagen Chat',
 		description: 'Chat with the ability to generate images',
 		href: '/imagen-chat',
@@ -103,6 +109,12 @@ export const demos: ItemProps[] = [
 		description: 'Chat with end-to-end speech',
 		// href: '/speak-chat',
 		tags: ['Chat', 'LLM', 'STT'],
+	},
+	{
+		title: 'Prompt Improver',
+		description: 'Improve a prompt using LLM',
+		// href: '/prompt-improver',
+		tags: ['LLM'],
 	},
 	{
 		// inspiration: https://old.reddit.com/r/LocalLLaMA/comments/17fmhcb/
