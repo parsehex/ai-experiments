@@ -36,9 +36,6 @@ class CompletionRequest(CompletionOptions):
 	prefix_response: str = Field(
 		'', description='Prefix to add to prompt.'
 	)
-	return_prompt: bool = Field(
-		True, description='Return prompt with response.'
-	)
 	model: str = Field(
 		'',
 		description=
@@ -90,11 +87,6 @@ class CompletionResponse(BaseModel):
 	)
 	params: dict[
 		str, Any] = Field(..., description='Completion parameters.')
-	prompt: str = Field(
-		'',
-		description=
-		'Prompt used to generate result, if passed `return_prompt` was True.'
-	)
 
 class CompletionReturn(BaseModel):
 	result: CompletionResult = Field(

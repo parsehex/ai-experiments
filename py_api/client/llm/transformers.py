@@ -64,12 +64,6 @@ class LLMClient_Transformers(LLMClient_Base):
 			device_map=self.device,
 		)
 
-		# self.generator = TextStreamer(
-		# 	self.tokenizer, # type: ignore
-		# 	skip_prompt=True,
-		# 	skip_special_tokens=True
-		# )
-
 		end = time.time()
 		logger.debug(
 			f'Loaded model {self.model_name} in {end - start}s'
@@ -90,46 +84,10 @@ class LLMClient_Transformers(LLMClient_Base):
 		torch.cuda.empty_cache()
 		logger.debug('Unloaded model.')
 
-	# def generate(
-	# 	self,
-	# 	options: CompletionOptions_Transformers
-	# ):
-	# 	if not self.loaded or self.model is None or self.generator is None or self.tokenizer is None or self.cache is None:
-	# 		raise Exception('Re-load model.')
-
-	# 	start = time.time()
-
-	# 	params = options.model_dump()
-	# 	tokens = self.tokenizer(params['prompt'], return_tensors='pt').input_ids.to(self.device)
-
-	# 	output = self.model.generate(
-	# 		tokens,
-	# 		self.generator,
-	# 		**params,
-	# 	)
-
-	# 	generated_tokens = 0
-	# 	while True:
-	# 		chunk = self.tokenizer.decode(output[0], skip_special_tokens=True)
-	# 		generated_tokens += 1
-	# 		if eos or generated_tokens >= options.max_tokens:
-	# 			break
-	# 		yield chunk
-
-	# 	end = time.time()
-	# 	logger.debug(f'Generated text in {end - start}s')
-
 	def complete(self, options: CompletionOptions_Transformers):
 		if not self.loaded or self.model is None:
 			self.load_model()
 		assert isinstance(options, CompletionOptions_Transformers)
-		# result = ''
-		# tokens = 0
-		# for chunk in self.generate(
-		# 	options
-		# ):
-		# 	tokens += len(chunk)
-		# 	result += chunk
 		opt = options.model_dump()
 		del opt['prompt']
 		pipe = pipeline(
@@ -140,7 +98,6 @@ class LLMClient_Transformers(LLMClient_Base):
 		)
 
 		result = pipe(options.prompt)
-		print(result)
 		result = result[0]['generated_text']  # type: ignore
 		# remove prompt from result
 		result = result[len(options.prompt):]

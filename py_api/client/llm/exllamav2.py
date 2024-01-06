@@ -32,7 +32,6 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		models_dir = Args['llm_models_dir']
 
 		# model_name should be name of directory in models_dir
-		# TODO: model name can also start with 'hf:' to download from HuggingFace
 		is_dir = os.path.isdir(os.path.join(models_dir, model_name))
 		if not is_dir:
 			raise Exception(

@@ -60,8 +60,6 @@ class LLMClient_Base:
 					newOptions[key] = optObj[key]
 				else:
 					newOptions[key] = schema['properties'][key]['default']
-				# newOptions[key] = optObj[key]
-				# print(f'setting {key} to {opt[key]}')
 
 		new_options = model.model_validate(newOptions)
 

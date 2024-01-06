@@ -161,7 +161,6 @@ def llm_api(app: FastAPI):
 		parts = req.parts
 		messages = req.messages
 		prefix_response = req.prefix_response
-		return_prompt = req.return_prompt
 		model = req.model
 		if model == '':
 			model = manager.model_name or ''
@@ -201,9 +200,6 @@ def llm_api(app: FastAPI):
 			'result': result.result,
 			'params': result.params
 		}
-		# TODO remove (client should check params.prompt)
-		# if return_prompt:
-		# 	res['prompt'] = prompt
 		return CompletionResponse(**res)
 
 	@app.websocket('/llm/v1/ws')
