@@ -26,7 +26,7 @@ SamplersDict = Dict[str, Union[SamplersUnion, None]]
 
 samplers: SamplersDict = {
 	'dpm++ 2m': None,
-	'dpm++ 2m kerras': None,
+	'dpm++ 2m karras': None,
 	'euler a': None
 }
 
