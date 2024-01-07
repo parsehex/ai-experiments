@@ -48,13 +48,13 @@ const generateImg = async (
 		sampler_name: sampler,
 		guidance_scale: cfg,
 		seed,
-		batch_size: 1,
-		n_iter: 1,
+		// batch_size: 1,
+		// n_iter: 1,
 		num_inference_steps: steps,
 		width: 512,
 		height: 768,
 	});
-	const info: txt2imgResponseInfo = JSON.parse(res.info);
+	const info: txt2imgResponseInfo = res.info;
 	const image = res.images[0];
 	return { image, info };
 };
@@ -192,15 +192,15 @@ function InnerMonologueChat() {
 				negative_prompt: 'easynegative',
 				sampler_name: pickSampler(options.randomSampler),
 				guidance_scale: options.randomCfg ? GET_RANDOM_CFG() : options.cfg,
-				batch_size: 1,
-				n_iter: 1,
+				// batch_size: 1,
+				// n_iter: 1,
 				num_inference_steps: options.steps,
 				width: 512,
 				height: 768,
 			});
 			const end = Date.now();
 			toast.success(`Generated image ${(end - start) / 1000}s`);
-			infoparams = JSON.parse(res.info);
+			infoparams = res.info;
 			setLastInfo(infoparams);
 			image = res.images[0];
 			toast.success('Image generated');
@@ -407,7 +407,7 @@ function InnerMonologueChat() {
 
 		const opt = {} as any;
 		if (verbatim) {
-			opt.cfg = lastInfo.cfg_scale;
+			opt.cfg = lastInfo.guidance_scale;
 			opt.sampler = lastInfo.sampler_name;
 		} else {
 			if (cfg) opt.cfg = cfg;
