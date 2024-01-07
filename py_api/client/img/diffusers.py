@@ -36,6 +36,7 @@ class ImgClient_Diffusers(ImgClient_Base):
 								StableDiffusionXLPipeline, None] = None
 	pipeline: Union[DiffusionPipeline, None] = None
 	default_config: Any = {}
+	current_sampler: str = ''
 
 	def load_model(self, model_name: str):
 		if model_name is None or model_name == '':
@@ -75,6 +76,7 @@ class ImgClient_Diffusers(ImgClient_Base):
 		self.pipeline.scheduler = DPMSolverMultistepScheduler.from_config(
 			self.default_config
 		)
+		self.current_sampler = 'DPM++ 2M'
 
 		self.model = AutoPipelineForText2Image.from_pipe(
 			self.pipeline
@@ -133,11 +135,12 @@ class ImgClient_Diffusers(ImgClient_Base):
 		sampler_name = gen_options.sampler_name
 		if sampler_name is None or sampler_name == '':
 			sampler_name = 'Euler a'
-		sampler = self.get_sampler(sampler_name)
-		self.pipeline.scheduler = sampler
-		self.model = AutoPipelineForText2Image.from_pipe(
-			self.pipeline
-		)
+		if sampler_name != self.current_sampler:
+			sampler = self.get_sampler(sampler_name)
+			self.pipeline.scheduler = sampler
+			self.model = AutoPipelineForText2Image.from_pipe(
+				self.pipeline
+			)
 
 		seed = -1
 		if gen_options.seed is not None:
