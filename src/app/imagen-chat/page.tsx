@@ -30,7 +30,7 @@ const GET_RANDOM_CFG = () =>
 	Math.random() * (RANCFG_MAX - RANCFG_MIN) + RANCFG_MIN;
 
 const pickSampler = (ran = true) => {
-	const choices = ['Euler a', 'LMS Karras', 'UniPC'];
+	const choices = ['Euler a', 'DPM++ 2M', 'DPM++ 2M Karras'];
 	if (!ran) return choices[0];
 	return choices[Math.floor(Math.random() * choices.length)];
 };
