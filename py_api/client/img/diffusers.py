@@ -73,9 +73,10 @@ class ImgClient_Diffusers(ImgClient_Base):
 		self.pipeline.vae = vae
 
 		self.default_config = self.pipeline.scheduler.config
-		self.pipeline.scheduler = DPMSolverMultistepScheduler.from_config(
+		samplers['dpm++ 2m'] = DPMSolverMultistepScheduler.from_config( # type: ignore
 			self.default_config
 		)
+		self.pipeline.scheduler = samplers['dpm++ 2m']
 		self.current_sampler = 'DPM++ 2M'
 
 		self.model = AutoPipelineForText2Image.from_pipe(
@@ -91,7 +92,7 @@ class ImgClient_Diffusers(ImgClient_Base):
 		torch.cuda.empty_cache()
 
 	def list_samplers(self) -> List[str]:
-		return ['DPM++ 2M', 'DPM++ 2M Kerras', 'Euler a']
+		return ['DPM++ 2M', 'DPM++ 2M Karras', 'Euler a']
 
 	def get_sampler(self, sampler_name: str) -> Any:
 		sampler_name = sampler_name.lower()
@@ -101,7 +102,7 @@ class ImgClient_Diffusers(ImgClient_Base):
 				sampler = DPMSolverMultistepScheduler.from_config(
 					self.default_config
 				)
-			elif sampler_name == 'dpm++ 2m kerras':
+			elif sampler_name == 'dpm++ 2m karras':
 				sampler = DPMSolverMultistepScheduler.from_config(
 					self.default_config, use_karras_sigmas=True
 				)
@@ -141,6 +142,7 @@ class ImgClient_Diffusers(ImgClient_Base):
 			self.model = AutoPipelineForText2Image.from_pipe(
 				self.pipeline
 			)
+			self.current_sampler = sampler_name
 
 		seed = -1
 		if gen_options.seed is not None:
