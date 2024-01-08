@@ -98,7 +98,7 @@ type StepsPreset = 'Low' | 'Medium' | 'High' | 'Custom';
 function InnerMonologueChat() {
 	const defMsg = makeMsg(
 		'message',
-		'ASSISTANT',
+		'assistant',
 		'Hi, what do you want to talk about?'
 	);
 	const [messages, setMessages] = useState<Message[]>([defMsg]);

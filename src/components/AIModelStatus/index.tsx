@@ -188,6 +188,7 @@ const AIModelStatus: React.FC<AIModelStatusProps> = ({ type, inline }) => {
 		>
 			<div
 				className={`h-3 w-full rounded-full ${getStatusColor()} cursor-pointer`}
+				style={{ minWidth: '75px' }}
 				onClick={handleToggleExpand}
 				title={`${name} Status`}
 			/>
