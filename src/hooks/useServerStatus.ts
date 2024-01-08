@@ -26,6 +26,7 @@ function handleMessage(
 ) {
 	const message = JSON.parse(e.data);
 	const { type: messageType, data } = message;
+	const payload = JSON.parse(data);
 	const { model, loader_name } = JSON.parse(data) ?? {};
 
 	switch (messageType) {
@@ -39,10 +40,8 @@ function handleMessage(
 			setStatus(ServerStatus.ON_NO_MODEL);
 			break;
 		case 'list_models':
-			const models =
-				data?.models?.sort((a: string, b: string) =>
-					a.toLowerCase().localeCompare(b.toLowerCase())
-				) ?? [];
+			let models = payload.models;
+			if (!models) models = [];
 			setModels(models);
 			break;
 		default:

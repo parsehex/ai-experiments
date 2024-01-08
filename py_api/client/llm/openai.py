@@ -43,10 +43,11 @@ class LLMClient_OpenAI(LLMClient_Base):
 		url = "https://api.openai.com/v1/models"
 		res = self._api_get(url)
 		models = []
+		prefix = 'openai:'
 		for model in res['data']:
 			if 'gpt' not in model['id']:
 				continue
-			models.append(model['id'])
+			models.append(prefix + model['id'])
 		return models
 
 	# TODO temporary

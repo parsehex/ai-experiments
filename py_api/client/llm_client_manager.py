@@ -71,6 +71,7 @@ class LLMManager(BaseAIManager):
 	def list_models(self) -> list[str]:
 		models = self.list_local_models()
 		models.extend(LLMClient_OpenAI.instance.list_models())
+		models.sort()
 		return models
 
 	def pick_client(self, model_name: str):
