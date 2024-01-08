@@ -22,7 +22,7 @@ const SizePresets = [
 
 const ImageGenerator = () => {
 	const [prompt, setPrompt] = useState('beautiful');
-	const [negativePrompt, setNegativePrompt] = useState('easynegative');
+	const [negativePrompt, setNegativePrompt] = useState('');
 	const [seed, setSeed] = useState(-1);
 	const [samplers, setSamplers] = useState([] as string[]);
 	const [selectedSampler, setSelectedSampler] = useState('');
@@ -87,11 +87,13 @@ const ImageGenerator = () => {
 					<TextInput
 						label="Prompt"
 						id="imagen-prompt"
+						tabIndex={1}
 						value={[prompt, setPrompt]}
 					/>
 					<TextInput
 						label="Negative Prompt"
 						id="imagen-negprompt"
+						tabIndex={2}
 						value={[negativePrompt, setNegativePrompt]}
 					/>
 					<label>
@@ -119,6 +121,7 @@ const ImageGenerator = () => {
 						<input
 							type="number"
 							className="input"
+							tabIndex={3}
 							min={1}
 							max={200}
 							value={steps}
@@ -160,6 +163,7 @@ const ImageGenerator = () => {
 						<input
 							type="number"
 							className="input"
+							tabIndex={4}
 							min={1}
 							max={20}
 							step={0.25}
@@ -204,7 +208,11 @@ const ImageGenerator = () => {
 							{/* {lastGenParams.infotexts?.length && (
 								<span className="params">{lastGenParams.infotexts[0]}</span>
 							)} */}
-							<ImgCarousel images={generatedImages} defaultExpanded={true} />
+							<ImgCarousel
+								maxContentHeight={200}
+								images={generatedImages}
+								defaultExpanded={true}
+							/>
 						</div>
 					)}
 				</>
