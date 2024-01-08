@@ -116,8 +116,8 @@ const TtsDemo: React.FC = () => {
 				<h2>TTS Offline</h2>
 			) : (
 				<>
-					{Options()}
-					{Input()}
+					<Options />
+					<Input />
 					{audioUrl && (
 						<div>
 							<audio controls src={audioUrl}></audio>

@@ -196,7 +196,7 @@ const ImageGenerator = () => {
 		<div className="flex">
 			{sdOnline ? (
 				<>
-					{GenOptions()}
+					<GenOptions />
 
 					{!!generatedImages.length && (
 						<div className="gen-image flex flex-col">

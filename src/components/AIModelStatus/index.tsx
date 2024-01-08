@@ -207,7 +207,7 @@ const AIModelStatus: React.FC<AIModelStatusProps> = ({ type, inline }) => {
 									</button>
 								</div>
 							)}
-							{models.length > 0 && LoadModelControls()}
+							{models.length > 0 && <LoadModelControls />}
 						</>
 					)}
 				</div>
