@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify';
-import { generate, Params } from '@/lib/llm';
+import { generate, Params, complete } from '@/lib/llm';
 import { makePrompt } from '@/lib/llm/prompts';
 import { Message } from '@/lib/types/llm';
 import * as parts from '../prompt-parts';
@@ -12,10 +12,9 @@ export const innerMonologue = async (messages: Message[]) => {
 	messages = messages.filter((msg) => msg.type !== 'thought');
 	const promptParts = parts.innerMonologue({ messages });
 	const { prefix_response: prefixResponse, user, system } = promptParts;
-	const result = await generate(
-		makePrompt(user, system, 'ChatML'),
+	const result = await complete(
+		{ user, system, prefix_response: prefixResponse },
 		Params({
-			prefixResponse,
 			cfg: 2,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 			ban_eos_token: true,
@@ -27,10 +26,9 @@ export const summarizeChat = async (messages: Message[], lastSummary = '') => {
 	messages = messages.filter((msg) => msg.type !== 'thought');
 	const promptParts = parts.summarizeChat({ messages, lastSummary });
 	const { prefix_response: prefixResponse, user, system } = promptParts;
-	const result = await generate(
-		makePrompt(user, system, 'ChatML'),
+	const result = await complete(
+		{ user, system, prefix_response: prefixResponse },
 		Params({
-			prefixResponse,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})
 	);
@@ -45,10 +43,9 @@ export const imgPromptThoughts = async (
 ) => {
 	const promptParts = parts.imagePromptThoughts({ msg, prevMsg, summary });
 	const { prefix_response: prefixResponse, user, system } = promptParts;
-	let result = await generate(
-		makePrompt(user, system, 'ChatML'),
+	let result = await complete(
+		{ user, system, prefix_response: prefixResponse },
 		Params({
-			prefixResponse,
 			stop: ['RESPONSE:', 'INPUT:', '\n', '<|im_end|>'],
 			tokenBans: '13',
 		})
@@ -61,10 +58,9 @@ export const imgPromptThoughts = async (
 export const imgPrompt = async (desc: string, thoughts = '') => {
 	const promptParts = parts.makeImgPrompt({ desc, thoughts });
 	const { prefix_response: prefixResponse, user, system } = promptParts;
-	let result = await generate(
-		makePrompt(user, system, 'ChatML'),
+	let result = await complete(
+		{ user, system, prefix_response: prefixResponse },
 		Params({
-			prefixResponse,
 			temp: 0.5,
 			repetition_penalty: 1.25,
 			truncation_length: 4098,
@@ -82,10 +78,9 @@ export async function addLorasToPrompt(prompt: string) {
 	// const loras = await getLoras();
 	const pickLorasParts = parts.pickLoras({ prompt });
 	const { prefix_response: prefixResponse, user, system } = pickLorasParts;
-	const result = await generate(
-		makePrompt(user, system, 'ChatML'),
+	const result = await complete(
+		{ user, system, prefix_response: prefixResponse },
 		Params({
-			prefixResponse,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})
 	);
@@ -114,10 +109,9 @@ export const continueChat = async (
 		summary,
 	});
 	const { prefix_response: prefixResponse, user, system } = promptParts;
-	const result = await generate(
-		makePrompt(user, system, 'ChatML'),
+	const result = await complete(
+		{ user, system, prefix_response: prefixResponse },
 		Params({
-			prefixResponse,
 			max: 512,
 			temp: 0.5,
 			custom_token_bans: '13',
@@ -137,10 +131,9 @@ export const pickIntentArea = async (
 		summary,
 	});
 	const { prefix_response: prefixResponse, user, system } = promptParts;
-	const result = await generate(
-		makePrompt(user, system, 'ChatML'),
+	const result = await complete(
+		{ user, system, prefix_response: prefixResponse },
 		Params({
-			prefixResponse,
 			temp: 0.25,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})
@@ -158,11 +151,10 @@ export const pickImageIntent = async (
 		summary,
 	});
 	const { prefix_response: prefixResponse, user, system } = promptParts;
-	const result = await generate(
-		makePrompt(user, system, 'ChatML'),
+	const result = await complete(
+		{ user, system, prefix_response: prefixResponse },
 		Params({
 			max: 16,
-			prefixResponse,
 			temp: 0.25,
 			stop: ['RESPONSE:', 'INPUT:', '\n'],
 		})

@@ -83,7 +83,7 @@ export function makeImgPrompt({
 	thoughts: string;
 }): PromptPartResponse {
 	const system: PromptPart[] = [
-		{ val: 'You are an Image Description Writer.\n' },
+		// { val: 'You are an Image Description Writer.\n' },
 		{
 			val: `Your task is to write a description of an image based on the following INPUT.
 The description should follow a specific format.\n`,

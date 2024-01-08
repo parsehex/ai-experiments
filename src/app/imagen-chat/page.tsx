@@ -13,6 +13,7 @@ import {
 	makeThoughtMsg,
 } from '@/lib/utils/messages';
 import * as gen from './generate';
+import AIModelStatus from '@/components/AIModelStatus';
 
 // NOTE: If we set message content to a promise the chatbox will show a spinner while waiting for the promise to resolve
 // (despite TS errors -- it's implemented but not typed)
@@ -92,10 +93,10 @@ const DefaultOptions: Options = {
 	steps: 20,
 	randomCfg: false,
 	randomSampler: true,
-	showThoughts: false,
+	showThoughts: true,
 };
 type StepsPreset = 'Low' | 'Medium' | 'High' | 'Custom';
-function InnerMonologueChat() {
+function ImagenChat() {
 	const defMsg = makeMsg(
 		'message',
 		'assistant',
@@ -163,20 +164,18 @@ function InnerMonologueChat() {
 				'image-prompt-thoughts'
 			);
 			newMessages = addMsg(promptMsg, newMessages, setMessages);
-			const detectedDesc = gen.imgPromptFromInput(userMsg, newMessages, {
-				summary: chatSummary,
-			});
-			const dT = makeThoughtMsg(
-				// @ts-ignore
-				detectedDesc,
-				'Detected Description',
-				'detected-desc'
-			);
-			newMessages = addMsg(dT, newMessages, setMessages);
-			const prompt = await gen.imgPrompt(
-				await detectedDesc,
-				await promptThoughts
-			);
+			// TODO why does this cause a crash with the new api server?
+			// const detectedDesc = gen.imgPromptFromInput(userMsg, newMessages, {
+			// 	summary: chatSummary,
+			// });
+			// const dT = makeThoughtMsg(
+			// 	// @ts-ignore
+			// 	detectedDesc,
+			// 	'Detected Description',
+			// 	'detected-desc'
+			// );
+			// newMessages = addMsg(dT, newMessages, setMessages);
+			const prompt = await gen.imgPrompt(await promptThoughts);
 			imagePrompt = prompt;
 			setLastPrompt(prompt);
 			// await addLorasToPrompt(prompt);
@@ -217,7 +216,7 @@ function InnerMonologueChat() {
 		// @ts-ignore
 		const aiMessage = makeMsg('message', 'ASSISTANT', response, o);
 		newMessages = addMsg(aiMessage, newMessages, setMessages);
-		updateSummary(newMessages);
+		// updateSummary(newMessages);
 	};
 
 	const handleClear = () => {
@@ -436,7 +435,11 @@ function InnerMonologueChat() {
 	};
 
 	return (
-		<div className={`inner-monologue-chat ${options.wide ? '' : 'container'}`}>
+		<div className={`imagen-chat ${options.wide ? '' : 'container'}`}>
+			<div>
+				<AIModelStatus type="llm" />
+				<AIModelStatus type="img" />
+			</div>
 			<div>
 				<label>
 					Show Thoughts
@@ -633,4 +636,4 @@ function InnerMonologueChat() {
 	);
 }
 
-export default InnerMonologueChat;
+export default ImagenChat;
