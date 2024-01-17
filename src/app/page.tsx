@@ -90,6 +90,13 @@ export default function Home() {
 				A collection of AI-powered demos and experiments. Select a tag to filter
 				the projects.
 			</small>
+			<Collapsible title="About" titleSize="sm" defaultCollapsed={true}>
+				<p>
+					I made these demos to learn about making apps incorporating AI. My
+					goal with them was/is to iterate quickly to gain experience with all
+					the different parts of the process.
+				</p>
+			</Collapsible>
 			<div className="flex flex-wrap justify-center mb-4">
 				<button
 					className={`basic m-1 p-1 ${

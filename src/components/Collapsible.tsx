@@ -3,15 +3,19 @@ import React, { useState, HTMLAttributes } from 'react';
 export interface CollapsibleProps extends HTMLAttributes<HTMLDivElement> {
 	title: string;
 	titleSize?: 'sm' | 'md' | 'lg';
+	titleAlign?: 'left' | 'center' | 'right';
 	children: React.ReactNode;
 	defaultCollapsed?: boolean;
+	inline?: boolean;
 }
 
 const Collapsible: React.FC<CollapsibleProps> = ({
 	title,
 	titleSize,
+	titleAlign = 'center',
 	children,
 	defaultCollapsed,
+	inline,
 	...rest
 }) => {
 	const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed ?? false);
@@ -27,16 +31,17 @@ const Collapsible: React.FC<CollapsibleProps> = ({
 			titleClass = 'text-lg';
 			break;
 	}
+	titleClass += ` text-${titleAlign}`;
 
 	return (
-		<div {...rest}>
-			<span
-				className={`flex items-center cursor-pointer select-none ${titleClass}`}
+		<div {...rest} className={`flex flex-col ${inline ? 'inline' : ''}`}>
+			<div
+				className={`max-w-full cursor-pointer select-none ${titleClass}`}
 				onClick={() => setIsCollapsed(!isCollapsed)}
 			>
 				{title} {isCollapsed ? '►' : '▼'}
-			</span>
-			{!isCollapsed && children}
+			</div>
+			<div className={isCollapsed ? 'invisible max-h-3' : ''}>{children}</div>
 		</div>
 	);
 };
