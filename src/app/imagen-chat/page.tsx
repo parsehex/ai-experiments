@@ -96,6 +96,8 @@ const DefaultOptions: Options = {
 	showThoughts: true,
 };
 type StepsPreset = 'Low' | 'Medium' | 'High' | 'Custom';
+const lsChatKey = 'imagen-chat-chat';
+const lsOptionsKey = 'imagen-chat-options';
 function ImagenChat() {
 	const defMsg = makeMsg(
 		'message',
@@ -457,14 +459,8 @@ function ImagenChat() {
 				<button
 					className="green"
 					onClick={() => {
-						localStorage.setItem(
-							'inner-monologue-chat',
-							JSON.stringify(messages)
-						);
-						localStorage.setItem(
-							'inner-monologue-chat-options',
-							JSON.stringify(options)
-						);
+						localStorage.setItem(lsChatKey, JSON.stringify(messages));
+						localStorage.setItem(lsOptionsKey, JSON.stringify(options));
 					}}
 				>
 					Save
@@ -473,10 +469,8 @@ function ImagenChat() {
 					className="basic"
 					onClick={() => {
 						// load messages from ls
-						const lsChat = localStorage.getItem('inner-monologue-chat');
-						const lsOptions = localStorage.getItem(
-							'inner-monologue-chat-options'
-						);
+						const lsChat = localStorage.getItem(lsChatKey);
+						const lsOptions = localStorage.getItem(lsOptionsKey);
 						if (lsChat) {
 							setMessages(JSON.parse(lsChat));
 							const opts = lsOptions ? JSON.parse(lsOptions) : {};
