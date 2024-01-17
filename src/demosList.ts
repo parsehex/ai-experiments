@@ -111,6 +111,12 @@ export const demos: ItemProps[] = [
 		tags: ['Chat', 'LLM', 'STT'],
 	},
 	{
+		title: 'Simple I/O',
+		description: 'Simple input/output demo',
+		href: '/simple-io',
+		tags: ['LLM'],
+	},
+	{
 		// inspiration: https://old.reddit.com/r/LocalLLaMA/comments/17fmhcb/
 		title: 'Thought Chain',
 		description: 'Use LLM to answer questions in a multi-step process',
