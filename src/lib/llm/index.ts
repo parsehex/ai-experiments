@@ -209,6 +209,11 @@ export async function complete(
 	if (promptFmt?.prefix_response)
 		params.prefix_response = promptFmt.prefix_response;
 	if (promptFmt?.grammar) params.grammar = promptFmt.grammar;
+	if (params.max) {
+		// don't know how this mixup happened, don't feel like fixing
+		params.max_tokens = params.max;
+		delete params.max;
+	}
 	const resp = await newapi.generateText(params);
 	const res = resp.result.choices[0].text.trim();
 	return promptFmt.response_formatter ? promptFmt.response_formatter(res) : res;

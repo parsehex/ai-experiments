@@ -59,7 +59,6 @@ export async function generateText(
 	params: GenerateParams
 ): Promise<GenerateResponse> {
 	if (!adjusted) fixUrl();
-	params.return_prompt = true;
 	const response = await fetch(`${BASE_URL}/v1/complete`, {
 		method: 'POST',
 		headers: {
