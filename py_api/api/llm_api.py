@@ -182,7 +182,7 @@ def llm_api(app: FastAPI):
 						messages.append(MessageObject.model_validate(msg))
 				else:
 					prompt = prompt_format.parts_to_prompt(
-						parts, modelName(), prefix_response
+						parts, model, prefix_response
 					)
 			except Exception as e:
 				# raise Exception(
