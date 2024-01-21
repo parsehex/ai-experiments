@@ -1,9 +1,11 @@
 accelerate == 0.25.0
+autoawq
 diffusers == 0.25.0
 emoji == 2.9.0
 fastapi == 0.108.0
 gradio == 4.13.0
 huggingface_hub
+librosa
 numpy ==  1.26.3
 omegaconf == 2.3.0
 pydantic == 2.5.3
