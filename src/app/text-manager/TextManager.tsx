@@ -484,7 +484,7 @@ export default function TextManager({
 					</button>
 				</div>
 				<textarea
-					className="textarea"
+					className="textarea input"
 					placeholder="Content"
 					value={currentContent}
 					style={{ maxWidth: '20vw' }}
@@ -496,7 +496,7 @@ export default function TextManager({
 			</button>
 			<div className="mb-4">
 				<textarea
-					className="textarea"
+					className="textarea input"
 					placeholder="Instructions"
 					value={instructions}
 					style={{ maxWidth: '20vw' }}

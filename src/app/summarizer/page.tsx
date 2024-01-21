@@ -1,12 +1,15 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { GenerateOptions, generate } from '@/lib/llm';
+import { GenerateOptions, complete } from '@/lib/llm';
 import TextManager from '../text-manager/TextManager';
 import { listModels } from '@/lib/llm/openai-api';
-import { makePrompt } from '@/lib/llm/prompts';
+// import { makePrompt } from '@/lib/llm/prompts';
 import { TextChunk } from '../text-manager/types';
 import { IoReloadOutline, IoStopSharp } from 'react-icons/io5';
 import { stopStream } from '@/lib/llm/ooba-api.new';
+import Collapsible from '@/components/Collapsible';
+import { PromptFormatResponse, PromptPartResponse } from '@/lib/types/llm';
+import AIModelStatus from '@/components/AIModelStatus';
 
 const lsKey = 'textSummarizationChunks';
 
@@ -71,6 +74,72 @@ function Summarizer() {
 	// 	setOutput(result);
 	// };
 
+	const [systemPrompt, setSystemPrompt] = useState('');
+	const [inputText, setInputText] = useState('');
+	const [output, setOutput] = useState('');
+
+	const lsKey = 'summarize-';
+	useEffect(() => {
+		const storedSystemPrompt = localStorage.getItem(lsKey + 'system');
+		if (storedSystemPrompt) setSystemPrompt(storedSystemPrompt);
+		const storedInputText = localStorage.getItem(lsKey + 'input');
+		if (storedInputText) setInputText(storedInputText);
+	}, []);
+	useEffect(() => {
+		localStorage.setItem(lsKey + 'system', systemPrompt);
+		localStorage.setItem(lsKey + 'input', inputText);
+	}, [systemPrompt, inputText]);
+
+	const SimpleSummaryForm = () => {
+		// TODO
+		// a simpler form to summarize text standalone
+		// has a box for System Prompt/Instructions & Input Text
+		// + button to generate the output
+		// output is displayed below
+		return (
+			<Collapsible className="grow" title="Simple Summary">
+				<p>TODO</p>
+				<label className="font-bold text-xs">
+					System Prompt
+					<textarea
+						className="w-full input"
+						value={systemPrompt}
+						onChange={(e) => setSystemPrompt(e.target.value)}
+					/>
+				</label>
+				<label className="font-bold text-xs">
+					Input Text
+					<textarea
+						className="w-full input"
+						value={inputText}
+						onChange={(e) => setInputText(e.target.value)}
+					/>
+				</label>
+				<button
+					className="ml-2 bg-blue-500 hover:bg-blue-700 text-white font-bold p-1 rounded"
+					onClick={async () => {
+						const fmt: PromptPartResponse = {
+							system: [{ val: systemPrompt }],
+							user: [{ val: inputText }],
+							prefix_response: 'RESPONSE:\n',
+						};
+						const result = await complete(fmt, {
+							temp: 0.75,
+							max: 512,
+							repeat_pen: 1.19,
+							stop: ['|im_end|>', '<|im_end|>', '>!'],
+						});
+						console.log(result);
+						setOutput(result);
+					}}
+				>
+					Generate
+				</button>
+				<span className="whitespace-pre-line">{output}</span>
+			</Collapsible>
+		);
+	};
+
 	const renderSummary = (chunk: TextChunk, chunkTitle: string) => {
 		return (
 			<div key={chunk.id} className="p-4 border-b border-gray-300">
@@ -129,8 +198,9 @@ function Summarizer() {
 
 	return (
 		<div className="mt-2 flex">
+			<AIModelStatus type="llm" />
 			<div className="border-r border-gray-300 pr-4 max-w-1/3">
-				<TextManager selectedModel={selectedModel} lsKey={lsKey} />
+				<TextManager selectedModel={selectedModel} lsKey={lsKey} />A
 			</div>
 			<div className="ml-4 grow">
 				<label className="font-bold text-xs">Model</label>
@@ -164,6 +234,7 @@ function Summarizer() {
 				</h2>
 				{renderSummaries()}
 			</div>
+			{SimpleSummaryForm()}
 		</div>
 	);
 }
