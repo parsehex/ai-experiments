@@ -101,7 +101,7 @@ class LLMClient_OpenAI(LLMClient_Base):
 		res = self._api_post(url, body)
 		choice = res['choices'][0]
 		r = text_completion(
-			choice['text'],
+			choice['message']['content'],
 			model_name=options.model,
 			finish_reason=choice['finish_reason'],
 		)
