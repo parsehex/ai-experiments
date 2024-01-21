@@ -101,7 +101,8 @@ class LLMClient_Exllamav2(LLMClient_Base):
 		input_ids = self.tokenizer.encode(options.prompt)
 		input_ids.to(self.device)
 
-		self.generator.set_stop_conditions(options.stop)
+		if options.stop:
+			self.generator.set_stop_conditions(options.stop)
 		self.generator.begin_stream(input_ids, settings)
 
 		generated_tokens = 0
