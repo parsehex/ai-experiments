@@ -22,7 +22,7 @@ class LLMClient_Transformers(LLMClient_Base):
 	def convert_options(
 		self, options: CompletionOptions
 	) -> CompletionOptions_Transformers:
-		new_options = self.map_options_from_moodel(
+		new_options = self.map_options_from_model(
 			options, CompletionOptions_Transformers
 		)
 		assert isinstance(

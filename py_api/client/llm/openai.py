@@ -58,7 +58,7 @@ class LLMClient_OpenAI(LLMClient_Base):
 		self, options: CompletionOptions
 	) -> CompletionOptions_OpenAI:
 		"""Convert options from common names to model-specific names and values."""
-		new_options = self.map_options_from_moodel(
+		new_options = self.map_options_from_model(
 			options, CompletionOptions_OpenAI
 		)
 		if 'openai:' in options.model:

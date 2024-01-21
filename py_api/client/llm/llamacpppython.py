@@ -56,7 +56,7 @@ class LLMClient_LlamaCppPython(LLMClient_Base):
 	def convert_options(
 		self, options: CompletionOptions
 	) -> CompletionOptions_LlamaCppPython:
-		new_options = self.map_options_from_moodel(
+		new_options = self.map_options_from_model(
 			options, CompletionOptions_LlamaCppPython
 		)
 		assert isinstance(

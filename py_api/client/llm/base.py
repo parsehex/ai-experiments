@@ -23,7 +23,7 @@ class LLMClient_Base:
 			cls._instance = cls()
 		return cls._instance
 
-	def map_options_from_moodel(
+	def map_options_from_model(
 		self, options: CompletionOptions, model: Any
 	) -> Union[CompletionOptions_LlamaCppPython,
 							CompletionOptions_Exllamav2]:
