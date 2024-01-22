@@ -6,10 +6,7 @@ import argparse, logging, os
 import uvicorn, fastapi
 from fastapi.middleware.cors import CORSMiddleware
 
-from py_api.api.llm_api import llm_api
-from py_api.api.tts_api import tts_api
-from py_api.api.stt_api import stt_api
-from py_api.api.img_api import img_api
+from py_api.api import img_api, llm_api, stt_api, tts_api, utils_api
 from py_api.args import Args
 from py_api.client import llm_client_manager, tts_client_manager, stt_client_manager, img_client_manager
 from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL, TTS_MODELS_DIR, TTS_MODEL, TTS_OUTPUT_DIR, TTS_VOICES_DIR, STT_INPUT_DIR, IMG_MODELS_DIR, IMG_MODEL
@@ -176,12 +173,16 @@ if __name__ == '__main__':
 		tts_api(app)
 
 	if not args.no_stt:
+		sttManager = stt_client_manager.STTManager.instance
+		sttManager.load_model('whisperx')
 		stt_api(app)
 
 	if not args.no_img:
 		imgManager = img_client_manager.ImgManager.instance
 		imgManager.load_model('')
 		img_api(app)
+
+	utils_api(app)
 
 	uvicorn.run(app, host=args.host, port=args.port)
 	logger.info(f'API server started on {args.host}:{args.port}.')

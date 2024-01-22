@@ -13,8 +13,8 @@ python-dotenv == 1.0.0
 scipy == 1.11.4
 simpleaudio == 1.0.4
 # styletts2 == 0.1.4
-torch == 2.1.2
-torchaudio == 2.1.2
+torch == 2.1
+torchaudio == 2.1
 TTS == 0.22.0
 transformers == 4.36.2
 uvicorn == 0.25.0
@@ -22,3 +22,5 @@ uvicorn == 0.25.0
 https://github.com/turboderp/exllamav2/releases/download/v0.0.10/exllamav2-0.0.10+cu121-cp311-cp311-linux_x86_64.whl
 
 # also `CMAKE_ARGS="-DLLAMA_CUBLAS=on" pip install llama-cpp-python`
+
+git+https://github.com/m-bain/whisperx.git
