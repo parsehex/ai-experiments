@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { addCorsIfNot } from '@/lib/utils';
@@ -7,6 +8,7 @@ import { WhisperResultChunk } from '@/lib/types';
 const TranscribeAudio: React.FC = () => {
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
 	const [transcription, setTranscription] = useState<string | null>(null);
+	const [diarize, setDiarize] = useState<boolean>(false);
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		if (event.target.files && event.target.files[0]) {
@@ -18,18 +20,31 @@ const TranscribeAudio: React.FC = () => {
 		event.preventDefault();
 		if (!selectedFile) return;
 		const formData = new FormData();
+		// formData.append('diarize', diarize.toString());
 		formData.append('file', selectedFile);
 
 		try {
 			const base = addCorsIfNot('http://localhost:5000/', 5000);
 			const response = await axios.post(
-				`${base}v1/audio/transcriptions`,
+				`${base}stt/v1/transcribe?diarize=${diarize}`,
 				formData,
 				{
 					headers: { 'Content-Type': 'multipart/form-data' },
 				}
 			);
-			setTranscription(response.data.text);
+			// response has `parts` array of objects
+			// each object has `speech`, `start`/`end` and `speaker` (empty string if diarize=false)
+
+			// let text = '';
+			// for (let i = 0; i < response.data.parts.length; i++) {
+			// 	const part = response.data.parts[i];
+			// 	text += part.speech;
+			// 	if (i < response.data.parts.length - 1) {
+			// 		text += ' ';
+			// 	}
+			// }
+			// setTranscription(text.trim());
+			transcribed(response.data.parts);
 		} catch (error) {
 			console.error('Error uploading file and getting transcription', error);
 		}
@@ -70,13 +85,14 @@ const TranscribeAudio: React.FC = () => {
 		// (looks to have timestamps)
 		for (let i = 0; i < result.length; i++) {
 			const chunk = result[i];
+			if (chunk.speaker) text += `[${chunk.speaker}]: `;
 			text += chunk.speech;
 			if (i < result.length - 1) {
 				const nextChunk = result[i + 1];
 				if (nextChunk.speech.match(/^[',]/)) {
 					continue;
 				}
-				text += ' ';
+				text += '\n';
 			}
 		}
 		setTranscription(text);
@@ -109,6 +125,14 @@ const TranscribeAudio: React.FC = () => {
 			</div>
 			<div className="inline-flex">
 				<form onSubmit={handleFormSubmit}>
+					<label>
+						Diarize
+						<input
+							type="checkbox"
+							checked={diarize}
+							onChange={() => setDiarize(!diarize)}
+						/>
+					</label>
 					<input type="file" accept="audio/*" onChange={handleFileChange} />
 					<button type="submit" className="basic">
 						Transcribe Audio

@@ -23,13 +23,18 @@ export interface WhisperResultChunk {
 	 *
 	 * e.g. `"00:00:00.000"`
 	 */
-	start: string;
+	start: number;
 	/**
 	 * Timestamp of the end of the chunk.
 	 *
 	 * e.g. `"00:00:00.000"`
 	 */
-	end: string;
+	end: number;
 	/** The speech during that chunk. */
 	speech: string;
+	/**
+	 * The speaker of that chunk,
+	 * or empty string if diarization is disabled.
+	 */
+	speaker: string;
 }
