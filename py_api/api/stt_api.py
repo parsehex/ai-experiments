@@ -8,9 +8,10 @@ from py_api.models.stt.stt_client import TranscribeResponse
 from py_api.utils import audio
 
 logger = logging.getLogger(__name__)
-manager = STTManager.instance
 
 def stt_api(app: FastAPI):
+	manager = STTManager.instance
+
 	def transcribe(
 		file_path: str, diarize: bool = False
 	) -> TranscribeResponse:

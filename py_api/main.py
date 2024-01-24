@@ -6,9 +6,9 @@ import argparse, logging, os
 import uvicorn, fastapi
 from fastapi.middleware.cors import CORSMiddleware
 
-from py_api.api import img_api, llm_api, stt_api, tts_api, utils_api
+# from py_api.api import img_api, llm_api, stt_api, tts_api, utils_api
 from py_api.args import Args
-from py_api.client import llm_client_manager, tts_client_manager, stt_client_manager, img_client_manager
+# from py_api.client import llm_client_manager, tts_client_manager, stt_client_manager, img_client_manager
 from py_api.settings import HOST, PORT, LLM_MODELS_DIR, LLM_MODEL, TTS_MODELS_DIR, TTS_MODEL, TTS_OUTPUT_DIR, TTS_VOICES_DIR, STT_INPUT_DIR, IMG_MODELS_DIR, IMG_MODEL
 from py_api.utils import prompt_format
 
@@ -159,7 +159,9 @@ if __name__ == '__main__':
 	)
 
 	if not args.no_llm:
-		llmManager = llm_client_manager.LLMManager.instance
+		from py_api.api.llm_api import llm_api
+		from py_api.client.llm_client_manager import LLMManager
+		llmManager = LLMManager.instance
 		if llm_model is not None:
 			fmt = prompt_format.get_model_format(llm_model)
 			logger.info(f'Loading LLM model: {llm_model}')
@@ -168,20 +170,30 @@ if __name__ == '__main__':
 		llm_api(app)
 
 	if not args.no_tts:
-		ttsManager = tts_client_manager.TTSManager.instance
+		# ttsManager = tts_client_manager.TTSManager.instance
+		from py_api.api.tts_api import tts_api
+		from py_api.client.tts_client_manager import TTSManager
+		ttsManager = TTSManager.instance
 		ttsManager.load_model(tts_model)
 		tts_api(app)
 
 	if not args.no_stt:
-		sttManager = stt_client_manager.STTManager.instance
+		# sttManager = stt_client_manager.STTManager.instance
+		from py_api.api.stt_api import stt_api
+		from py_api.client.stt_client_manager import STTManager
+		sttManager = STTManager.instance
 		sttManager.load_model('whisperx')
 		stt_api(app)
 
 	if not args.no_img:
-		imgManager = img_client_manager.ImgManager.instance
+		# imgManager = img_client_manager.ImgManager.instance
+		from py_api.api.img_api import img_api
+		from py_api.client.img_client_manager import ImgManager
+		imgManager = ImgManager.instance
 		imgManager.load_model('')
 		img_api(app)
 
+	from py_api.api.utils_api import utils_api
 	utils_api(app)
 
 	uvicorn.run(app, host=args.host, port=args.port)

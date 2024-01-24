@@ -9,13 +9,10 @@ import logging, os, time
 import subprocess as sp
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query
 from py_api.args import Args
-from py_api.client.stt_client_manager import STTManager
-from py_api.models.stt.stt_client import TranscribeResponse
 from py_api.models.utils_api import GetVRAMResponse
 from py_api.utils import audio
 
 logger = logging.getLogger(__name__)
-manager = STTManager.instance
 
 def utils_api(app: FastAPI):
 	@app.get('/utils/v1/vram', tags=['utils'])

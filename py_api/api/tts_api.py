@@ -9,9 +9,10 @@ from py_api.models.tts.tts_client import SpeakResponse, SpeakToFileResponse
 
 EXTENSIONS = []
 logger = logging.getLogger(__name__)
-manager = tts_client_manager.TTSManager.instance
 
 def tts_api(app: FastAPI):
+	manager = tts_client_manager.TTSManager.instance
+
 	def modelName():
 		if manager.model_name is not None:
 			return manager.model_name
@@ -178,7 +179,6 @@ def tts_api(app: FastAPI):
 	)
 	async def tts_speak(req: SpeakRequest):
 		"""Generate TTS audio from text."""
-		global manager
 		if manager.model_name is None:
 			raise HTTPException(
 				status_code=500, detail='Model not loaded.'
@@ -192,7 +192,6 @@ def tts_api(app: FastAPI):
 	)
 	async def tts_speak_to_file(req: SpeakToFileRequest):
 		"""Generate and save TTS audio to file on server."""
-		global manager
 		if manager.model_name is None:
 			raise HTTPException(
 				status_code=500, detail='Model not loaded.'

@@ -12,9 +12,9 @@ from py_api.utils import prompt_format
 # supported extensions
 EXTENSIONS = ['.gguf', '.ggml', '.safetensor']
 logger = logging.getLogger(__name__)
-manager = llm_client_manager.LLMManager.instance
 
 def llm_api(app: FastAPI):
+	manager = llm_client_manager.LLMManager.instance
 	openai = LLMClient_OpenAI.instance
 
 	def modelName():
@@ -281,7 +281,6 @@ def llm_api(app: FastAPI):
 	)
 	async def llm_complete(req: CompletionRequest):
 		"""Generate text from a prompt, or an array of PromptParts. Prompt should be in proper format (unless using `parts`), it's fed directly to the model. If both are provided then `prompt` is overwritten by constructing prompt from `parts`."""
-		global manager
 		if manager.model_name is None and req.model is None:
 			raise HTTPException(
 				status_code=500, detail='Model not loaded.'

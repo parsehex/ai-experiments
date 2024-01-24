@@ -9,9 +9,10 @@ from py_api.models.img.img_client import Txt2ImgOptions, Txt2ImgResponse
 
 EXTENSIONS = []
 logger = logging.getLogger(__name__)
-manager = img_client_manager.ImgManager.instance
 
 def img_api(app: FastAPI):
+	manager = img_client_manager.ImgManager.instance
+
 	def modelName():
 		if manager.model_name is not None:
 			return manager.model_name
