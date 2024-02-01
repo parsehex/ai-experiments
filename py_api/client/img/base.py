@@ -1,14 +1,12 @@
 from typing import Generator, List, Dict, Union, Any
 from pydantic import BaseModel
 from py_api.models.img.img_client import Txt2ImgOptions, Txt2ImgResponse
+from py_api.settings import DEVICE_MAP
 
 class ImgClient_Base:
 	_instance = None
-	# cache = None
 	config = None
-	device = None
-	# tokenizer = None
-	# generator = None
+	device = DEVICE_MAP['img']
 	loaded = False
 	model = None
 	model_name: Union[str, None] = None

@@ -1,9 +1,12 @@
 from pydantic import BaseModel
+from typing import Union
 
 class TranscribeOptions(BaseModel):
 	"""Options for transcribing audio."""
 	file_path: str
 	diarize: bool = False
+	# json or text
+	result_format: str = 'json'
 
 class TranscribeChunk(BaseModel):
 	"""Chunk of transcription."""
@@ -14,4 +17,5 @@ class TranscribeChunk(BaseModel):
 
 class TranscribeResponse(BaseModel):
 	"""Response for transcribing audio."""
-	parts: list[TranscribeChunk] = []
+	# result: list[TranscribeChunk] = []
+	result: Union[list[TranscribeChunk], str] = []

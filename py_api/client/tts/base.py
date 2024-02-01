@@ -1,11 +1,12 @@
 from typing import Union
 from py_api.models.tts.tts_client import SpeakOptions, SpeakToFileOptions, SpeakResponse, SpeakToFileResponse
+from py_api.settings import DEVICE_MAP
 
 class TTSClient_Base:
 	_instance = None
 	# cache = None
 	config = None
-	device = None
+	device = DEVICE_MAP['tts']
 	# tokenizer = None
 	# generator = None
 	loaded = False

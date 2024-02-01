@@ -1,12 +1,13 @@
 from typing import Generator, List, Dict, Union, Any
 from py_api.models.llm.llm_api import CompletionReturn
 from py_api.models.llm.client import CompletionOptions, CompletionOptions_LlamaCppPython, CompletionOptions_Exllamav2
+from py_api.settings import DEVICE_MAP
 
 class LLMClient_Base:
 	_instance = None
 	cache = None
 	config = None
-	device = None
+	device = DEVICE_MAP['llm']
 	tokenizer = None
 	generator = None
 	loaded = False

@@ -1,41 +1,51 @@
-import os, re, subprocess
+import datetime, os, re, subprocess
 import whisperx
 from .base import STTClient_Base
 from py_api.models.stt.stt_client import TranscribeOptions, TranscribeResponse
 from py_api.settings import HF_TOKEN
 
 class STTClient_WhisperX(STTClient_Base):
-	# whisper_cpp_path = '/home/user/whisper.cpp'
-	device = 'cuda'
 	raw_model = None
 	align_model = None
 	metadata = None
 	diarize_model = None
+	models = {'raw': None, 'align': None, 'diarize': None}
 
 	def load_model(self, model_name: str | None):
-		self.raw_model = whisperx.load_model(
-			'large-v2',
-			device=self.device,
-			compute_type='float16',
-			language='en'
-		)
-		model_a, metadata = whisperx.load_align_model(
-			language_code='en', device=self.device
-		)
-		self.align_model = model_a
-		self.metadata = metadata
-		if HF_TOKEN:
+		compute_type = 'float16' if self.device == 'cuda' else 'int8'
+		# self.raw_model = whisperx.load_model(
+		# 	'large-v2',
+		# 	device=self.device,
+		# 	compute_type=compute_type,
+		# 	language='en'
+		# )
+		if not self.raw_model:
+			self.raw_model = whisperx.load_model(
+				'large-v2',
+				device=self.device,
+				compute_type=compute_type,
+				language='en'
+			)
+		if not self.align_model:
+			model_a, metadata = whisperx.load_align_model(
+				language_code='en', device=self.device
+			)
+			self.align_model = model_a
+			self.metadata = metadata
+			del model_a, metadata
+		if HF_TOKEN and not self.diarize_model:
 			self.diarize_model = whisperx.DiarizationPipeline(
 				use_auth_token=HF_TOKEN, device=self.device
 			)
 
 	def unload_model(self):
+		import gc
+		import torch
+		print('Unloading model')
 		self.raw_model = None
 		self.align_model = None
 		self.metadata = None
 		self.diarize_model = None
-		import gc
-		import torch
 		gc.collect()
 		torch.cuda.empty_cache()
 
@@ -79,15 +89,47 @@ class STTClient_WhisperX(STTClient_Base):
 			)
 			transcript = diarize_transcript
 
+		if options.result_format == 'text':
+			transcript = self.format_str(transcript['segments'])
+			return TranscribeResponse(result=transcript)
+
 		parts = self.parse(transcript)
-		return TranscribeResponse(parts=parts)
+		return TranscribeResponse(result=parts)
+
+	def format_str(self, segments):
+		s = ''
+		merged_segments = []
+		i = 0
+		# TODO merge lines from same speaker within 1 second
+		while i < len(segments):
+			segment = segments[i]
+			merged_segments.append(segment)
+			i += 1
+
+		hours = False
+		last = merged_segments[-1]
+		_start = datetime.timedelta(seconds=last['start'])
+		_end = datetime.timedelta(seconds=last['end'])
+		if _start.seconds > 3600:
+			hours = True
+
+		for segment in merged_segments:
+			segment['start'] = round(segment['start'], 0)
+			segment['end'] = round(segment['end'], 0)
+			_start = datetime.timedelta(seconds=segment['start'])
+			_end = datetime.timedelta(seconds=segment['end'])
+
+			if not hours:
+				_start = str(_start).split(':')[1:]
+				_start = ':'.join(_start)
+				_end = str(_end).split(':')[1:]
+				_end = ':'.join(_end)
+			speaker = segment['speaker']
+			speech = segment['text']
+			s += f"[{_start}-{_end}] {speaker}: {speech}\n"
+		return s
 
 	def parse(self, transcript):
-		# drop `word_segments`
-		# for each segment:
-		#   drop `words`
-		#   keep `start` / `end` and `text`
-		#   keep `speaker` if present
 		parts = []
 		for segment in transcript['segments']:
 			part = {

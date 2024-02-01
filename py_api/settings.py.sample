@@ -5,6 +5,13 @@ LOG_LEVEL = logging.INFO
 HOST = '127.0.0.1'
 PORT = 5000
 
+DEVICE_MAP = {
+	'img': 'cuda',
+	'llm': 'cuda',
+	'tts': 'cuda',
+	'stt': 'cuda',
+}
+
 LLM_MODELS_DIR = '/your/llm/models/dir'
 TTS_MODELS_DIR = '/your/tts/models/dir'
 IMG_MODELS_DIR = '/your/sd/models/dir'

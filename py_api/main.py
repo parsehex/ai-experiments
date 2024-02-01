@@ -170,7 +170,6 @@ if __name__ == '__main__':
 		llm_api(app)
 
 	if not args.no_tts:
-		# ttsManager = tts_client_manager.TTSManager.instance
 		from py_api.api.tts_api import tts_api
 		from py_api.client.tts_client_manager import TTSManager
 		ttsManager = TTSManager.instance
@@ -178,15 +177,17 @@ if __name__ == '__main__':
 		tts_api(app)
 
 	if not args.no_stt:
-		# sttManager = stt_client_manager.STTManager.instance
 		from py_api.api.stt_api import stt_api
 		from py_api.client.stt_client_manager import STTManager
 		sttManager = STTManager.instance
-		sttManager.load_model('whisperx')
+		try:
+			sttManager.load_model('whisperx')
+		except Exception:
+			sttManager.unload_model()
+			logger.warning('Failed to load STT model. Out of memory?')
 		stt_api(app)
 
 	if not args.no_img:
-		# imgManager = img_client_manager.ImgManager.instance
 		from py_api.api.img_api import img_api
 		from py_api.client.img_client_manager import ImgManager
 		imgManager = ImgManager.instance
