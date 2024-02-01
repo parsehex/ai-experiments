@@ -81,6 +81,12 @@ const componentPrototypes: ItemProps[] = [
 
 export const demos: ItemProps[] = [
 	{
+		title: 'Read Aloud',
+		description: 'Read text from different sources aloud using TTS',
+		href: '/read-aloud',
+		tags: ['TTS'],
+	},
+	{
 		title: 'Role Chat',
 		description: 'Character-based chat/role play without LangChain',
 		href: '/role-play',
