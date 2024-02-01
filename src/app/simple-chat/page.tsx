@@ -19,7 +19,7 @@ const getResponse = async (input: string, messages: Message[]) => {
 	}));
 	const response = await complete(
 		{ user, system, prefix_response: 'RESPONSE: ', prior_msgs },
-		{ temp: 0.5, max: 150, stop: ['RESPONSE:'] }
+		{ temp: 0.5, max: 150, stop: ['RESPONSE:', '<|im_end|>', '\n\n'] }
 	);
 	return response;
 };
