@@ -1,25 +1,5 @@
 import React, { useState, useRef } from 'react';
-
-export interface HoverMenuFormFieldOption {
-	value: string;
-	label: string;
-}
-
-export interface HoverMenuFormField {
-	type: 'text' | 'number' | 'select';
-	label: string;
-	name: string;
-	title?: string;
-	options?: HoverMenuFormFieldOption[]; // Updated for select type fields
-	placeholder?: string; // For text type fields
-	defaultValue?: any; // For number and select type fields
-}
-
-export interface HoverMenuButtonProps {
-	fields: HoverMenuFormField[];
-	onSubmit: (values: { [key: string]: any }) => void;
-	label: string;
-}
+import { HoverMenuButtonProps, HoverMenuFormField } from './types';
 
 const HoverMenuButton: React.FC<HoverMenuButtonProps> = ({
 	fields,

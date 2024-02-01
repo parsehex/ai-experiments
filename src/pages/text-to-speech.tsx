@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import TextInput from '@/components/TextInput';
 import { getSpeakers, generateTTS, getVoices, speak } from '@/lib/tts';
 import { Provider, Speaker } from '@/app/api/tts/types';
+import AudioPlayer from '@/components/AudioPlayer';
 
 const TtsDemo: React.FC = () => {
 	const [text, setText] = useState<string>('');
@@ -118,12 +119,7 @@ const TtsDemo: React.FC = () => {
 				<>
 					<Options />
 					<Input />
-					{audioUrl && (
-						<div>
-							<audio controls src={audioUrl}></audio>
-							<button onClick={handleDownload}>Download</button>
-						</div>
-					)}
+					<AudioPlayer audioUrl={audioUrl} />
 				</>
 			)}
 		</div>

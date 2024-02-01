@@ -1,13 +1,5 @@
-import React, { useState, HTMLAttributes } from 'react';
-
-export interface CollapsibleProps extends HTMLAttributes<HTMLDivElement> {
-	title: string;
-	titleSize?: 'sm' | 'md' | 'lg';
-	titleAlign?: 'left' | 'center' | 'right';
-	children: React.ReactNode;
-	defaultCollapsed?: boolean;
-	inline?: boolean;
-}
+import React, { useState } from 'react';
+import { CollapsibleProps } from './types';
 
 const Collapsible: React.FC<CollapsibleProps> = ({
 	title,

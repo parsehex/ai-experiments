@@ -619,11 +619,9 @@ function ImagenChat() {
 			/>
 			{chatSummary && (
 				<div className="last-prompt flex">
-					{chatSummary && (
-						<p>
-							Summary: <span>{chatSummary}</span>
-						</p>
-					)}
+					<p>
+						Summary: <span>{chatSummary}</span>
+					</p>
 				</div>
 			)}
 		</div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, HTMLAttributes } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useServerStatus } from '@/hooks/useServerStatus';
 import {
 	LoadModelResponse,
@@ -8,11 +8,7 @@ import {
 import * as llm from '@/lib/llm/new-api';
 import * as img from '@/lib/imagen';
 import * as tts from '@/lib/tts';
-
-export interface AIModelStatusProps extends HTMLAttributes<HTMLDivElement> {
-	type: 'llm' | 'img' | 'tts' | 'stt';
-	inline?: boolean;
-}
+import { AIModelStatusProps } from '../types';
 
 const AIModelStatus: React.FC<AIModelStatusProps> = ({ type, inline }) => {
 	let name = type.toUpperCase();

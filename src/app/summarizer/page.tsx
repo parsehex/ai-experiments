@@ -179,7 +179,7 @@ function Summarizer() {
 		);
 	};
 
-	const renderSummaries = () => {
+	const Summaries = () => {
 		return chunks.flatMap((chunk) => {
 			if (Array.isArray(chunk.content)) {
 				return chunk.content.map(
@@ -232,9 +232,9 @@ function Summarizer() {
 						<IoReloadOutline />
 					</button>
 				</h2>
-				{renderSummaries()}
+				<Summaries />
 			</div>
-			{SimpleSummaryForm()}
+			<SimpleSummaryForm />
 		</div>
 	);
 }

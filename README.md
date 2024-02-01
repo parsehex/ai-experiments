@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Notes From Developer
+
+- Page Routes seem to do full page reloads very easily (/every time?), use App Routes instead, at least for bigger demos.
+
 ## Getting Started
 
 First, run the development server:

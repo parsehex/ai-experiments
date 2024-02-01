@@ -395,7 +395,7 @@ export default function TextManager({
 		updateChunks('remove', { id });
 	};
 
-	const renderChunks = () => {
+	const Chunks = () => {
 		return chunks.map((chunk) => (
 			<div key={chunk.id} className="p-4 border-b border-gray-300">
 				<h3
@@ -513,7 +513,7 @@ export default function TextManager({
 						{isConfirmClear ? 'Confirm?' : 'Clear All'}
 					</button>
 				)}
-				{renderChunks()}
+				<Chunks />
 			</div>
 		</Collapsible>
 	);
