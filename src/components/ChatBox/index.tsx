@@ -5,6 +5,10 @@ import MessageItem from './MessageItem';
 import InputBox from './InputBox';
 import { ChatBoxMessage } from '@/lib/types/llm';
 
+// TODO add a `features` prop where you can enable helpers
+//   like a bool to allow deleting messages (still need ig hooks when they get called at least)
+//   or one to enable a "clear all" button
+
 export const ChatBox = ({
 	roles = ['user', 'assistant'],
 	messages,

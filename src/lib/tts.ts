@@ -46,6 +46,7 @@ function base64ToBlob(base64: string): Blob {
 	return new Blob([ab], { type: 'audio/wav' });
 }
 
+// TODO is there a default voice?
 export async function speak(text: string, voice: string): Promise<Blob> {
 	const url = `${BASE_URL}/tts/v1/speak`;
 	const body: SpeakOptions = {

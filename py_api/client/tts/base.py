@@ -2,6 +2,13 @@ from typing import Union
 from py_api.models.tts.tts_client import SpeakOptions, SpeakToFileOptions, SpeakResponse, SpeakToFileResponse
 from py_api.settings import DEVICE_MAP
 
+# TODO i guess do we need a Base class for these Base classes?
+#   could have helper for converting options in diff ways
+#   have common methods load/unload then inheriting Base classes can implement their own methods to run inference
+#   also `list_models`, which would only be implemented by clients that use different source for models (e.g. llm/openai)
+# TODO this base class should have:
+# `list_voices` for TTS clients that support it
+
 class TTSClient_Base:
 	_instance = None
 	# cache = None
