@@ -141,7 +141,7 @@ const TranscribeAudio: React.FC = () => {
 				{transcription && (
 					<div>
 						<h2>Transcription:</h2>
-						<p>{transcription}</p>
+						<p className="whitespace-pre-line">{transcription}</p>
 					</div>
 				)}
 			</div>
