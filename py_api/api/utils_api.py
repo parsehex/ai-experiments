@@ -12,7 +12,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Query
 from fastapi.responses import FileResponse
 from py_api.args import Args
 from py_api.models.utils_api import GetVRAMResponse
-from py_api.utils import audio, media
+from py_api.utils import audio
 
 mime = magic.Magic(mime=True)
 logger = logging.getLogger(__name__)
