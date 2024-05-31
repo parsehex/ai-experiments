@@ -1,0 +1,101 @@
+.chatBox {
+	@apply bg-white dark:bg-gray-800 shadow-md rounded-lg mx-auto w-full flex flex-col items-start p-4 my-1;
+	overflow-y: auto;
+}
+
+.roleColor1 {
+	/* @apply bg-blue-500 text-white; */
+	background-color: #3b82f6;
+	color: #fff;
+}
+.roleColor2 {
+	/* @apply bg-green-500 text-black; */
+	background-color: #10b981;
+	color: #000;
+}
+.roleColor3 {
+	/* @apply bg-purple-500 text-white; */
+	background-color: #8b5cf6;
+	color: #fff;
+}
+.roleColor4 {
+	/* @apply bg-orange-500 text-white; */
+	background-color: #f59e0b;
+	color: #fff;
+}
+
+.chatBox .message.action {
+	@apply bg-gray-200 text-black italic w-full mx-auto text-center items-center;
+}
+.chatBox .message {
+	@apply flex flex-col items-start rounded-lg p-1;
+
+	.message-content {
+		@apply whitespace-pre-wrap;
+	}
+
+	& > input[type='checkbox'] {
+		// make slightly nicer looking
+		@apply appearance-none border-gray-300 rounded-sm w-4 h-4 checked:bg-blue-600 checked:border-transparent focus:outline-none;
+		border-width: 1px;
+	}
+
+	&.selected {
+		background-color: #d7d700 !important;
+		color: #000 !important;
+		font-weight: bold;
+	}
+
+	&.thought {
+		@apply bg-gray-100 text-gray-500;
+	}
+}
+.chatBox .message-header {
+	@apply flex flex-row items-center w-full ml-2;
+}
+.chatBox .message button.regenerate,
+.chatBox .message button.delete,
+.chatBox .message button.copy {
+	@apply text-xs text-gray-500 hover:text-white px-1 py-1 rounded-md;
+}
+.chatBox .message button.regenerate {
+	@apply bg-green-100 hover:bg-green-500;
+}
+.chatBox .message button.delete {
+	@apply bg-red-100 hover:bg-red-500;
+}
+.chatBox .message button.copy {
+	@apply bg-blue-100 hover:bg-blue-500;
+}
+.chatBox .message .role {
+	font-size: 12px;
+	@apply text-xs text-gray-500 mr-2 py-1 rounded-sm bg-gray-100 px-1 font-bold;
+}
+.thought-header {
+	@apply font-bold text-xs items-center;
+	.label {
+		@apply text-gray-500 mr-2 rounded-sm bg-gray-100 px-1 font-bold;
+		font-size: 0.75em;
+	}
+}
+.chatBox button.bulk-delete {
+	@apply bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full fixed bottom-24 right-4;
+}
+/* .chatBox .message .role.action {
+	@apply text-sm ml-2;
+} */
+
+.chatBox .user {
+	background-color: #1d4ed8 !important;
+	color: #fff !important;
+}
+
+.chatBox .assistant:not(.thought) {
+	background-color: #d1d5db !important;
+	color: #000 !important;
+}
+
+.assistant-thinking {
+	color: #aaa;
+	font-style: italic;
+}

@@ -4,18 +4,18 @@ import {
 	AgentExecutor,
 	initializeAgentExecutorWithOptions,
 } from 'langchain/agents';
-import { getTool } from '../tools';
-import { getLLM } from '../llms';
-import { Tool } from 'langchain/tools';
 import { Serialized } from 'langchain/load/serializable';
-import { testPrompts } from './prompts';
+import { Tool } from 'langchain/tools';
 import { ChatBox } from '@/components/ChatBox';
-import { Message } from '../types';
+import { getLLM } from '@/lib/llms';
+import { getTool } from '@/lib/tools';
+import { Message } from '@/lib/types/llm';
+import { testPrompts } from './prompts';
 
 // TODO add other chat routes to prototype other agents
 // chat page that uses entity memory and displays entities, able to edit them
 
-function Chat() {
+function LangchainChat() {
 	const [messages, setMessages] = useState([
 		{
 			role: 'assistant',
@@ -116,7 +116,7 @@ function Chat() {
 	};
 
 	return (
-		<div>
+		<>
 			<input
 				value={openaiKey}
 				className="input"
@@ -163,8 +163,8 @@ function Chat() {
 					<button onClick={handleSend}>Send</button>c
 				</div> */}
 			</div>
-		</div>
+		</>
 	);
 }
 
-export default Chat;
+export default LangchainChat;

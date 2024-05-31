@@ -1,15 +1,13 @@
-import { useEffect } from 'react';
-import * as ooba from '@/app/ooba-api';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 import Header from './Header';
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
-	useEffect(() => {
-		(window as any).ooba = ooba;
-	}, []);
 	return (
 		<>
 			<Header />
 			<main>{children}</main>
+			<ToastContainer position="bottom-center" autoClose={3000} />
 		</>
 	);
 };

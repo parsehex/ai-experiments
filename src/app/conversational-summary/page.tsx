@@ -1,42 +1,30 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ChatBox } from '@/components/ChatBox';
-import { Message } from '@/app/types';
-import * as ooba from '@/app/ooba-api';
-import { v4 } from 'uuid';
+import { complete } from '@/lib/llm';
+import { PromptPart, Message } from '@/lib/types/llm';
+import { addMsg, makeMsg } from '@/lib/utils/messages';
 
 const summarize = async (messages: Message[], summary?: string) => {
-	let prompt = 'Summarize the following chat in one paragraph:\n';
-	if (summary) {
-		prompt = `This is a summary of the chat so far: ${summary}\n`;
-		prompt +=
-			'Revise the summary based on the following new messages in the chat in one paragraph:\n';
-	}
-	for (let msg of messages) {
-		prompt += `${msg.role}: ${msg.content}\n`;
-	}
-	prompt += '\nSUMMARY: ';
-	const result = await ooba.generateText({
-		prompt,
-		temperature: 0.01,
-		guidance_scale: 1.2,
-	});
+	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}\n`).join('');
+	const parts: PromptPart[] = [
+		{ val: 'Summarize the following chat in one paragraph:\n', use: !summary },
+		{
+			val: `This is a summary of the chat so far: ${summary}
+Revise the summary based on the following new messages in the chat in one paragraph:\n`,
+			use: !!summary,
+		},
+		{ val: msgs },
+	];
+	const result = await complete(
+		{
+			user: parts,
+			prefix_response: '\nSUMMARY: ',
+		},
+		{ cfg: 1.2 }
+	);
 	console.log('summary', prompt, result);
-	return result.results[0].text;
-};
-
-const constructPrompt = (
-	input: string,
-	lastMessageWithRole: string,
-	summary?: string
-) => {
-	const s = `\nThis is a summary of the chat so far: ${summary}`;
-	return `Continue the following chat between USER and ASSISTANT by responding to the INPUT in a submissive manner.${
-		summary ? s : ''
-	}
-${lastMessageWithRole}
-INPUT: ${input}
-RESPONSE: `;
+	return result;
 };
 
 const sendInput = async (
@@ -44,16 +32,26 @@ const sendInput = async (
 	lastMessageWithRole: string,
 	summary?: string
 ) => {
-	const prompt = constructPrompt(input, lastMessageWithRole, summary);
-	const result = await ooba.generateText({
-		prompt,
-		max_new_tokens: 1500,
-		temperature: 0.25,
-		guidance_scale: 1.5,
-		stopping_strings: ['INPUT:', 'RESPONSE:'],
-	});
+	const parts: PromptPart[] = [
+		{
+			val: `Continue the following chat between USER and ASSISTANT by responding to the INPUT.\n`,
+		},
+		{
+			val: `This is a summary of the chat so far: ${summary}\n`,
+			use: !!summary,
+		},
+		{ val: `${lastMessageWithRole}`, suf: '\n' },
+		{ val: `INPUT: ${input}` },
+	];
+	const result = await complete(
+		{
+			user: parts,
+			prefix_response: '\nRESPONSE: ',
+		},
+		{ cfg: 1.2, temp: 0.25, max: 1500, stop: ['INPUT:', 'RESPONSE:'] }
+	);
 	console.log('message', prompt, result);
-	return result.results[0].text;
+	return result;
 };
 
 function ConversationalSummaryChat() {
@@ -71,31 +69,19 @@ function ConversationalSummaryChat() {
 		if (!userInput) return;
 		setInput('');
 
-		const userMsgId = v4();
-		const resMsgId = v4();
-		let newMessages = [
-			...messages,
-			{ role: 'USER', content: userInput, id: userMsgId },
-		] as Message[];
-		setMessages(newMessages);
+		const userMsg = makeMsg('message', 'user', userInput);
+		let newMessages = addMsg(userMsg, messages, setMessages);
 
 		const chatSummary = summary || '';
-		const lastMessage = messages[messages.length - 1];
-		let lastMessageWithRole = '';
-		if (lastMessage) {
-			lastMessageWithRole = `${lastMessage.role}: ${lastMessage.content}`;
+		const lastMsg = messages[messages.length - 1];
+		let lastMesgWithRole = '';
+		if (lastMsg) {
+			lastMesgWithRole = `${lastMsg.role}: ${lastMsg.content}`;
 		}
-		const response = await sendInput(
-			userInput,
-			lastMessageWithRole,
-			chatSummary
-		);
+		const response = await sendInput(userInput, lastMesgWithRole, chatSummary);
 
-		newMessages = [
-			...newMessages,
-			{ role: 'ASSISTANT', content: response, id: resMsgId },
-		];
-		setMessages(newMessages);
+		const resMsg = makeMsg('message', 'assistant', response);
+		newMessages = addMsg(resMsg, newMessages, setMessages);
 
 		const msgsToSummarize = [...newMessages];
 		// we should only summarize the new messages
@@ -114,35 +100,28 @@ function ConversationalSummaryChat() {
 	};
 
 	return (
-		<div>
-			<h1>Chat - Conversational Summary</h1>
-			<div className="container">
-				<button className="clear-button" onClick={handleClear}>
-					Clear
-				</button>
-				<ChatBox
-					messages={messages}
-					setMessages={setMessages}
-					readOnly={true}
-				/>
-				{summary && (
-					<div className="summaryBox">
-						<h2>Generated Summary</h2>
-						<p>{summary}</p>
-					</div>
-				)}
-				<div className="input-container px-2">
-					<input
-						className="input mr-2 grow"
-						type="text"
-						onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-						value={input}
-						onChange={(e) => setInput(e.target.value)}
-						placeholder="Type your message..."
-						autoFocus
-					/>
-					<button onClick={handleSend}>Send</button>
+		<div className="container">
+			<button className="clear-button" onClick={handleClear}>
+				Clear
+			</button>
+			<ChatBox messages={messages} setMessages={setMessages} readOnly={true} />
+			{summary && (
+				<div className="summaryBox">
+					<h2>Generated Summary</h2>
+					<p>{summary}</p>
 				</div>
+			)}
+			<div className="input-container px-2">
+				<input
+					className="input mr-2 grow"
+					type="text"
+					onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+					value={input}
+					onChange={(e) => setInput(e.target.value)}
+					placeholder="Type your message..."
+					autoFocus
+				/>
+				<button onClick={handleSend}>Send</button>
 			</div>
 		</div>
 	);

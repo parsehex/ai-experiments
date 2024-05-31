@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--foreground-rgb: 0, 0, 0;
+	--background-start-rgb: 240, 245, 250;
+	--background-end-rgb: 255, 255, 255;
+	--accent-rgb: 10, 132, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--foreground-rgb: 255, 255, 255;
+		--background-start-rgb: 25, 25, 25;
+		--background-end-rgb: 15, 15, 15;
+		--accent-rgb: 64, 156, 255;
+	}
+}
+
+body {
+	color: rgb(var(--foreground-rgb));
+	background: linear-gradient(
+			to bottom,
+			transparent,
+			rgb(var(--background-end-rgb))
+		)
+		rgb(var(--background-start-rgb));
+	background-repeat: no-repeat;
+	font-family: sans-serif;
+	@apply bg-gray-100 dark:bg-gray-900;
+}
+
+main {
+	@apply py-1 px-3;
+}
+
+nav {
+	@apply my-2 ml-3;
+	a {
+		/* make more like link buttons */
+		@apply text-blue-400 hover:text-blue-600 dark:hover:text-blue-400 underline px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-700;
+	}
+}
+
+.container {
+	@apply flex flex-col items-center max-w-6xl min-h-screen mx-auto;
+	max-height: 100vh;
+}
+
+.input-container {
+	@apply flex flex-row items-center w-full justify-center;
+}
+.input-container textarea {
+	@apply grow;
+}
+
+input.input {
+	@apply bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-xl p-2 border focus:border-blue-500 focus:outline-none;
+	&.sm {
+		@apply h-8;
+	}
+}
+input.disabled {
+	@apply bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-white focus:border-blue-500 focus:outline-none;
+}
+textarea.input {
+	@apply bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-md p-2 border focus:border-blue-500 focus:outline-none;
+}
+
+button {
+	&.basic {
+		@apply bg-blue-500 hover:bg-blue-600 text-white px-2 rounded-md;
+		font-family: Arial, Helvetica, sans-serif;
+	}
+	&.delete {
+		background-color: #f44336;
+		color: white;
+		// pick something nice, sans-serif
+		border: none;
+		padding: 5px 10px;
+		border-radius: 5px;
+	}
+	&.green {
+		@apply px-2 py-1 rounded-md text-white bg-green-500 hover:bg-green-600 hover:opacity-100;
+	}
+}
+label {
+	@apply mx-1;
+}
+
+select {
+	@apply bg-gray-100 dark:bg-gray-800 text-black dark:text-white rounded-md p-2 border focus:border-blue-500 focus:outline-none;
+}
+
+input.resize {
+	width: auto;
+	min-width: 50px;
+}
+textarea.resize {
+	overflow-y: hidden;
+	min-height: 50px;
+}
+
+.character textarea {
+	border: 1px solid #ccc;
+	padding: 3px;
+	min-height: 50px;
+}
+
+textarea {
+	resize: both;
+}
+
+.action-item {
+	position: relative; /* Needed for absolute positioning of the button */
+	padding: 10px;
+}
+
+.delete-action-button {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background-color: #f44336;
+	color: white;
+	border: none;
+	padding: 5px 10px;
+	border-radius: 5px;
+	display: none; /* Hide by default */
+}
+
+.action-item:hover .delete-action-button {
+	display: block; /* Show on hover */
+}
+
+button {
+	&.start-record {
+		@apply bg-green-500 hover:bg-green-600 text-white p-2 rounded-md;
+	}
+	&.stop-record {
+		@apply bg-red-500 hover:bg-red-600 text-white p-2 rounded-md;
+	}
+}

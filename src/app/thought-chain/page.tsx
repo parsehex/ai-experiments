@@ -1,10 +1,9 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Tooltip } from 'react-tooltip';
-import * as ooba from '@/app/ooba-api';
-import { GenerateParams } from '@/app/ooba-types';
-import { PhaseType } from '@/app/types';
+import { PhaseType } from '@/lib/types';
 import * as prompts from './prompts';
+import { GenerateOptions, generate } from '@/lib/llm';
 
 const phases: PhaseType[] = [
 	{
@@ -24,7 +23,7 @@ const phases: PhaseType[] = [
 			phase1Output: previousResults['Phase 1: Expertise Identification'],
 		}),
 		extraParams: {
-			temperature: 0.25,
+			temp: 0.25,
 		},
 	},
 	{
@@ -48,8 +47,8 @@ const phases: PhaseType[] = [
 		}),
 		shouldStop: (output) => output.trim().toUpperCase() === 'NO',
 		extraParams: {
-			stopping_strings: ['Q:'],
-			guidance_scale: 1.1,
+			stop: ['Q:'],
+			cfg: 1.1,
 		},
 	},
 	{
@@ -62,7 +61,7 @@ const phases: PhaseType[] = [
 			revision: previousResults['Phase 4: Response Revision'],
 		}),
 		extraParams: {
-			stopping_strings: ['Q:'],
+			stop: ['Q:'],
 		},
 	},
 ];
@@ -71,26 +70,25 @@ interface Result {
 	output: string;
 	prompt: string;
 }
-const params: Partial<GenerateParams> = {
-	temperature: 0.01,
-	guidance_scale: 1.25,
-	stopping_strings: ['Q:', '\n'],
+const params: GenerateOptions = {
+	temp: 0.01,
+	cfg: 1.25,
+	stop: ['Q:', '\n'],
 };
 
 async function runPrompt(
 	template: string,
 	variables: Record<string, string>,
-	extraParams?: Partial<GenerateParams>
+	extraParams?: GenerateOptions
 ) {
 	const prompt = template.replace(
 		/{{(.*?)}}/g,
 		(_, g) => variables[g.trim()] || ''
 	);
 	console.log(prompt);
-	const options = Object.assign({}, params, extraParams, { prompt });
-	const response = await ooba.generateText(options);
-	const responseText = response.results[0].text;
-	return responseText;
+	const options = Object.assign({}, params, extraParams);
+	const response = await generate(prompt, options);
+	return response.trim();
 }
 
 const Phase = ({
@@ -136,7 +134,6 @@ function ThoughtChain() {
 	};
 	useEffect(() => {
 		loadInput();
-		(window as any).ooba = ooba;
 	}, []);
 
 	const [inputText, setInputText] = useState('');
@@ -192,57 +189,52 @@ function ThoughtChain() {
 	};
 
 	return (
-		<div>
-			<h1>Thought Chain</h1>
-			<div>
-				<div className="mt-2 flex flex-row justify-center">
-					<textarea
-						className="input mr-2"
-						style={{ height: '6em', width: '45%' }}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter' && e.shiftKey) {
-								e.preventDefault();
-								handleSend();
-							}
+		<>
+			<div className="mt-2 flex flex-row justify-center">
+				<textarea
+					className="input mr-2"
+					style={{ height: '6em', width: '45%' }}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' && e.shiftKey) {
+							e.preventDefault();
+							handleSend();
+						}
+					}}
+					value={inputText}
+					onChange={(e) => setInputText(e.target.value)}
+					placeholder="Type your message..."
+				/>
+				<div className="inline-flex flex-col">
+					<button onClick={() => handleSend()} className="mr-2">
+						Send
+					</button>
+					<button
+						onClick={() => {
+							const i = Math.round(Math.random() * prompts.testPrompts.length);
+							handleSend(prompts.testPrompts[i]);
 						}}
-						value={inputText}
-						onChange={(e) => setInputText(e.target.value)}
-						placeholder="Type your message..."
-					/>
-					<div className="inline-flex flex-col">
-						<button onClick={() => handleSend()} className="mr-2">
-							Send
-						</button>
-						<button
-							onClick={() => {
-								const i = Math.round(
-									Math.random() * prompts.testPrompts.length
-								);
-								handleSend(prompts.testPrompts[i]);
-							}}
-							className="mr-2"
-						>
-							Test
-						</button>
-						{currentPhase && <span className="fade">{currentPhase}</span>}
-					</div>
-				</div>
-				<div
-					className="mb-4 flex flex-row flex-wrap pb-5"
-					style={{ height: '30em' }}
-				>
-					{phases.map((phase) => (
-						<Phase
-							key={phase.name}
-							phase={phase.name}
-							outputText={results[phase.name]?.output || ''}
-							processOutput={phase.processOutput}
-							tooltipContent={results[phase.name]?.prompt}
-						/>
-					))}
+						className="mr-2"
+					>
+						Test
+					</button>
+					{currentPhase && <span className="fade">{currentPhase}</span>}
 				</div>
 			</div>
-		</div>
+			<div
+				className="mb-4 flex flex-row flex-wrap pb-5"
+				style={{ height: '30em' }}
+			>
+				{phases.map((phase) => (
+					<Phase
+						key={phase.name}
+						phase={phase.name}
+						outputText={results[phase.name]?.output || ''}
+						processOutput={phase.processOutput}
+						tooltipContent={results[phase.name]?.prompt}
+					/>
+				))}
+			</div>
+		</>
 	);
 }
 

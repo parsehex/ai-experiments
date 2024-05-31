@@ -8,20 +8,20 @@ import { StructuredTool, Tool } from 'langchain/tools';
 import { Serialized } from 'langchain/load/serializable';
 import { EntityMemory } from 'langchain/memory';
 import { ChatBox } from '@/components/ChatBox';
-import { getLLM } from '@/app/llms';
-import { Message } from '@/app/types';
+import { getLLM } from '@/lib/llms';
+import { Message, RawMessage } from '@/lib/types/llm';
 import { testPrompts } from './prompts';
 
 // TODO add other chat routes to prototype other agents
 // chat page that uses entity memory and displays entities, able to edit them
 
-function Chat() {
+function EntityMemoryChat() {
 	const [messages, setMessages] = useState([
 		{
 			role: 'assistant',
 			content: "Hi, I'm a chatbot who can search the web. How can I help you?",
 		},
-	] as Message[]);
+	] as RawMessage[]);
 	const [input, setInput] = useState('');
 	const [openaiKey, setOpenaiKey] = useState('');
 	const [executor, setExecutor] = useState(null as AgentExecutor | null);
@@ -77,7 +77,7 @@ function Chat() {
 		setMessages([
 			...messages,
 			{ role: 'user', content: userInput },
-		] as Message[]);
+		] as RawMessage[]);
 
 		const result = await executor.call({ input: userInput }, [
 			{
@@ -101,7 +101,7 @@ function Chat() {
 		}
 		newMessages.push({ role: 'assistant', content: response });
 
-		setMessages(newMessages as Message[]);
+		setMessages(newMessages as RawMessage[]);
 
 		const newEntities = await executor.memory?.loadMemoryVariables({
 			input: '',
@@ -115,8 +115,7 @@ function Chat() {
 	};
 
 	return (
-		<div>
-			<h1>Chat - Entity Memory</h1>
+		<>
 			<input
 				value={openaiKey}
 				className="input"
@@ -128,7 +127,7 @@ function Chat() {
 			/>
 			<div className="container">
 				<ChatBox
-					messages={messages}
+					messages={messages as Message[]}
 					setMessages={setMessages}
 					roles={['user', 'assistant', 'assistant-thinking']}
 				/>
@@ -155,8 +154,8 @@ function Chat() {
 					<button onClick={handleSend}>Send</button>
 				</div>
 			</div>
-		</div>
+		</>
 	);
 }
 
-export default Chat;
+export default EntityMemoryChat;

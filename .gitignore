@@ -34,3 +34,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+**/venv/**/*
+**/__pycache__/**/*
+
+src/app/story-generator/starters.ts
+scripts/**/logs/*.txt
+
+py_api/settings.py
+py_api/scripts/**/*.wav
+py_api/scripts/**/input*.txt
+py_api/scripts/out/**/*

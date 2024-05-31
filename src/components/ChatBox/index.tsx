@@ -1,26 +1,43 @@
-import { Message } from '@/app/types';
+import '@/styles/chatbox.scss';
+import { CustomBtns } from '@/lib/types';
 import { useEffect, useRef, useState } from 'react';
 import MessageItem from './MessageItem';
 import InputBox from './InputBox';
+import { ChatBoxMessage } from '@/lib/types/llm';
+
+// TODO add a `features` prop where you can enable helpers
+//   like a bool to allow deleting messages (still need ig hooks when they get called at least)
+//   or one to enable a "clear all" button
 
 export const ChatBox = ({
-	roles = ['USER', 'ASSISTANT'],
+	roles = ['user', 'assistant'],
 	messages,
 	setMessages,
 	deleteMessage,
+	deleteMessages,
 	regenerateMessage,
 	readOnly = false,
 	handleSend,
 	multiline = false,
+	defExpandImages = false,
+	defExpandThoughts = false,
+	handleEdit,
+	customBtns,
 }: {
 	roles?: string[];
-	messages: Message[];
+	messages: ChatBoxMessage[];
+	// messages: Message[];
 	setMessages: (value: any) => void;
 	deleteMessage?: (id: string) => void;
-	regenerateMessage?: (id: string) => void;
+	deleteMessages?: (ids: string[]) => void;
+	regenerateMessage?: (id: string) => void | Promise<void>;
 	readOnly?: boolean;
 	handleSend?: (content: string) => void;
 	multiline?: boolean;
+	defExpandImages?: boolean;
+	defExpandThoughts?: boolean;
+	handleEdit?: (id: string, content: string) => void;
+	customBtns?: CustomBtns;
 }) => {
 	const [tempMsgContent, setTempMsgContent] = useState('');
 	const messagesEndRef = useRef<null | HTMLDivElement>(null);
@@ -28,16 +45,14 @@ export const ChatBox = ({
 		new Set()
 	);
 	const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
-	const [collapsedThoughts, setCollapsedThoughts] = useState<Set<string>>(
-		new Set()
-	);
 
 	const [roleClassMap, setRoleClassMap] = useState(
 		{} as Record<string, string>
 	);
 
 	useEffect(() => {
-		if (messagesEndRef.current) {
+		const lastMsgIsThought = messages[messages.length - 1]?.type === 'thought';
+		if (messagesEndRef.current && !lastMsgIsThought) {
 			const top = messagesEndRef.current.scrollHeight;
 			messagesEndRef.current.scroll({ top, behavior: 'smooth' });
 		}
@@ -45,8 +60,9 @@ export const ChatBox = ({
 
 	const toggleRole = (messageId: string) => {
 		setMessages((prevMessages: any) => {
-			return prevMessages.map((msg: Message) => {
+			return prevMessages.map((msg: ChatBoxMessage) => {
 				if (msg.id === messageId) {
+					// console.log(msg);
 					const currentIndex = roles.indexOf(msg.role);
 					const nextRole = roles[(currentIndex + 1) % roles.length];
 					return { ...msg, role: nextRole };
@@ -70,7 +86,7 @@ export const ChatBox = ({
 
 	const handleSelect = (
 		e: React.ChangeEvent<HTMLInputElement>,
-		msg: Message,
+		msg: ChatBoxMessage,
 		idx: number
 	) => {
 		const updatedSelection = new Set(selectedMessages);
@@ -103,27 +119,6 @@ export const ChatBox = ({
 
 		setSelectedMessages(updatedSelection);
 	};
-	const toggleCollapse = (messageId: string) => {
-		setCollapsedThoughts((prev) => {
-			const newSet = new Set(prev);
-			if (newSet.has(messageId)) {
-				newSet.delete(messageId);
-			} else {
-				newSet.add(messageId);
-			}
-			return newSet;
-		});
-	};
-	const handleEdit = (id: string, content: string) => {
-		setMessages((prevMessages: any) => {
-			return prevMessages.map((msg: Message) => {
-				if (msg.id === id) {
-					return { ...msg, content };
-				}
-				return msg;
-			});
-		});
-	};
 	return (
 		<div className="chatBox" ref={messagesEndRef}>
 			{messages.map((msg, idx) => (
@@ -132,23 +127,27 @@ export const ChatBox = ({
 					key={idx}
 					message={msg}
 					index={idx}
-					isThoughtCollapsed={collapsedThoughts.has(msg.id)}
 					isSelected={selectedMessages.has(msg.id)}
 					onToggleRole={() => !readOnly && toggleRole(msg.id)}
-					onDelete={() => deleteMessage && deleteMessage(msg.id)}
-					onRegenerate={() => regenerateMessage && regenerateMessage(msg.id)}
-					onEdit={(id, content) => handleEdit(id, content)}
-					onToggleThoughtCollapse={() => toggleCollapse(msg.id)}
-					onCopy={() => navigator.clipboard.writeText(msg.content)}
+					onDelete={deleteMessage}
+					onRegenerate={regenerateMessage}
+					onEdit={(id, content) => {
+						handleEdit && handleEdit(id, content);
+					}}
+					onCopy={async () => navigator.clipboard.writeText(await msg.content)}
+					hasSelect={deleteMessages !== undefined}
 					onSelect={(e) => handleSelect(e, msg, idx)}
 					readOnly={readOnly}
+					defExpandImages={defExpandImages}
+					defExpandThoughts={defExpandThoughts}
+					customBtns={customBtns}
 				/>
 			))}
-			{deleteMessage && selectedMessages.size > 0 && (
+			{deleteMessages && selectedMessages.size > 0 && (
 				<button
 					className="bulk-delete"
 					onClick={() => {
-						selectedMessages.forEach((id) => deleteMessage(id));
+						deleteMessages(Array.from(selectedMessages));
 						setSelectedMessages(new Set());
 					}}
 				>

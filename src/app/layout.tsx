@@ -1,25 +1,28 @@
-import '@/styles/globals.css';
+'use client';
+import '@/styles/globals.scss';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import Header from '@/components/Header';
-
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-	title: 'AI Demos and Experiments',
-	description: 'Collection of prototypes that use AI',
-};
+import Layout from '@/components/Layout';
+import { usePathname } from 'next/navigation';
+import { getPageTitle } from '@/pageTitleMap';
 
 export default function RootLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
+	const pathname = usePathname();
+	const title = getPageTitle(pathname || '');
+
 	return (
 		<html lang="en">
-			<body className={inter.className}>
-				<Header />
-				{children}
+			<head>
+				<meta charSet="utf-8" />
+				<meta name="viewport" content="width=device-width" />
+				<title>{title}</title>
+				<link rel="icon" href="/favicon.ico" />
+			</head>
+			<body>
+				<Layout>{children}</Layout>
 			</body>
 		</html>
 	);
