@@ -1,40 +1,9 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Notes From Developer
+## Overview
 
-- Page Routes seem to do full page reloads very easily (/every time?), use App Routes instead, at least for bigger demos.
+This is a collection of demos and protoypes I made Fall of 2023 to learn about making an app that utilizes AI. Much of what I've learned with these has carried over to making [BuddyGenAI](https://github.com/parsehex/BuddyGenAI), an app/game to make virtual buddies to talk with.
 
-## Getting Started
+I may/will probably circle back to clean up this project in the future. I believe I updated to use the standalone [py-ai-server](https://github.com/parsehex/py-ai-server) but the project might still be setup to use `./py_api/`.
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+(I may have also done a broken merge a few minutes ago)
