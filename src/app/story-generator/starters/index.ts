@@ -17,7 +17,6 @@ export const StarterPresets: StarterPreset[] = [
 			upcomingEvents: [],
 		},
 	},
-	buttandjohn(),
 	gwis(),
 ];
 

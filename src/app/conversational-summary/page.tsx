@@ -4,6 +4,7 @@ import { ChatBox } from '@/components/ChatBox';
 import { complete } from '@/lib/llm';
 import { PromptPart, Message } from '@/lib/types/llm';
 import { addMsg, makeMsg } from '@/lib/utils/messages';
+import AIModelStatus from '@/components/AIModelStatus';
 
 const summarize = async (messages: Message[], summary?: string) => {
 	const msgs = messages.map((msg) => `${msg.role}: ${msg.content}\n`).join('');
@@ -57,7 +58,7 @@ const sendInput = async (
 function ConversationalSummaryChat() {
 	const [messages, setMessages] = useState([
 		{
-			role: 'ASSISTANT',
+			role: 'assistant',
 			content: 'Hi, what do you want to talk about?',
 		},
 	] as Message[]);
@@ -101,9 +102,10 @@ function ConversationalSummaryChat() {
 
 	return (
 		<div className="container">
-			<button className="clear-button" onClick={handleClear}>
+			<button className="basic delete clear-button" onClick={handleClear}>
 				Clear
 			</button>
+			<AIModelStatus type="llm" />
 			<ChatBox messages={messages} setMessages={setMessages} readOnly={true} />
 			{summary && (
 				<div className="summaryBox">

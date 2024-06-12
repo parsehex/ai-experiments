@@ -81,6 +81,18 @@ const componentPrototypes: ItemProps[] = [
 
 export const demos: ItemProps[] = [
 	{
+		title: 'Vercel/AI Test',
+		description: '',
+		href: '/vercel-ai-test',
+		tags: ['LLM'],
+	},
+	{
+		title: 'Summarizer v2',
+		description: 'Second attempt at a summarizer using LLM',
+		href: '/summarizer-v2',
+		tags: ['LLM', 'Tool'],
+	},
+	{
 		title: 'Read Aloud',
 		description: 'Read text from different sources aloud using TTS',
 		href: '/read-aloud',

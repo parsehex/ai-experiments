@@ -95,21 +95,6 @@ const TtsDemo: React.FC = () => {
 			</div>
 		);
 	};
-	const Input = () => {
-		return (
-			<>
-				<TextInput
-					id="tts-input"
-					label="Text"
-					value={[text, setText]}
-					isTextarea
-				/>
-				<button onClick={handleGenerate} disabled={isGenerating}>
-					Generate
-				</button>
-			</>
-		);
-	};
 
 	return (
 		<div className="tts-demo">
@@ -118,7 +103,17 @@ const TtsDemo: React.FC = () => {
 			) : (
 				<>
 					<Options />
-					<Input />
+					<div>
+						<TextInput
+							id="tts-input"
+							label="Text"
+							value={[text, setText]}
+							isTextarea
+						/>
+						<button onClick={handleGenerate} disabled={isGenerating}>
+							Generate
+						</button>
+					</div>
 					<AudioPlayer audioUrl={audioUrl} />
 				</>
 			)}

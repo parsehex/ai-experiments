@@ -19,7 +19,7 @@ const getResponse = async (input: string, messages: Message[]) => {
 	}));
 	const response = await complete(
 		{ user, system, prefix_response: 'RESPONSE: ', prior_msgs },
-		{ temp: 0.5, max: 150, stop: ['RESPONSE:', '<|im_end|>', '\n\n'] }
+		{ temp: 0.5, max: 2500, stop: ['RESPONSE:'], repeat_pen: 1.15 }
 	);
 	return response;
 };
@@ -27,7 +27,7 @@ const getResponse = async (input: string, messages: Message[]) => {
 const defaultMsg = makeMsg(
 	'message',
 	'assistant',
-	"Hi, I'm a chatbot. How can I help you today?"
+	'Hi, how can I help you today?'
 );
 function SimpleChat() {
 	const [messages, setMessages] = useState<Message[]>([defaultMsg]);
@@ -53,6 +53,7 @@ function SimpleChat() {
 				messages={messages}
 				setMessages={setMessages}
 				handleSend={handleSend}
+				multiline
 			/>
 		</div>
 	);

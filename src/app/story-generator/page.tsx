@@ -356,7 +356,7 @@ const StoryGenerator = () => {
 			ref={divRef}
 		>
 			<TextInput
-				className="h-9"
+				// className="h-9"
 				minWidth="8rem"
 				label="Name"
 				placeholder="Name"

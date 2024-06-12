@@ -1,17 +1,18 @@
-'use client';
 import '@/styles/globals.scss';
 import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
-import { usePathname } from 'next/navigation';
+// import { usePathname } from 'next/navigation';
 import { getPageTitle } from '@/pageTitleMap';
+import { AI } from './action';
 
 export default function RootLayout({
 	children,
 }: {
 	children: React.ReactNode;
 }) {
-	const pathname = usePathname();
-	const title = getPageTitle(pathname || '');
+	// const pathname = usePathname();
+	// const title = getPageTitle(pathname || '');
+	const title = 'Test';
 
 	return (
 		<html lang="en">
@@ -22,7 +23,9 @@ export default function RootLayout({
 				<link rel="icon" href="/favicon.ico" />
 			</head>
 			<body>
-				<Layout>{children}</Layout>
+				<AI>
+					<Layout>{children}</Layout>
+				</AI>
 			</body>
 		</html>
 	);

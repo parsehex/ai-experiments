@@ -171,6 +171,7 @@ function CharacterChat() {
 					setMessages={setMessages}
 					deleteMessage={handleDeleteMessage}
 					handleSend={handleSend}
+					multiline
 				/>
 			</div>
 		</div>

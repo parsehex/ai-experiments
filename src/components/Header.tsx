@@ -1,3 +1,4 @@
+'use client';
 import { getPageTitle } from '@/pageTitleMap';
 import { usePathname } from 'next/navigation';
 import 'react-tooltip/dist/react-tooltip.css';
